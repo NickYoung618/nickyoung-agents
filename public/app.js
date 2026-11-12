@@ -268,7 +268,7 @@ async function sendRequest(home = false) {
   sending = true;
   saveDrafts();
   $("#homeStart").disabled = true;
-  $("#composer button").disabled = true;
+  document.querySelectorAll("#composer button").forEach(button=>button.disabled=true);
   $("#homeStart").textContent = '正在创建任务…';
   $("#notice").textContent = target ? '正在发送补充要求…' : '正在创建任务，随后由负责人理解需求…';
   try {
@@ -294,7 +294,7 @@ async function sendRequest(home = false) {
   } finally {
     sending = false;
     $("#homeStart").disabled = false;
-    $("#composer button").disabled = false;
+    document.querySelectorAll("#composer button").forEach(button=>button.disabled=false);
     $("#homeStart").textContent = '开始';
   }
 }

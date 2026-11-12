@@ -85,6 +85,8 @@ export function verificationEnvironment(config = {}) {
 }
 export async function executeCheck(engine, c, cwd, gate, trace) {
   const output = [];
+  const environment = { ...process.env };
+  delete environment.NODE_TEST_CONTEXT;
   let exitCode = 0,
     interrupted = false;
   for (const [index, command] of gate.commands.entries()) {
@@ -111,6 +113,7 @@ export async function executeCheck(engine, c, cwd, gate, trace) {
       ],
       {
         cwd,
+        env: environment,
         timeout: engine.config.timeout,
         onEvent: (event) => {
           output.push(event.text || JSON.stringify(event));

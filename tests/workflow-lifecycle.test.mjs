@@ -80,6 +80,7 @@ test("检查与审查阶段重启，只重建隔离 gate，不重复实现或唤
       f.e.workflow.gate("a", g.id, { status: "running" });
       f.e.workflow.update("a", {
         phase: stage === "check" ? "validating" : "reviewing",
+        resumePhase: "planning",
       });
       const restored = new Engine(
         f.e.store,
@@ -189,6 +190,120 @@ test("暂停/429/缺失依赖不计代码返修；改名任务不能绕过批次
     f.e.workflow.queueRepair("a", [issue], ["e"]);
     assert.equal(f.e.state("a").cycle.phase, "blocked");
     assert.equal(f.e.state("a").cycle.tasks[0].failures, 0);
+    assert.equal(f.calls.length, 0);
+  } finally {
+    f.clean();
+  }
+});
+
+test("暂停首次规划后可继续；目标追加使旧规划结果失效", async () => {
+  const f = setup();
+  try {
+    f.e.workflow.start("a", "原始目标");
+    const original = f.e.model;
+    let release;
+    f.e.model = () => new Promise((r) => (release = r));
+    const old = f.e.wake("a");
+    await new Promise((r) => setImmediate(r));
+    f.e.pause("a");
+    release({ message: "旧规划", recruits: [], actions: [], plan: plan(1) });
+    await old;
+    assert.equal(f.e.state("a").tasks.length, 0);
+    f.e.model = original;
+    f.e.resume("a");
+    await drain(f.e);
+    assert.equal(f.e.state("a").status, "done");
+    assert.equal(f.calls.filter((c) => c.role === "planner").length, 1);
+  } finally {
+    f.clean();
+  }
+});
+
+test("执行中追加新目标时，旧规划结果只记历史，不覆盖新目标的计划", async () => {
+  const f = setup();
+  try {
+    f.e.workflow.start("a", "旧目标");
+    const original = f.e.model;
+    let release,
+      planned = 0;
+    f.e.model = async (...args) => {
+      if (args[3].role === "planner" && planned++ === 0)
+        return new Promise((r) => (release = r));
+      return original(...args);
+    };
+    const old = f.e.wake("a");
+    await new Promise((r) => setImmediate(r));
+    await f.e.message("a", "新目标");
+    release({ message: "旧计划", recruits: [], actions: [], plan: plan(1) });
+    await old;
+    assert.equal(f.e.state("a").tasks.length, 0);
+    assert.equal(f.e.state("a").cycle.goal, "新目标");
+    assert.ok(
+      f.e.state("a").events.some((e) => e.type === "planner_stale_result"),
+    );
+    const deadline = Date.now() + 5000;
+    while (Date.now() < deadline && !f.e.state("a").tasks.length)
+      await new Promise((r) => setTimeout(r, 20));
+    await drain(f.e);
+    assert.equal(f.e.state("a").status, "done");
+    assert.equal(f.e.state("a").cycle.tasks.length, 5);
+    assert.equal(planned, 2);
+  } finally {
+    f.clean();
+  }
+});
+
+test("规划结果已持久化但尚未提交时，重启直接重放计划，不再调用负责人", async () => {
+  const f = setup();
+  try {
+    f.e.workflow.start("a", "恢复已知规划");
+    const x = f.e.state("a").cycle;
+    f.e.event("a", "model_result", {
+      runId: "known-plan",
+      member: "leader",
+      role: "planner",
+      cycleId: x.cycleId,
+      goalRevision: x.goalRevision,
+      result: { message: "完整计划", recruits: [], actions: [], plan: plan(1) },
+    });
+    const restored = new Engine(
+      f.e.store,
+      f.e.config,
+      () => {},
+      () => {},
+    );
+    restored.model = async (...args) => {
+      assert.notEqual(args[3].role, "planner");
+      return f.e.model(...args);
+    };
+    restored.recover();
+    await drain(restored);
+    assert.equal(restored.state("a").status, "done");
+    assert.ok(
+      restored.state("a").events.some((e) => e.type === "plan_recovered"),
+    );
+    assert.equal(f.calls.filter((c) => c.role === "planner").length, 0);
+    restored.shutdown();
+  } finally {
+    f.clean();
+  }
+});
+
+test("同目标重复计划幂等；新目标版本沿用同计划也能恢复执行", async () => {
+  const f = setup();
+  try {
+    f.e.workflow.start("a", "原目标");
+    const p = plan(1);
+    f.e.workflow.submit("a", p);
+    const revision = f.e.state("a").cycle.planRevision;
+    assert.equal(f.e.workflow.submit("a", p).reused, true);
+    assert.equal(f.e.state("a").cycle.planRevision, revision);
+    f.e.wake = () => {};
+    await f.e.message("a", "明确继续此计划作为新目标");
+    f.e.workflow.submit("a", p);
+    assert.equal(f.e.state("a").cycle.phase, "executing");
+    assert.equal(f.e.state("a").cycle.planRevision, revision + 1);
+    assert.equal(f.e.state("a").cycle.replans, 1);
     assert.equal(f.calls.length, 0);
   } finally {
     f.clean();

@@ -96,7 +96,23 @@ test("真实适配器失败与暂停均保留 runId 和已知部分 usage", asyn
       trigger: "test",
     });
     const rejected = assert.rejects(pending);
-    await new Promise((r) => setTimeout(r, 100));
+    const deadline = Date.now() + 5000;
+    while (
+      Date.now() < deadline &&
+      !e
+        .state("c")
+        .events.some(
+          (x) => x.type === "process" && x.data.event.usage?.input_tokens === 4,
+        )
+    )
+      await new Promise((r) => setTimeout(r, 10));
+    assert.ok(
+      e
+        .state("c")
+        .events.some(
+          (x) => x.type === "process" && x.data.event.usage?.input_tokens === 4,
+        ),
+    );
     e.pause("c");
     await rejected;
     const s = e.state("c"),

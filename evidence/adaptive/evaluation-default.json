@@ -1,0 +1,5 @@
+{
+  "live": false,
+  "status": "not_run",
+  "reason": "真实模型评估未运行；需要 --live、--budget-turns、--budget-ms 和 --config。"
+}

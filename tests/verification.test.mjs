@@ -254,3 +254,69 @@ test("源码污染使正式证据失败，原目录保持实现成果；正常�
     }
   }
 });
+
+test("实际缺陷补丁与新增回归：原审查提交和最终补丁提交分开，正式检查覆盖新增断言", async () => {
+  const f = setup();
+  try {
+    const base = f.e.model;
+    let reviews = 0;
+    f.e.model = async (c, m, p, o) => {
+      if (o.role === "reviewer") {
+        reviews++;
+        const x = JSON.parse(p);
+        return {
+          message: "下界缺陷",
+          reviewedCommit: x.reviewedCommit,
+          criteriaIds: ["c"],
+          blockingIssues: [
+            {
+              issueId: "lower-bound",
+              taskId: f.e.state(c).cycle.tasks[0].id,
+              criterionId: "c",
+              location: "src/clamp.mjs:1",
+              evidence: "clamp(-1,0,10) 得到 -1，违反下界",
+              expected: "返回 0 并增加下界回归断言",
+              checkIds: ["check"],
+              semantic: false,
+            },
+          ],
+          advisories: [],
+          needsVerification: [],
+        };
+      }
+      const result = await base(c, m, p, o);
+      const repair = o.purpose === "repair";
+      writeFileSync(
+        join(f.path, "src/clamp.mjs"),
+        repair
+          ? "export const clamp=(n,min,max)=>Math.max(min,Math.min(n,max));\n"
+          : "export const clamp=(n,min,max)=>Math.min(n,max);\n",
+      );
+      writeFileSync(
+        join(f.path, "src/behavior.test.mjs"),
+        "import test from 'node:test';import assert from 'node:assert/strict';import {clamp} from './clamp.mjs';test('within range',()=>assert.equal(clamp(5,0,10),5));\n" +
+          (repair
+            ? "test('lower bound',()=>assert.equal(clamp(-1,0,10),0));\n"
+            : ""),
+      );
+      return result;
+    };
+    const p = plan(1);
+    p.gates[0].commands = ["node --test src/behavior.test.mjs"];
+    f.e.workflow.start("a", "下界修复");
+    f.e.workflow.submit("a", p);
+    await drain(f.e);
+    const x = f.e.state("a").cycle;
+    assert.equal(f.e.state("a").status, "done");
+    assert.equal(reviews, 1);
+    assert.notEqual(x.reviewedCommit, x.finalCommit);
+    assert.match(
+      f.e.git(f.path, ["diff", x.reviewedCommit, x.finalCommit]),
+      /lower bound/,
+    );
+    assert.match(x.evidence.at(-1).output, /pass 2/);
+    assert.ok(x.issues.every((i) => i.closed));
+  } finally {
+    f.clean();
+  }
+});

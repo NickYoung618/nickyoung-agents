@@ -63,3 +63,29 @@ test("direct 完整配置无规划无审查，自动检查仍真实执行", asyn
     f.clean();
   }
 });
+
+test("auto 选择免审仍统计一次首次规划", async () => {
+  const f = setup();
+  try {
+    const original = f.e.model;
+    const roles = [];
+    f.e.model = async (c, m, p, o) => {
+      roles.push(o.purpose);
+      if (o.role === "planner")
+        return {
+          message: "免审规划",
+          recruits: [],
+          actions: [],
+          plan: plan(1, "checks_only"),
+        };
+      return original(c, m, p, o);
+    };
+    f.e.workflow.start("a", "auto免审");
+    await f.e.wake("a");
+    await drain(f.e);
+    assert.equal(f.e.state("a").status, "done");
+    assert.deepEqual(roles, ["plan", "execute"]);
+  } finally {
+    f.clean();
+  }
+});

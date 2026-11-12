@@ -1,5 +1,7 @@
 # NickYoung 开发方案
 
+> 本文的逐任务审查、成功后负责人恢复及固定返修流程仅适用于 legacy。adaptive_v1 的正式规格和回滚边界见 [ADAPTIVE-WORKFLOW.md](docs/ADAPTIVE-WORKFLOW.md)，角色不代表模型能力或价格。
+
 给执行这份方案的 Codex：你运行在这台服务器上（ubuntu 用户），项目目录是 `/home/ubuntu/disk/dzk/nickyoung/`。读完直接做到底，中途不用停下来等确认，阶段小结写进 `RESULT.md` 即可。第 2 节是已经实测过的事实，可以直接用；第 3–5 节是定下来的设计；第 6 节是建议，可以按实际情况调整。
 
 ## 1 要做成什么

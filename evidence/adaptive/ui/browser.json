@@ -9,20 +9,20 @@
     "新交接单次动画，减少动态效果与暂停无动画，选中成员保持",
     {
       "events": 500,
-      "wallMs": 228,
-      "renderObservationUpperBoundMs": 24,
+      "wallMs": 372,
+      "renderObservationUpperBoundMs": 163,
       "includesSSEDebounce": true
     },
     {
       "events": 2000,
-      "wallMs": 313,
-      "renderObservationUpperBoundMs": 79,
+      "wallMs": 338,
+      "renderObservationUpperBoundMs": 87,
       "includesSSEDebounce": true
     },
     {
       "events": 5000,
-      "wallMs": 431,
-      "renderObservationUpperBoundMs": 162,
+      "wallMs": 516,
+      "renderObservationUpperBoundMs": 187,
       "includesSSEDebounce": true
     },
     "决策选项清楚，答复后确认",

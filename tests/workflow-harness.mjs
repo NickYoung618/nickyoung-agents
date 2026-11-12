@@ -37,7 +37,7 @@ export function setup() {
     calls.push({ member: m.id, ...opts });
     const data = JSON.parse(prompt);
     if (opts.role === "planner")
-      return { message: "plan", recruits: [], plan: plan(5) };
+      return { message: "plan", recruits: [], actions: [], plan: plan(5) };
     if (opts.role === "executor") {
       mkdirSync(join(path, "src"), { recursive: true });
       writeFileSync(

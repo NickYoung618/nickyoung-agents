@@ -15,7 +15,8 @@ export function progress(s) {
     const checked=checks.filter(g=>['passed','reused'].includes(g.status)).length;
     const reviewState=x.policy==='checks_only'?'按策略无需模型审查':reviews.some(g=>g.status==='changes_requested')?'局部修复 / 待复查':reviews.every(g=>g.status==='passed')&&reviews.length?'独立审查及补丁证据已满足':'等待整体独立审查';
     const active=x.tasks.find(t=>t.status==='running');
-    const reason=s.status==='paused'?'点击继续恢复当前阶段':x.phase==='blocked'?x.blockedReason:waiting?`${waiting} 项决定等待答复；无关任务继续排队`:active?`${memberName(s,active.member)} · ${active.title}`:x.phase==='validating'?'程序正在验证固定提交':x.phase==='reviewing'?'审查者核对已有证据和验收标准':x.reason;
+    const denied=s.questions.filter(q=>q.cycleId===x.cycleId&&q.authorization&&q.answer===false).length;
+    const reason=s.status==='paused'?'点击继续恢复当前阶段':x.phase==='blocked'?x.blockedReason:denied?`${denied} 项授权已拒绝，关联任务不会执行；可调整目标`:waiting?`${waiting} 项决定等待答复；无关任务继续排队`:active?`${memberName(s,active.member)} · ${active.title}`:x.phase==='validating'?'程序正在验证固定提交':x.phase==='reviewing'?'审查者核对已有证据和验收标准':x.reason;
     return { action: s.status==='paused'?'工作流已暂停':`${labels[x.phase]||x.phase}${active?' · '+active.title:''}`, next:`${reason||'等待依赖或检查点'} · ${reviewState}`,waiting,passed:implemented,implemented,checked,checkTotal:checks.length,reviewState,policy:x.policy,reason:x.reason,last:s.events.at(-1),total:x.tasks.length };
   }
   const waiting = s.questions.filter(q => !q.answered).length;

@@ -147,3 +147,62 @@ test("已有旧会话不受新创建开关影响；计划修订保留历史而�
     f.clean();
   }
 });
+
+test("授权被拒绝只阻塞关联任务；回执不能被当作许可", async () => {
+  const f = setup();
+  try {
+    const p = plan(2, "checks_only");
+    p.tasks[1].dependsOn = [];
+    f.e.workflow.start("a", "授权");
+    await f.e.action("a", {
+      type: "ask",
+      questionId: "auth",
+      question: "允许外部操作?",
+      yes: "允许",
+      no: "拒绝",
+      authorization: true,
+      taskIds: ["t0"],
+      gateIds: [],
+    });
+    p.tasks[0].waitsForQuestions = ["auth"];
+    f.e.workflow.submit("a", p);
+    const q = f.e.state("a").questions[0];
+    f.e.event("a", "answer", { id: q.id, answer: false, cycleId: q.cycleId });
+    await drain(f.e);
+    assert.equal(
+      f.e.state("a").cycle.tasks.find((t) => t.localId === "t0").status,
+      "queued",
+    );
+    assert.equal(
+      f.e.state("a").cycle.tasks.find((t) => t.localId === "t1").status,
+      "implemented",
+    );
+    await assert.rejects(f.e.action("a", { type: "finish" }));
+  } finally {
+    f.clean();
+  }
+});
+test("环境变化先使证据失效并重跑检查，再进行模型审查", async () => {
+  const f = setup();
+  try {
+    f.e.workflow.start("a", "环境失效");
+    f.e.workflow.submit("a", plan(1));
+    await f.e.workflow.step("a");
+    await f.e.workflow.step("a");
+    f.e.config.verificationEnvironment = "changed";
+    await f.e.workflow.step("a");
+    assert.equal(f.calls.filter((c) => c.role === "reviewer").length, 0);
+    assert.equal(
+      f.e.state("a").cycle.evidence.filter((e) => e.source === "executed")
+        .length,
+      2,
+    );
+    assert.ok(
+      f.e.state("a").events.some((e) => e.type === "evidence_invalidated"),
+    );
+    await drain(f.e);
+    assert.equal(f.e.state("a").status, "done");
+  } finally {
+    f.clean();
+  }
+});

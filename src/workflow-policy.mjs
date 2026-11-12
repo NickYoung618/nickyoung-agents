@@ -37,7 +37,11 @@ export function canRunTask(task, cycle, questions = []) {
       ),
     ) &&
     !(task.waitsForQuestions || []).some((id) =>
-      questions.some((q) => q.id === id && !q.answered),
+      questions.some(
+        (q) =>
+          q.id === id &&
+          (!q.answered || (q.authorization && q.answer !== true)),
+      ),
     )
   );
 }
@@ -80,7 +84,10 @@ export function canDeliver(cycle, questions = []) {
       ) &&
     !(cycle.issues || []).some((i) => !i.closed) &&
     !questions.some(
-      (q) => !q.answered && (!q.cycleId || q.cycleId === cycle.cycleId),
+      (q) =>
+        (!q.answered ||
+          (q.authorization && q.answer !== true && q.status !== "withdrawn")) &&
+        (!q.cycleId || q.cycleId === cycle.cycleId),
     )
   );
 }
@@ -175,7 +182,10 @@ export function validatePlan(input, members, { direct = false } = {}) {
     [...criteria].some(
       (id) =>
         !plan.gates.some(
-          (g) => g.kind === "check" && g.criteriaIds.includes(id),
+          (g) =>
+            g.kind === "check" &&
+            g.phase === "final" &&
+            g.criteriaIds.includes(id),
         ),
     )
   )

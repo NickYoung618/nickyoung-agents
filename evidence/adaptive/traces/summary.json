@@ -1,0 +1,122 @@
+{
+  "fixture": true,
+  "realModels": false,
+  "summaries": [
+    {
+      "name": "three_tasks",
+      "status": "done",
+      "calls": {
+        "plan": 1,
+        "execute": 3,
+        "review": 1
+      },
+      "checks": [
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+      "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c"
+    },
+    {
+      "name": "five_tasks",
+      "status": "done",
+      "calls": {
+        "plan": 1,
+        "execute": 5,
+        "review": 1
+      },
+      "checks": [
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": "31abd4ad34f92f4970ccfa3d2a5ea9186f38b057",
+      "finalCommit": "31abd4ad34f92f4970ccfa3d2a5ea9186f38b057"
+    },
+    {
+      "name": "direct",
+      "status": "done",
+      "calls": {
+        "execute": 1
+      },
+      "checks": [
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": null,
+      "finalCommit": "13142c380382ce1ae72f999746641476e027ca4c"
+    },
+    {
+      "name": "auto_checks_only",
+      "status": "done",
+      "calls": {
+        "plan": 1,
+        "execute": 1
+      },
+      "checks": [
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": null,
+      "finalCommit": "58b7a26e4f7d35c8a7125306df02b307e953cef9"
+    },
+    {
+      "name": "checkpoint",
+      "status": "done",
+      "calls": {
+        "plan": 1,
+        "execute": 3,
+        "review": 1
+      },
+      "checks": [
+        {
+          "checkId": "contract",
+          "source": "executed",
+          "result": "passed"
+        },
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": "fb2e36b5ac1fcb80a73ab0233b7dac3eba1855b2",
+      "finalCommit": "fb2e36b5ac1fcb80a73ab0233b7dac3eba1855b2"
+    },
+    {
+      "name": "local_repair",
+      "status": "done",
+      "calls": {
+        "plan": 1,
+        "execute": 1,
+        "review": 1,
+        "repair": 1
+      },
+      "checks": [
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        },
+        {
+          "checkId": "check",
+          "source": "executed",
+          "result": "passed"
+        }
+      ],
+      "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+      "finalCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c"
+    }
+  ]
+}

@@ -10,7 +10,10 @@
     "start": "node src/server.mjs",
     "test": "node --test --test-isolation=none tests/*.test.mjs",
     "build": "node scripts/build-vendor.mjs",
-    "test:ui": "node tests/ui.mjs"
+    "test:ui": "node tests/ui.mjs",
+    "test:workflow": "node --test --test-isolation=none tests/policy.test.mjs tests/tracing.test.mjs tests/workflow.test.mjs tests/workflow-lifecycle.test.mjs tests/workflow-failures.test.mjs tests/verification.test.mjs tests/adaptive-runner.test.mjs tests/adaptive-ui.test.mjs tests/evaluation.test.mjs",
+    "evaluate:workflow": "node scripts/evaluate-workflow.mjs",
+    "trace:workflow": "node scripts/trace-workflow.mjs"
   },
   "dependencies": {
     "dompurify": "3.4.17",

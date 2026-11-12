@@ -1,0 +1,30 @@
+{
+  "baseline": "aa1f35fb5efa6b3f5343fa8484b6d717d0c31be1",
+  "branch": "adaptive-v1",
+  "workspace": "/home/ubuntu/disk/dzk/nickyoung-adaptive",
+  "unitTests": {
+    "command": "npm test",
+    "passed": 76,
+    "failed": 0,
+    "skipped": 0
+  },
+  "ui": {
+    "command": "npm run test:ui",
+    "passed": true,
+    "viewports": 6,
+    "themes": 2,
+    "views": 5,
+    "pageErrors": 0
+  },
+  "realModelEvaluation": {
+    "status": "not_run",
+    "authorizedBudget": null
+  },
+  "production": {
+    "changed": false,
+    "restarted": false,
+    "pushed": false,
+    "merged": false,
+    "deployed": false
+  }
+}

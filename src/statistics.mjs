@@ -94,7 +94,7 @@ export function cycleStatistics(conversations) {
   for (const { events } of conversations)
     for (const e of events) {
       const d = e.data;
-      if (!d.runId || !d.cycleId) continue;
+      if (!d.cycleId) continue;
       if (!groups.has(d.cycleId))
         groups.set(d.cycleId, { runs: new Map(), events: [] });
       const g = groups.get(d.cycleId);
@@ -107,6 +107,8 @@ export function cycleStatistics(conversations) {
     const s = {
       cycleId,
       calls: {},
+      byPurpose: {},
+      usageTotalsAreKnownSubtotal: true,
       failed: 0,
       interrupted: 0,
       usageKnown: 0,
@@ -128,6 +130,33 @@ export function cycleStatistics(conversations) {
       const d = { ...start?.data, ...end?.data },
         u = d.usage;
       s.calls[d.purpose] = (s.calls[d.purpose] || 0) + 1;
+      const p = (s.byPurpose[d.purpose] ||= {
+        calls: 0,
+        known: 0,
+        unknown: 0,
+        input: 0,
+        output: 0,
+        cached: 0,
+        cacheCreation: 0,
+        failed: 0,
+        interrupted: 0,
+        duration: 0,
+        waitDuration: 0,
+      });
+      p.calls++;
+      p.input += u?.input_tokens || 0;
+      p.output += u?.output_tokens || 0;
+      p.cached += u?.cached_input_tokens || u?.cache_read_input_tokens || 0;
+      p.cacheCreation += u?.cache_creation_input_tokens || 0;
+      p[
+        Number.isFinite(u?.input_tokens) && Number.isFinite(u?.output_tokens)
+          ? "known"
+          : "unknown"
+      ]++;
+      p.failed += end?.type === "run_failed" ? 1 : 0;
+      p.interrupted += end?.type === "run_interrupted" ? 1 : 0;
+      p.duration += d.duration || 0;
+      p.waitDuration += d.waitDuration || 0;
       s.failed += end?.type === "run_failed" ? 1 : 0;
       s.interrupted += end?.type === "run_interrupted" ? 1 : 0;
       const known =
@@ -142,7 +171,24 @@ export function cycleStatistics(conversations) {
       if (start) times.push(Date.parse(start.time));
       if (end) times.push(Date.parse(end.time));
     }
-    s.usageCoverage = s.usageKnown / (s.usageKnown + s.usageUnknown);
+    s.usageCoverage =
+      s.usageKnown + s.usageUnknown
+        ? s.usageKnown / (s.usageKnown + s.usageUnknown)
+        : null;
+    const cycleStart = g.events.find((e) => e.type === "cycle");
+    if (cycleStart) {
+      times.push(Date.parse(cycleStart.time));
+      times.push(
+        ...g.events
+          .filter(
+            (e) =>
+              e.type === "report" ||
+              e.type === "check" ||
+              e.type === "cycle_update",
+          )
+          .map((e) => Date.parse(e.time)),
+      );
+    }
     s.wallDuration = times.length
       ? Math.max(...times) - Math.min(...times)
       : null;

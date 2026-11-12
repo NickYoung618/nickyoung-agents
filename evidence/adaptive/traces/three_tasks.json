@@ -1,0 +1,2054 @@
+{
+  "fixture": true,
+  "realModels": false,
+  "formalCommandsActuallyExecuted": true,
+  "name": "three_tasks",
+  "status": "done",
+  "workflowVersion": "adaptive_v1",
+  "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+  "metrics": [
+    {
+      "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+      "calls": {
+        "plan": 1,
+        "execute": 3,
+        "review": 1
+      },
+      "byPurpose": {
+        "plan": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 4,
+          "waitDuration": 0
+        },
+        "execute": {
+          "calls": 3,
+          "known": 0,
+          "unknown": 3,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 11,
+          "waitDuration": 0
+        },
+        "review": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 0,
+          "waitDuration": 0
+        }
+      },
+      "usageTotalsAreKnownSubtotal": true,
+      "failed": 0,
+      "interrupted": 0,
+      "usageKnown": 0,
+      "usageUnknown": 5,
+      "input": 0,
+      "output": 0,
+      "cached": 0,
+      "cacheCreation": 0,
+      "modelDuration": 15,
+      "waitDuration": 0,
+      "wallDuration": 3164,
+      "humanDecisions": 0,
+      "usageCoverage": 0
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "conversation": "a",
+      "type": "created",
+      "data": {
+        "workflowVersion": "adaptive_v1",
+        "path": "/tmp/ny-workflow-bt1g8f/source",
+        "branch": "fixture",
+        "status": "working"
+      },
+      "time": "2026-11-12T19:22:54.843Z"
+    },
+    {
+      "id": 2,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "leader"
+      },
+      "time": "2026-11-12T19:22:54.845Z"
+    },
+    {
+      "id": 3,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "m",
+        "name": "实现"
+      },
+      "time": "2026-11-12T19:22:54.845Z"
+    },
+    {
+      "id": 4,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "r",
+        "name": "审查"
+      },
+      "time": "2026-11-12T19:22:54.845Z"
+    },
+    {
+      "id": 5,
+      "conversation": "a",
+      "type": "cycle",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "goal": "three_tasks",
+        "planRevision": 0,
+        "goalRevision": 0,
+        "generation": 0,
+        "phase": "planning",
+        "tasks": [],
+        "gates": [],
+        "evidence": [],
+        "issues": [],
+        "repairs": {},
+        "replans": 0,
+        "rechecks": 0,
+        "policy": "final_review",
+        "budgets": {
+          "taskRepairs": 2,
+          "cycleRepairs": 6,
+          "replans": 1,
+          "rechecks": 1
+        }
+      },
+      "time": "2026-11-12T19:22:54.847Z"
+    },
+    {
+      "id": 6,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "a017fc6b-f78d-49ef-966e-73ffc18b905d",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "role": "planner",
+        "purpose": "plan",
+        "trigger": "new_goal",
+        "model": "controlled-fixture",
+        "member": "leader"
+      },
+      "time": "2026-11-12T19:22:54.860Z"
+    },
+    {
+      "id": 7,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "a017fc6b-f78d-49ef-966e-73ffc18b905d",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "role": "planner",
+        "purpose": "plan",
+        "trigger": "new_goal",
+        "model": "controlled-fixture",
+        "member": "leader",
+        "result": {
+          "message": "受控规划",
+          "recruits": [],
+          "actions": [],
+          "plan": {
+            "goal": "连续实现",
+            "scope": [
+              "src/"
+            ],
+            "conventions": [
+              "接口不变"
+            ],
+            "contractPaths": [
+              "src/api/"
+            ],
+            "criteria": [
+              {
+                "id": "c",
+                "text": "运行正确"
+              }
+            ],
+            "tasks": [
+              {
+                "id": "t0",
+                "title": "实现0",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              {
+                "id": "t1",
+                "title": "实现1",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [
+                  "t0"
+                ],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              {
+                "id": "t2",
+                "title": "实现2",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [
+                  "t1"
+                ],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              }
+            ],
+            "gates": [
+              {
+                "id": "check",
+                "kind": "check",
+                "phase": "final",
+                "scope": [
+                  "src/"
+                ],
+                "afterTasks": [],
+                "criteriaIds": [
+                  "c"
+                ],
+                "commands": [
+                  "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+                ],
+                "reviewerId": "",
+                "assumption": "",
+                "deterministic": true,
+                "outputs": []
+              },
+              {
+                "id": "review",
+                "kind": "model",
+                "phase": "final",
+                "scope": [
+                  "src/"
+                ],
+                "afterTasks": [],
+                "criteriaIds": [
+                  "c"
+                ],
+                "commands": [],
+                "reviewerId": "r",
+                "assumption": "",
+                "deterministic": true,
+                "outputs": []
+              }
+            ],
+            "policy": "final_review",
+            "reason": "明确范围和客观测试；可逆本地修改",
+            "facts": [
+              "没有外部操作",
+              "已有覆盖测试"
+            ]
+          }
+        },
+        "duration": 4
+      },
+      "time": "2026-11-12T19:22:54.864Z"
+    },
+    {
+      "id": 8,
+      "conversation": "a",
+      "type": "task",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "title": "实现0",
+        "description": "实现独立步骤",
+        "executorId": "m",
+        "dependsOn": [],
+        "gateIds": [],
+        "waitsForQuestions": [],
+        "scope": [
+          "src/"
+        ],
+        "localId": "t0",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "member": "m",
+        "dispatcher": "leader",
+        "definition": {
+          "id": "t0",
+          "title": "实现0",
+          "description": "实现独立步骤",
+          "executorId": "m",
+          "dependsOn": [],
+          "gateIds": [],
+          "waitsForQuestions": [],
+          "scope": [
+            "src/"
+          ]
+        },
+        "planRevision": 1,
+        "generation": 1,
+        "status": "implemented",
+        "failures": 0,
+        "activeToken": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+        "commit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9",
+        "summary": "实现0",
+        "files": [
+          "src/t0.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:54.874Z"
+    },
+    {
+      "id": 9,
+      "conversation": "a",
+      "type": "task",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "title": "实现1",
+        "description": "实现独立步骤",
+        "executorId": "m",
+        "dependsOn": [
+          "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0"
+        ],
+        "gateIds": [],
+        "waitsForQuestions": [],
+        "scope": [
+          "src/"
+        ],
+        "localId": "t1",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "member": "m",
+        "dispatcher": "leader",
+        "definition": {
+          "id": "t1",
+          "title": "实现1",
+          "description": "实现独立步骤",
+          "executorId": "m",
+          "dependsOn": [
+            "t0"
+          ],
+          "gateIds": [],
+          "waitsForQuestions": [],
+          "scope": [
+            "src/"
+          ]
+        },
+        "planRevision": 1,
+        "generation": 1,
+        "status": "implemented",
+        "failures": 0,
+        "activeToken": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+        "commit": "2980a6ba508388f33334488acf53ad5e7b5bc385",
+        "summary": "实现1",
+        "files": [
+          "src/t1.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:54.874Z"
+    },
+    {
+      "id": 10,
+      "conversation": "a",
+      "type": "task",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "title": "实现2",
+        "description": "实现独立步骤",
+        "executorId": "m",
+        "dependsOn": [
+          "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1"
+        ],
+        "gateIds": [],
+        "waitsForQuestions": [],
+        "scope": [
+          "src/"
+        ],
+        "localId": "t2",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "member": "m",
+        "dispatcher": "leader",
+        "definition": {
+          "id": "t2",
+          "title": "实现2",
+          "description": "实现独立步骤",
+          "executorId": "m",
+          "dependsOn": [
+            "t1"
+          ],
+          "gateIds": [],
+          "waitsForQuestions": [],
+          "scope": [
+            "src/"
+          ]
+        },
+        "planRevision": 1,
+        "generation": 1,
+        "status": "implemented",
+        "failures": 0,
+        "activeToken": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "summary": "实现2",
+        "files": [
+          "src/t2.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:54.874Z"
+    },
+    {
+      "id": 11,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "goal": "连续实现",
+        "scope": [
+          "src/"
+        ],
+        "conventions": [
+          "接口不变"
+        ],
+        "contractPaths": [
+          "src/api/"
+        ],
+        "criteria": [
+          {
+            "id": "c",
+            "text": "运行正确"
+          }
+        ],
+        "policy": "final_review",
+        "reason": "明确范围和客观测试；可逆本地修改",
+        "facts": [
+          "没有外部操作",
+          "已有覆盖测试"
+        ],
+        "planSignature": "483dd01f5437c5cc0f75c9b64ff4c91462a75d2378dd430e0b314b9c2a4bf09a",
+        "planRevision": 1,
+        "generation": 1,
+        "replans": 0,
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ],
+        "issues": [],
+        "finalCommit": null,
+        "reviewedCommit": null
+      },
+      "time": "2026-11-12T19:22:54.875Z"
+    },
+    {
+      "id": 12,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "executing"
+      },
+      "time": "2026-11-12T19:22:54.875Z"
+    },
+    {
+      "id": 13,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "attempt": 1,
+        "scheduleId": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348"
+      },
+      "time": "2026-11-12T19:22:54.883Z"
+    },
+    {
+      "id": 14,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "status": "running",
+        "activeToken": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348"
+      },
+      "time": "2026-11-12T19:22:54.883Z"
+    },
+    {
+      "id": 15,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "630435ee-608b-48a9-81a2-b9bbe73d5d37",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "scheduleId": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m"
+      },
+      "time": "2026-11-12T19:22:54.915Z"
+    },
+    {
+      "id": 16,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "630435ee-608b-48a9-81a2-b9bbe73d5d37",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "scheduleId": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m",
+        "result": {
+          "message": "implemented",
+          "completion": "complete",
+          "summary": "实现0",
+          "files": [
+            "src/t0.txt"
+          ],
+          "selfTests": [],
+          "blockers": "",
+          "handoff": "node --test"
+        },
+        "duration": 3
+      },
+      "time": "2026-11-12T19:22:54.918Z"
+    },
+    {
+      "id": 17,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "status": "implemented",
+        "commit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9",
+        "summary": "实现0",
+        "files": [
+          "src/t0.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:55.025Z"
+    },
+    {
+      "id": 18,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "finalCommit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9",
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:55.029Z"
+    },
+    {
+      "id": 19,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+        "attempt": 1,
+        "scheduleId": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+        "commit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9"
+      },
+      "time": "2026-11-12T19:22:55.029Z"
+    },
+    {
+      "id": 20,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "attempt": 1,
+        "scheduleId": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8"
+      },
+      "time": "2026-11-12T19:22:55.033Z"
+    },
+    {
+      "id": 21,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "status": "running",
+        "activeToken": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8"
+      },
+      "time": "2026-11-12T19:22:55.033Z"
+    },
+    {
+      "id": 22,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "ef41f079-d016-4df7-aa0a-db42a32b53df",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "scheduleId": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m"
+      },
+      "time": "2026-11-12T19:22:55.051Z"
+    },
+    {
+      "id": 23,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "ef41f079-d016-4df7-aa0a-db42a32b53df",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "scheduleId": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m",
+        "result": {
+          "message": "implemented",
+          "completion": "complete",
+          "summary": "实现1",
+          "files": [
+            "src/t1.txt"
+          ],
+          "selfTests": [],
+          "blockers": "",
+          "handoff": "node --test"
+        },
+        "duration": 1
+      },
+      "time": "2026-11-12T19:22:55.052Z"
+    },
+    {
+      "id": 24,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "status": "implemented",
+        "commit": "2980a6ba508388f33334488acf53ad5e7b5bc385",
+        "summary": "实现1",
+        "files": [
+          "src/t1.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:55.144Z"
+    },
+    {
+      "id": 25,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "finalCommit": "2980a6ba508388f33334488acf53ad5e7b5bc385",
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:55.151Z"
+    },
+    {
+      "id": 26,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+        "attempt": 1,
+        "scheduleId": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+        "commit": "2980a6ba508388f33334488acf53ad5e7b5bc385"
+      },
+      "time": "2026-11-12T19:22:55.151Z"
+    },
+    {
+      "id": 27,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "attempt": 1,
+        "scheduleId": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447"
+      },
+      "time": "2026-11-12T19:22:55.157Z"
+    },
+    {
+      "id": 28,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "status": "running",
+        "activeToken": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447"
+      },
+      "time": "2026-11-12T19:22:55.157Z"
+    },
+    {
+      "id": 29,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "1addd643-fb41-41cb-9fab-f6921d8689db",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "scheduleId": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m"
+      },
+      "time": "2026-11-12T19:22:55.187Z"
+    },
+    {
+      "id": 30,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "1addd643-fb41-41cb-9fab-f6921d8689db",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "taskId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "scheduleId": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m",
+        "result": {
+          "message": "implemented",
+          "completion": "complete",
+          "summary": "实现2",
+          "files": [
+            "src/t2.txt"
+          ],
+          "selfTests": [],
+          "blockers": "",
+          "handoff": "node --test"
+        },
+        "duration": 7
+      },
+      "time": "2026-11-12T19:22:55.194Z"
+    },
+    {
+      "id": 31,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "status": "implemented",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "summary": "实现2",
+        "files": [
+          "src/t2.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:22:55.297Z"
+    },
+    {
+      "id": 32,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:55.299Z"
+    },
+    {
+      "id": 33,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+        "attempt": 1,
+        "scheduleId": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c"
+      },
+      "time": "2026-11-12T19:22:55.300Z"
+    },
+    {
+      "id": 34,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548"
+      },
+      "time": "2026-11-12T19:22:55.306Z"
+    },
+    {
+      "id": 35,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "running",
+            "evidenceIds": [],
+            "activeToken": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548"
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:55.307Z"
+    },
+    {
+      "id": 36,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "validating",
+        "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c"
+      },
+      "time": "2026-11-12T19:22:55.328Z"
+    },
+    {
+      "id": 37,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "validating"
+      },
+      "time": "2026-11-12T19:22:55.328Z"
+    },
+    {
+      "id": 38,
+      "conversation": "a",
+      "type": "command_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+        "commandId": "013422e2864a284d4ae9aeb397936c14c9152bd5e48e4a88f26e7221e992b1c2",
+        "index": 0,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\"",
+        "started": "2026-11-12T19:22:55.403Z"
+      },
+      "time": "2026-11-12T19:22:55.403Z"
+    },
+    {
+      "id": 39,
+      "conversation": "a",
+      "type": "command_result",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+        "commandId": "013422e2864a284d4ae9aeb397936c14c9152bd5e48e4a88f26e7221e992b1c2",
+        "index": 0,
+        "exitCode": 0,
+        "interrupted": false,
+        "ended": "2026-11-12T19:22:57.833Z"
+      },
+      "time": "2026-11-12T19:22:57.833Z"
+    },
+    {
+      "id": 40,
+      "conversation": "a",
+      "type": "check",
+      "data": {
+        "evidenceId": "7447860d-0a48-40db-8819-3174a65b3528",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "checkId": "check",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "tree": "68d487ead7e19d7e90f0a051bdba1cc80e5f4689",
+        "fingerprint": "a274b85a8c6897b2740923569242feed307e92b2f7ceace6d73e76de99b1e1df",
+        "commandSpecHash": "5380d860ed08f6c51110f777f220a413aaf0746c55420b0b2488b9abea6cf870",
+        "environment": {
+          "node": "v24.15.0",
+          "platform": "linux",
+          "arch": "x64",
+          "runtime": "local",
+          "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+        },
+        "source": "executed",
+        "result": "passed",
+        "exitCode": 0,
+        "output": "",
+        "started": "2026-11-12T19:22:55.353Z",
+        "ended": "2026-11-12T19:22:57.931Z",
+        "outputPath": "/tmp/ny-workflow-bt1g8f/data/evidence/80d00104-e4f8-4018-a2bc-2ba6bb7aa918/7447860d-0a48-40db-8819-3174a65b3528.log",
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+        "passed": true,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+      },
+      "time": "2026-11-12T19:22:57.932Z"
+    },
+    {
+      "id": 41,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "evidence": [
+          {
+            "evidenceId": "7447860d-0a48-40db-8819-3174a65b3528",
+            "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "tree": "68d487ead7e19d7e90f0a051bdba1cc80e5f4689",
+            "fingerprint": "a274b85a8c6897b2740923569242feed307e92b2f7ceace6d73e76de99b1e1df",
+            "commandSpecHash": "5380d860ed08f6c51110f777f220a413aaf0746c55420b0b2488b9abea6cf870",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:22:55.353Z",
+            "ended": "2026-11-12T19:22:57.931Z",
+            "outputPath": "/tmp/ny-workflow-bt1g8f/data/evidence/80d00104-e4f8-4018-a2bc-2ba6bb7aa918/7447860d-0a48-40db-8819-3174a65b3528.log"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:57.935Z"
+    },
+    {
+      "id": 42,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "7447860d-0a48-40db-8819-3174a65b3528"
+            ],
+            "activeToken": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:57.943Z"
+    },
+    {
+      "id": 43,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "issues": [],
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "7447860d-0a48-40db-8819-3174a65b3528"
+            ],
+            "activeToken": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:57.944Z"
+    },
+    {
+      "id": 44,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "evidenceId": "7447860d-0a48-40db-8819-3174a65b3528"
+      },
+      "time": "2026-11-12T19:22:57.944Z"
+    },
+    {
+      "id": 45,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8"
+      },
+      "time": "2026-11-12T19:22:57.947Z"
+    },
+    {
+      "id": 46,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "7447860d-0a48-40db-8819-3174a65b3528"
+            ],
+            "activeToken": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "running",
+            "evidenceIds": [],
+            "activeToken": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:57.949Z"
+    },
+    {
+      "id": 47,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "reviewing",
+        "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c"
+      },
+      "time": "2026-11-12T19:22:57.960Z"
+    },
+    {
+      "id": 48,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "reviewing"
+      },
+      "time": "2026-11-12T19:22:57.960Z"
+    },
+    {
+      "id": 49,
+      "conversation": "a",
+      "type": "cycle_review_start",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+        "gateId": "review",
+        "from": "m",
+        "to": "r",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c"
+      },
+      "time": "2026-11-12T19:22:57.964Z"
+    },
+    {
+      "id": 50,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "7314b37d-0fda-403d-b878-e425490c7826",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gateId": "review",
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+        "role": "reviewer",
+        "purpose": "review",
+        "trigger": "formal_checks_passed",
+        "model": "controlled-fixture",
+        "member": "r"
+      },
+      "time": "2026-11-12T19:22:58.024Z"
+    },
+    {
+      "id": 51,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "7314b37d-0fda-403d-b878-e425490c7826",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gateId": "review",
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+        "role": "reviewer",
+        "purpose": "review",
+        "trigger": "formal_checks_passed",
+        "model": "controlled-fixture",
+        "member": "r",
+        "result": {
+          "message": "reviewed",
+          "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+          "criteriaIds": [
+            "c"
+          ],
+          "blockingIssues": [],
+          "advisories": [
+            "可选建议"
+          ],
+          "needsVerification": []
+        },
+        "duration": 0
+      },
+      "time": "2026-11-12T19:22:58.024Z"
+    },
+    {
+      "id": 52,
+      "conversation": "a",
+      "type": "cycle_review",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+        "gateId": "review",
+        "reviewer": "r",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "message": "reviewed",
+        "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "criteriaIds": [
+          "c"
+        ],
+        "blockingIssues": [],
+        "advisories": [
+          "可选建议"
+        ],
+        "needsVerification": []
+      },
+      "time": "2026-11-12T19:22:58.096Z"
+    },
+    {
+      "id": 53,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "advisories": [
+          "可选建议"
+        ]
+      },
+      "time": "2026-11-12T19:22:58.097Z"
+    },
+    {
+      "id": 54,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<3;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "7447860d-0a48-40db-8819-3174a65b3528"
+            ],
+            "activeToken": "937f71adc048fa89324415fe6011b5ab3890bf834dd725dd39441f236a2e4548",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [],
+            "activeToken": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1,
+            "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "reviewEvidence": {
+              "message": "reviewed",
+              "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [],
+              "advisories": [
+                "可选建议"
+              ],
+              "needsVerification": []
+            },
+            "coverage": "full"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:22:58.105Z"
+    },
+    {
+      "id": 55,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+        "commit": "f25e2fea329c868c001d057d0852ef477246428c"
+      },
+      "time": "2026-11-12T19:22:58.105Z"
+    },
+    {
+      "id": 56,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "delivered",
+        "delivery": {
+          "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+          "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+          "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+          "policy": "final_review",
+          "checks": [
+            {
+              "evidenceId": "7447860d-0a48-40db-8819-3174a65b3528",
+              "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+              "planRevision": 1,
+              "checkId": "check",
+              "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "tree": "68d487ead7e19d7e90f0a051bdba1cc80e5f4689",
+              "fingerprint": "a274b85a8c6897b2740923569242feed307e92b2f7ceace6d73e76de99b1e1df",
+              "commandSpecHash": "5380d860ed08f6c51110f777f220a413aaf0746c55420b0b2488b9abea6cf870",
+              "environment": {
+                "node": "v24.15.0",
+                "platform": "linux",
+                "arch": "x64",
+                "runtime": "local",
+                "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+              },
+              "source": "executed",
+              "result": "passed",
+              "exitCode": 0,
+              "output": "",
+              "started": "2026-11-12T19:22:55.353Z",
+              "ended": "2026-11-12T19:22:57.931Z",
+              "outputPath": "/tmp/ny-workflow-bt1g8f/data/evidence/80d00104-e4f8-4018-a2bc-2ba6bb7aa918/7447860d-0a48-40db-8819-3174a65b3528.log"
+            }
+          ],
+          "reviewCoverage": [
+            {
+              "id": "review",
+              "kind": "model",
+              "phase": "final",
+              "scope": [
+                "src/"
+              ],
+              "afterTasks": [],
+              "criteriaIds": [
+                "c"
+              ],
+              "commands": [],
+              "reviewerId": "r",
+              "assumption": "",
+              "deterministic": true,
+              "outputs": [],
+              "status": "passed",
+              "evidenceIds": [],
+              "activeToken": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+              "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "planRevision": 1,
+              "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "reviewEvidence": {
+                "message": "reviewed",
+                "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+                "criteriaIds": [
+                  "c"
+                ],
+                "blockingIssues": [],
+                "advisories": [
+                  "可选建议"
+                ],
+                "needsVerification": []
+              },
+              "coverage": "full"
+            }
+          ],
+          "unresolvedIssues": [],
+          "tasks": [
+            {
+              "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+              "title": "实现0",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ],
+              "localId": "t0",
+              "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+              "member": "m",
+              "dispatcher": "leader",
+              "definition": {
+                "id": "t0",
+                "title": "实现0",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              "planRevision": 1,
+              "generation": 1,
+              "status": "implemented",
+              "failures": 0,
+              "activeToken": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+              "commit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9",
+              "summary": "实现0",
+              "files": [
+                "src/t0.txt"
+              ],
+              "selfTests": [],
+              "handoff": "node --test"
+            },
+            {
+              "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+              "title": "实现1",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [
+                "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0"
+              ],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ],
+              "localId": "t1",
+              "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+              "member": "m",
+              "dispatcher": "leader",
+              "definition": {
+                "id": "t1",
+                "title": "实现1",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [
+                  "t0"
+                ],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              "planRevision": 1,
+              "generation": 1,
+              "status": "implemented",
+              "failures": 0,
+              "activeToken": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+              "commit": "2980a6ba508388f33334488acf53ad5e7b5bc385",
+              "summary": "实现1",
+              "files": [
+                "src/t1.txt"
+              ],
+              "selfTests": [],
+              "handoff": "node --test"
+            },
+            {
+              "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+              "title": "实现2",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [
+                "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1"
+              ],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ],
+              "localId": "t2",
+              "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+              "member": "m",
+              "dispatcher": "leader",
+              "definition": {
+                "id": "t2",
+                "title": "实现2",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [
+                  "t1"
+                ],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              "planRevision": 1,
+              "generation": 1,
+              "status": "implemented",
+              "failures": 0,
+              "activeToken": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+              "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "summary": "实现2",
+              "files": [
+                "src/t2.txt"
+              ],
+              "selfTests": [],
+              "handoff": "node --test"
+            }
+          ],
+          "usage": "node --test\nnode --test\nnode --test"
+        }
+      },
+      "time": "2026-11-12T19:22:58.180Z"
+    },
+    {
+      "id": 57,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "phase": "delivered"
+      },
+      "time": "2026-11-12T19:22:58.180Z"
+    },
+    {
+      "id": 58,
+      "conversation": "a",
+      "type": "report",
+      "data": {
+        "text": "连续实现\n- 实现0：实现0\n- 实现1：实现1\n- 实现2：实现2\n最终提交：f25e2fea329c868c001d057d0852ef477246428c\n检查：check passed\n独立审查提交：f25e2fea329c868c001d057d0852ef477246428c\nnode --test\nnode --test\nnode --test",
+        "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+        "finalCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+        "policy": "final_review",
+        "checks": [
+          {
+            "evidenceId": "7447860d-0a48-40db-8819-3174a65b3528",
+            "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "tree": "68d487ead7e19d7e90f0a051bdba1cc80e5f4689",
+            "fingerprint": "a274b85a8c6897b2740923569242feed307e92b2f7ceace6d73e76de99b1e1df",
+            "commandSpecHash": "5380d860ed08f6c51110f777f220a413aaf0746c55420b0b2488b9abea6cf870",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:22:55.353Z",
+            "ended": "2026-11-12T19:22:57.931Z",
+            "outputPath": "/tmp/ny-workflow-bt1g8f/data/evidence/80d00104-e4f8-4018-a2bc-2ba6bb7aa918/7447860d-0a48-40db-8819-3174a65b3528.log"
+          }
+        ],
+        "reviewCoverage": [
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [],
+            "activeToken": "47c6b6d894400b716150523b18da9d63f1249542f01e54aa7b621de55b3eaba8",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "planRevision": 1,
+            "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "reviewEvidence": {
+              "message": "reviewed",
+              "reviewedCommit": "f25e2fea329c868c001d057d0852ef477246428c",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [],
+              "advisories": [
+                "可选建议"
+              ],
+              "needsVerification": []
+            },
+            "coverage": "full"
+          }
+        ],
+        "unresolvedIssues": [],
+        "tasks": [
+          {
+            "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0",
+            "title": "实现0",
+            "description": "实现独立步骤",
+            "executorId": "m",
+            "dependsOn": [],
+            "gateIds": [],
+            "waitsForQuestions": [],
+            "scope": [
+              "src/"
+            ],
+            "localId": "t0",
+            "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+            "member": "m",
+            "dispatcher": "leader",
+            "definition": {
+              "id": "t0",
+              "title": "实现0",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ]
+            },
+            "planRevision": 1,
+            "generation": 1,
+            "status": "implemented",
+            "failures": 0,
+            "activeToken": "b242b2911aa2d27db703cc3d1b546f7cc546789541d18669d353217cf712f348",
+            "commit": "a2b7a31a31c40dd86cf6b4c6185b02c206b2e8c9",
+            "summary": "实现0",
+            "files": [
+              "src/t0.txt"
+            ],
+            "selfTests": [],
+            "handoff": "node --test"
+          },
+          {
+            "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1",
+            "title": "实现1",
+            "description": "实现独立步骤",
+            "executorId": "m",
+            "dependsOn": [
+              "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t0"
+            ],
+            "gateIds": [],
+            "waitsForQuestions": [],
+            "scope": [
+              "src/"
+            ],
+            "localId": "t1",
+            "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+            "member": "m",
+            "dispatcher": "leader",
+            "definition": {
+              "id": "t1",
+              "title": "实现1",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [
+                "t0"
+              ],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ]
+            },
+            "planRevision": 1,
+            "generation": 1,
+            "status": "implemented",
+            "failures": 0,
+            "activeToken": "055dc7cd38fe2aa2750979cd62c0ba727d3db9f687788120dcdb41342d012ec8",
+            "commit": "2980a6ba508388f33334488acf53ad5e7b5bc385",
+            "summary": "实现1",
+            "files": [
+              "src/t1.txt"
+            ],
+            "selfTests": [],
+            "handoff": "node --test"
+          },
+          {
+            "id": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t2",
+            "title": "实现2",
+            "description": "实现独立步骤",
+            "executorId": "m",
+            "dependsOn": [
+              "80d00104-e4f8-4018-a2bc-2ba6bb7aa918:t1"
+            ],
+            "gateIds": [],
+            "waitsForQuestions": [],
+            "scope": [
+              "src/"
+            ],
+            "localId": "t2",
+            "cycleId": "80d00104-e4f8-4018-a2bc-2ba6bb7aa918",
+            "member": "m",
+            "dispatcher": "leader",
+            "definition": {
+              "id": "t2",
+              "title": "实现2",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [
+                "t1"
+              ],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ]
+            },
+            "planRevision": 1,
+            "generation": 1,
+            "status": "implemented",
+            "failures": 0,
+            "activeToken": "c9edcbf6d4ef41200fd11571151b2d9720d49e35b8bfae886c75678093e59447",
+            "commit": "f25e2fea329c868c001d057d0852ef477246428c",
+            "summary": "实现2",
+            "files": [
+              "src/t2.txt"
+            ],
+            "selfTests": [],
+            "handoff": "node --test"
+          }
+        ],
+        "usage": "node --test\nnode --test\nnode --test"
+      },
+      "time": "2026-11-12T19:22:58.180Z"
+    },
+    {
+      "id": 59,
+      "conversation": "a",
+      "type": "status",
+      "data": {
+        "status": "done"
+      },
+      "time": "2026-11-12T19:22:58.181Z"
+    }
+  ]
+}

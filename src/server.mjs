@@ -349,7 +349,10 @@ const server = https.createServer(
       if (p === "/api/conversations" && req.method === "POST") {
         let b = await body(req);
         if (!b.text?.trim()) throw new Error("请输入需求");
-        let c = await engine.create(b.text, b.path, { workflowVersion: b.workflowVersion, directPlan: b.directPlan });
+        let c = await engine.create(b.text, b.path, {
+          workflowVersion: b.workflowVersion,
+          directPlan: b.directPlan,
+        });
         await engine.message(c, b.text, b.files, { intent: b.intent });
         return json(res, 200, { id: c });
       }
@@ -380,8 +383,15 @@ const server = https.createServer(
           if (question.purpose === "init_repo") {
             if (b.answer) {
               engine.initialize(c);
+              if (s.workflowVersion === "adaptive_v1")
+                engine.workflow.start(
+                  c,
+                  s.events.findLast(
+                    (e) => e.type === "message" && e.data.member === "user",
+                  )?.data.text || s.title,
+                );
               engine.event(c, "status", { status: "working" });
-              engine.wake(c);
+              engine.wake(c, { reason: "new_goal" });
             } else engine.event(c, "status", { status: "cancelled" });
           } else if (s.workflowVersion === "adaptive_v1") engine.pump();
           else engine.wake(c);
@@ -468,7 +478,8 @@ const server = https.createServer(
           });
         return json(res, 200, { ok: true });
       }
-      if (p === "/api/stats/cycles") return json(res, 200, cycleStatistics(store.conversations()));
+      if (p === "/api/stats/cycles")
+        return json(res, 200, cycleStatistics(store.conversations()));
       if (p === "/api/stats")
         return json(res, 200, statistics(store.conversations()));
       if (p.startsWith("/api/")) return json(res, 404, { error: "接口不存在" });

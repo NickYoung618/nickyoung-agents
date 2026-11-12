@@ -77,6 +77,20 @@ export const reviewerSchema = object({
 export const plannerSchema = object({
   message: string,
   recruits: array(object({ name: string, role: string, tier: string })),
+  actions: array(
+    object({
+      type: { type: "string", enum: ["ask", "withdraw_question", "decision"] },
+      questionId: string,
+      question: string,
+      yes: string,
+      no: string,
+      text: string,
+      reason: string,
+      taskIds: strings,
+      gateIds: strings,
+      authorization: { type: "boolean" },
+    }),
+  ),
   plan: planSchema,
 });
 export const actionProperties = Object.fromEntries(
@@ -105,6 +119,8 @@ export const adaptiveActionProperties = {
   plan: planSchema,
   taskIds: strings,
   gateIds: strings,
+  questionId: string,
+  authorization: { type: "boolean" },
 };
 
 export function validateRoleResult(role, result) {

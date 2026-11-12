@@ -19,7 +19,7 @@ test("实际 CLI 适配器：auto 含分流规划；角色 schema、权限、独
     bin,
     `#!/usr/bin/env node
 const fs=require('node:fs'),path=require('node:path');const args=process.argv.slice(2),schema=JSON.parse(fs.readFileSync(args[args.indexOf('--output-schema')+1],'utf8'));fs.appendFileSync(${JSON.stringify(capture)},JSON.stringify({args:args.slice(0,-1),schema})+'\\n');const raw=args.at(-1),data=JSON.parse(raw.slice(raw.lastIndexOf('\\n{')+1));let r;
-if(schema.properties.recruits)r={message:'fixture plan',recruits:[{name:'实现',role:'执行',tier:'main'},{name:'审查',role:'审查',tier:'main'}],plan:${JSON.stringify(p)}};
+if(schema.properties.recruits)r={message:'fixture plan',actions:[],recruits:[{name:'实现',role:'执行',tier:'main'},{name:'审查',role:'审查',tier:'main'}],plan:${JSON.stringify(p)}};
 else if(schema.properties.completion){fs.mkdirSync('src',{recursive:true});fs.writeFileSync(path.join('src',data.task.localId+'.txt'),data.task.title);r={message:'fixture implement',completion:'complete',summary:data.task.title,files:['src/'+data.task.localId+'.txt'],selfTests:[],blockers:'',handoff:'node cli.mjs'};}
 else r={message:'fixture review',reviewedCommit:data.reviewedCommit,criteriaIds:['c'],blockingIssues:[],advisories:[],needsVerification:[]};
 console.log(JSON.stringify({type:'thread.started',thread_id:'fixture-session'}));console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:JSON.stringify(r)}}));console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:10,output_tokens:5,cached_input_tokens:2}}));\n`,

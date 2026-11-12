@@ -161,6 +161,7 @@ export class Engine {
       else {
         this.workflow.update(c, {
           goal: text,
+          goalRevision: (s.cycle.goalRevision || 0) + 1,
           phase: "planning",
           generation: s.cycle.generation + 1,
         });
@@ -177,7 +178,7 @@ export class Engine {
       return;
     }
     this.event(c, "status", { status: "working" });
-    this.wake(c);
+    this.wake(c, { reason: "new_goal" });
   }
   context(c) {
     const s = this.state(c);
@@ -276,6 +277,7 @@ export class Engine {
     const trace = {
       runId: id(),
       cycleId,
+      goalRevision: s.cycle?.goalRevision,
       taskId,
       gateId,
       scheduleId,
@@ -422,6 +424,7 @@ export class Engine {
       user = s.events.findLast(
         (e) => e.type === "message" && e.data.member === "user",
       );
+    if (s.workflowVersion === "adaptive_v1") return false;
     if (
       ["working", "interrupted"].includes(s.status) &&
       !s.tasks.length &&
@@ -451,18 +454,16 @@ export class Engine {
         c,
         s.members[0],
         adaptive
-          ? JSON.stringify({
-              project: s.path,
-              goal: s.cycle?.goal,
-              cycle: s.cycle,
-              members: s.members.map(({ session, ...m }) => m),
-              tiers: this.config.tiers,
-              reason,
-              evidenceIds,
-            })
+          ? JSON.stringify(this.workflow.plannerContext(c, reason, evidenceIds))
           : this.context(c),
         {
           leader: true,
+          purpose: s.events.some(
+            (e) => e.type === "run_start" && e.data.member === "leader",
+          )
+            ? "coordinate"
+            : "plan",
+          trigger: reason,
           ...(adaptive
             ? {
                 role: "planner",
@@ -474,7 +475,14 @@ export class Engine {
             : {}),
         },
       );
-      if (adaptive && s.cycleId !== this.state(c).cycleId) return;
+      if (
+        adaptive &&
+        (s.cycleId !== this.state(c).cycleId ||
+          s.cycle?.goalRevision !== this.state(c).cycle?.goalRevision)
+      ) {
+        this.event(c, "planner_stale_result", { cycleId: s.cycleId });
+        return;
+      }
       if (
         adaptive &&
         generation !== this.state(c).cycle?.generation &&
@@ -482,13 +490,9 @@ export class Engine {
       )
         return;
       if (this.state(c).status === "paused") return;
-      if (adaptive) {
-        for (const member of r.recruits || [])
-          await this.action(c, { type: "recruit", ...member });
-        if (r.plan) this.workflow.submit(c, r.plan);
-      }
+      if (adaptive) await this.applyAdaptivePlan(c, r);
       if (this.state(c).status === "paused") return;
-      for (const a of r.actions || []) {
+      for (const a of adaptive ? [] : r.actions || []) {
         try {
           await this.action(c, a);
         } catch (e) {
@@ -500,7 +504,12 @@ export class Engine {
     } catch (e) {
       if (!["paused", "interrupted"].includes(this.state(c).status)) {
         if (e.retryAt) this.retry(c, "leader", e.retryAt, () => this.wake(c));
-        else this.event(c, "status", { status: "error" });
+        else {
+          if (this.state(c).workflowVersion === "adaptive_v1")
+            this.workflow.block(c, "规划或协议失败: " + e.message, evidenceIds);
+          this.event(c, "error", { text: e.message, action: "planning" });
+          this.event(c, "status", { status: "error" });
+        }
       }
     } finally {
       this.waking.delete(c);
@@ -514,6 +523,13 @@ export class Engine {
       )
         setTimeout(() => this.wake(c), 100);
     }
+  }
+  async applyAdaptivePlan(c, result) {
+    for (const member of result.recruits || [])
+      await this.action(c, { type: "recruit", ...member });
+    for (const action of result.actions || []) await this.action(c, action);
+    if (result.plan) return this.workflow.submit(c, result.plan);
+    throw Error("规划结果缺少计划");
   }
   async teamAction(token, action) {
     const scope = this.teamTokens.get(token);
@@ -616,13 +632,29 @@ export class Engine {
         this.drainMembers();
         return;
       }
+      if (a.type === "withdraw_question" && a.questionId) {
+        const q = s.questions.find(
+          (q) => q.cycleId === s.cycleId && q.localId === a.questionId,
+        );
+        if (q) a = { ...a, question: q.id };
+      }
       if (a.type === "ask") {
+        const existing = s.questions.find(
+          (q) =>
+            q.cycleId === s.cycleId &&
+            a.questionId &&
+            q.localId === a.questionId,
+        );
+        if (existing) return { questionId: existing.id };
+        const questionId = id();
         this.event(c, "question", {
-          id: id(),
+          id: questionId,
+          localId: a.questionId,
           cycleId: s.cycleId,
           question: a.question,
           yes: a.yes,
           no: a.no,
+          authorization: a.authorization === true,
           taskIds: a.taskIds || [],
           gateIds: a.gateIds || [],
         });
@@ -631,12 +663,9 @@ export class Engine {
         ))
           this.event(c, "task_update", {
             id: t.id,
-            waitsForQuestions: [
-              ...t.waitsForQuestions,
-              this.state(c).questions.at(-1).id,
-            ],
+            waitsForQuestions: [...t.waitsForQuestions, questionId],
           });
-        return;
+        return { questionId };
       }
     }
     switch (a.type) {
@@ -935,7 +964,21 @@ export class Engine {
           advice: t.advice,
           context: this.context(c),
         }),
-        { cwd, taskId: t.id, taskRole: review ? "reviewer" : "member" },
+        {
+          cwd,
+          taskId: t.id,
+          taskRole: review ? "reviewer" : "member",
+          purpose: review
+            ? "review"
+            : t.status === "repair"
+              ? "repair"
+              : "execute",
+          trigger: review
+            ? "legacy_checks_passed"
+            : t.status === "repair"
+              ? "legacy_failure"
+              : "legacy_task_queued",
+        },
       );
       if (
         ["cancelled", "deferred", "queued"].includes(

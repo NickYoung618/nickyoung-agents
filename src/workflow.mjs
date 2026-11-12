@@ -1,5 +1,5 @@
 import { randomUUID } from "node:crypto";
-import { mkdirSync } from "node:fs";
+import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import {
   validatePlan,
@@ -48,6 +48,7 @@ export class Workflow {
       cycleId,
       goal,
       planRevision: 0,
+      goalRevision: 0,
       generation: 0,
       phase: "planning",
       tasks: [],
@@ -72,8 +73,20 @@ export class Workflow {
     let s = this.state(c),
       cycle = s.cycle;
     const plan = validatePlan(input, s.members, { direct });
+    for (const task of plan.tasks)
+      task.waitsForQuestions = task.waitsForQuestions.map((ref) => {
+        const question = s.questions.find(
+          (q) =>
+            q.cycleId === cycle?.cycleId && (q.id === ref || q.localId === ref),
+        );
+        if (!question) throw Error("任务引用未知问题");
+        return question.id;
+      });
     const signature = fingerprint(plan);
-    if (cycle?.planSignature === signature)
+    if (
+      cycle?.planSignature === signature &&
+      cycle.plannedGoalRevision === cycle.goalRevision
+    )
       return {
         cycleId: cycle.cycleId,
         planRevision: cycle.planRevision,
@@ -132,6 +145,7 @@ export class Workflow {
       reason: plan.reason,
       facts: plan.facts,
       planSignature: signature,
+      plannedGoalRevision: cycle.goalRevision,
       planRevision: revision,
       generation: cycle.generation + 1,
       replans: cycle.replans + (cycle.planRevision ? 1 : 0),
@@ -177,7 +191,11 @@ export class Workflow {
     const gate = cycle.gates.find(
       (g) =>
         g.status === "pending" &&
-        !s.questions.some((q) => !q.answered && q.gateIds?.includes(g.id)) &&
+        !s.questions.some(
+          (q) =>
+            (!q.answered || (q.authorization && q.answer !== true)) &&
+            q.gateIds?.includes(g.id),
+        ) &&
         (g.phase === "checkpoint"
           ? g.afterTasks.every((id) =>
               cycle.tasks.some(
@@ -356,6 +374,69 @@ export class Workflow {
       await this.e.wake(c, { reason, evidenceIds });
     }
   }
+  plannerContext(c, reason, evidenceIds) {
+    const s = this.state(c),
+      x = s.cycle;
+    return {
+      project: s.path,
+      goal: x?.goal,
+      cycleId: x?.cycleId,
+      planRevision: x?.planRevision,
+      scope: x?.scope,
+      conventions: x?.conventions,
+      contractPaths: x?.contractPaths,
+      criteria: x?.criteria,
+      policy: x?.policy,
+      tasks: x?.tasks.map((t) => ({
+        id: t.id,
+        localId: t.localId,
+        title: t.title,
+        scope: t.scope,
+        executorId: t.executorId,
+        dependsOn: t.dependsOn,
+        gateIds: t.gateIds,
+        status: t.status,
+        summary: t.summary,
+      })),
+      gates: x?.gates.map(({ reviewEvidence, ...g }) => g),
+      budgets: x?.budgets,
+      repairs: x?.repairs,
+      replans: x?.replans,
+      issues: x?.issues,
+      members: s.members.map(
+        ({ id, name, role, tierId, channel, model, effort }) => ({
+          id,
+          name,
+          role,
+          tierId,
+          channel,
+          model,
+          effort,
+        }),
+      ),
+      tiers: this.e.config.tiers,
+      questions: s.questions.filter((q) => q.cycleId === x?.cycleId),
+      messages: s.events
+        .filter((e) => e.type === "message" && e.data.member === "user")
+        .slice(-3)
+        .map((e) => ({
+          eventId: e.id,
+          text: e.data.text,
+          attachments: e.data.attachments,
+        })),
+      reason,
+      evidenceIds,
+      evidence: x?.evidence.map(
+        ({ evidenceId, checkId, commit, result, outputPath }) => ({
+          evidenceId,
+          checkId,
+          commit,
+          result,
+          outputPath,
+        }),
+      ),
+    };
+  }
   context(c, role, unit) {
     const s = this.state(c),
       x = s.cycle;
@@ -403,7 +484,9 @@ export class Workflow {
         scope: t.scope,
         commit: t.commit,
       })),
-      checks: x.evidence.filter((e) => e.commit === x.finalCommit),
+      checks: x.evidence
+        .filter((e) => e.commit === x.finalCommit)
+        .map((e) => ({ ...e, output: e.output.slice(-4000) })),
       issues: x.issues,
       previousReviewedCommit: x.reviewedCommit,
     };
@@ -592,6 +675,10 @@ export class Workflow {
       started,
       ended: new Date().toISOString(),
     };
+    const outputDir = join(this.e.config.data, "evidence", cycle.cycleId);
+    mkdirSync(outputDir, { recursive: true });
+    evidence.outputPath = join(outputDir, evidence.evidenceId + ".log");
+    writeFileSync(evidence.outputPath, evidence.output);
     this.event(c, "check", {
       ...evidence,
       ...token,
@@ -1046,8 +1133,15 @@ export class Workflow {
     if (!x) return;
     if (x.phase === "delivered") return;
     if (x.phase === "blocked" && !x.blockedReason?.includes("环境")) return;
+    const resumePhase =
+      x.phase === "paused"
+        ? x.resumePhase || "executing"
+        : x.phase === "blocked"
+          ? "executing"
+          : x.phase;
     this.update(c, {
       generation: x.generation + 1,
+      resumePhase: null,
       gates: x.gates.map((g) =>
         [
           "running",
@@ -1057,9 +1151,41 @@ export class Workflow {
           ? { ...g, status: "pending" }
           : g,
       ),
-      phase: x.resumePhase || (x.phase === "blocked" ? "executing" : x.phase),
+      phase: resumePhase,
     });
     this.event(c, "status", { status: "working" });
+    if (resumePhase === "planning") {
+      const result = s.events.findLast(
+        (e) =>
+          e.type === "model_result" &&
+          e.data.role === "planner" &&
+          e.data.cycleId === x.cycleId &&
+          e.data.goalRevision === x.goalRevision,
+      );
+      if (result) {
+        this.event(c, "plan_recovered", {
+          cycleId: x.cycleId,
+          runId: result.data.runId,
+        });
+        this.e
+          .applyAdaptivePlan(c, result.data.result)
+          .then(() => this.e.pump())
+          .catch((error) =>
+            this.block(c, "恢复计划校验失败: " + error.message, [
+              String(result.id),
+            ]),
+          );
+        return;
+      }
+      this.e.wake(c, {
+        reason: "ambiguous_recovery",
+        evidenceIds: s.events
+          .filter((e) => e.type === "run_start")
+          .slice(-1)
+          .map((e) => e.data.runId),
+      });
+      return;
+    }
     if (x.tasks.some((t) => t.status === "running")) {
       this.escalate(
         c,
