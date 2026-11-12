@@ -13,15 +13,17 @@
     "test:ui": "node tests/ui.mjs",
     "test:workflow": "node --test --test-isolation=none tests/policy.test.mjs tests/tracing.test.mjs tests/workflow.test.mjs tests/workflow-lifecycle.test.mjs tests/workflow-failures.test.mjs tests/verification.test.mjs tests/adaptive-runner.test.mjs tests/adaptive-ui.test.mjs tests/evaluation.test.mjs",
     "evaluate:workflow": "node scripts/evaluate-workflow.mjs",
-    "trace:workflow": "node scripts/trace-workflow.mjs"
+    "trace:workflow": "node scripts/trace-workflow.mjs",
+    "test:preview": "node tests/preview-ui.mjs"
   },
   "dependencies": {
     "dompurify": "3.4.17",
+    "esbuild": "0.28.2",
     "highlight.js": "11.12.0",
-    "marked": "18.2.0"
+    "marked": "18.2.0",
+    "parse5": "8.0.0"
   },
   "devDependencies": {
-    "esbuild": "0.28.2",
     "playwright": "^1.65.0"
   }
 }

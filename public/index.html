@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" data-ui-version="20261113-ux-1">
+<html lang="zh-CN" data-ui-version="20261113-preview-1">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="/favicon.svg" />
     <title>NickYoung · 工作台</title>
-    <link rel="stylesheet" href="/ui-package.css?v=20261113-ux-1" />
-    <link rel="stylesheet" href="/style.css?v=20261113-ux-1" />
-    <link rel="stylesheet" href="/viewport.css?v=20261113-ux-1" />
+    <link rel="stylesheet" href="/ui-package.css?v=20261113-preview-1" />
+    <link rel="stylesheet" href="/style.css?v=20261113-preview-1" />
+    <link rel="stylesheet" href="/viewport.css?v=20261113-preview-1" />
   </head>
   <body>
     <div id="ny-live-studio">
@@ -78,6 +78,7 @@
                     </button>
                   </div>
                   <details><summary>执行策略</summary><label>新会话流程 <select id="workflowVersion"><option value="legacy">现有流程</option><option value="adaptive_v1">自适应流程（试用）</option></select></label><p class="ny-small">自适应流程按整批需求安排检查与审查。已有会话继续使用创建时的流程。</p></details>
+                  <p id="workflowChoice" class="ny-small"></p><details><summary>运行版本</summary><p id="runtimeInfo" class="ny-small">正在读取服务版本…</p></details>
                   <div id="projectAdvanced" hidden><input id="path" placeholder="输入项目目录" aria-label="项目目录" /></div>
                   <button id="homeAttach" class="ny-button ny-quiet">
                     <i data-lucide="paperclip"></i>添加参考文件
@@ -95,7 +96,7 @@
               <section id="taskView" class="ny-view" hidden>
                 <div class="ny-heading">
 
-                  <h1 id="taskTitle">当前任务</h1>
+                  <h1 id="taskTitle">当前任务</h1><span id="workflowBadge" class="ny-small"></span>
                   <details id="projectDetails"><summary>完整目标与项目详情</summary><p id="fullGoal"></p><p id="projectPath"></p><button id="copyPath">复制目录</button></details>
                 </div>
                 <div class="ny-focus">
@@ -107,11 +108,11 @@
                   <div id="taskCounts" class="ny-small"></div><div id="nextAction"></div>
                 </div>
                 <div class="ny-tabs tabs">
-                  <button data-tab="team" class="ny-active">进展对话</button
+                  <button data-tab="preview">预览</button><button data-tab="team" class="ny-active">运行记录</button
                   ><button data-tab="graph">任务清单</button
-                  ><button data-tab="changes">代码改动</button>
+                  ><button data-tab="changes">文件与改动</button>
                 </div>
-                <button id="newProgress" hidden></button><section id="messages"></section>
+                <section id="previewPanel" hidden></section><button id="newProgress" hidden></button><section id="messages"></section>
                 <select id="taskFilter" aria-label="筛选任务" hidden><option value="all">全部任务</option><option value="blocked">只看等待与阻塞</option></select><section id="taskList" hidden></section>
                 <section id="changesPanel" hidden></section>
                 <div id="questions"></div>
@@ -235,7 +236,7 @@
         </div>
       </div>
     </div>
-    <script src="/lucide.min.js?v=20261113-ux-1"></script>
-    <script type="module" src="/app.js?v=20261113-ux-1"></script>
+    <script src="/lucide.min.js?v=20261113-preview-1"></script>
+    <script type="module" src="/app.js?v=20261113-preview-1"></script>
   </body>
 </html>

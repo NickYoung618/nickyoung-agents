@@ -135,7 +135,7 @@ export async function executeCheck(engine, c, cwd, gate, trace) {
       output.push(e.message);
     } finally {
       engine.running.delete(c + ":machine");
-      engine.event(c, "command_result", {
+      const resultEvent=engine.event(c, "command_result", {
         ...trace,
         commandId,
         index,
@@ -143,6 +143,7 @@ export async function executeCheck(engine, c, cwd, gate, trace) {
         interrupted,
         ended: new Date().toISOString(),
       });
+      if(exitCode===0)await engine.previews?.completed(c,{cwd,command,commit:trace.commit,cycleId:trace.cycleId,gateId:trace.unitId,runId:trace.runId,buildEvidenceIds:[resultEvent.id]});
     }
     if (exitCode) break;
   }

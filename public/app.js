@@ -1,3 +1,4 @@
+import { PreviewPanel } from "./studio/preview-panel.mjs";
 const modelTests = new Map();
 let modelCatalog = null,
   showHiddenModels = false;
@@ -26,6 +27,10 @@ const $ = (s) => document.querySelector(s),
           "'": "&#39;",
         })[c],
     );
+const previewPanel=new PreviewPanel($("#previewPanel"),{api,escape});
+let runtimeInfo=null;
+function showRuntime(){const selected=$("#workflowVersion").value||"legacy";$("#workflowChoice").textContent=`新会话流程：${selected}`;$("#runtimeInfo").textContent=runtimeInfo?.buildCommit?`${runtimeInfo.buildCommit} · ${runtimeInfo.dirty?"有开发改动 "+runtimeInfo.contentVersion?.slice(0,12):"干净版本"} · 启动 ${new Date(runtimeInfo.startedAt).toLocaleString()}`:"服务未提供已加载版本信息";}
+fetch("/api/runtime").then(r=>r.ok?r.json():null).then(info=>{runtimeInfo=info;showRuntime();}).catch(()=>showRuntime());
 let attachments = [];
 let attachmentContext = "new";
 const attachmentSelections = new Map([["new", attachments]]);
@@ -624,6 +629,7 @@ function restoreHomeDraft() {
   $("#path").value = d.path || '';
   drawProjects();
   $("#workflowVersion").value = d.workflowVersion || "legacy";
+  showRuntime();
   $("#projectSelect").value = d.project || '';
   if ($("#projectSelect").selectedIndex < 0) $("#projectSelect").value = '__custom';
   $("#projectAdvanced").hidden = $("#projectSelect").value !== '__custom';
@@ -740,7 +746,7 @@ $('#newProgress').onclick = () => { $('#messages').scrollTop = $('#messages').sc
 $('#statusQuery').onclick = async () => { try { await api(`conversations/${current}/message`, {text:'查看当前进度',intent:'status'}); await refresh(); } catch(error) { $('#notice').textContent=error.message; } };
 $('#homeInput').addEventListener('input', saveDrafts); $('#input').addEventListener('input', saveDrafts);
 $('#path').addEventListener('input', saveDrafts);
-$('#workflowVersion').onchange = saveDrafts;
+$('#workflowVersion').onchange = () => {saveDrafts();showRuntime();};
 $('#projectSelect').onchange = () => { $('#projectAdvanced').hidden = $('#projectSelect').value !== '__custom'; saveDrafts(); };
 window.addEventListener('pagehide', saveDrafts);
 $('#applyUpdate').onclick = () => { saveDrafts(); location.reload(); };
@@ -956,6 +962,7 @@ $("#taskFilter").onchange = () => render();
 function updateTaskTab() {
   $("#taskFilter").hidden = tab !== "graph";
   $("#messages").hidden = tab !== "team";
+  $("#previewPanel").hidden = tab !== "preview";
   $("#taskList").hidden = tab !== "graph";
   $("#changesPanel").hidden = tab !== "changes";
   for (const b of document.querySelectorAll(".tabs [data-tab]"))
@@ -1020,10 +1027,12 @@ function drawStudio(s) {
     .reverse();
   updateRegion('#resultContent', reports.length ? reports.map(({c,e}) => {
     const evidence = deliveryEvidence(c, e);
-    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.cycleId ? `<p class="ny-small">批次 ${escape(evidence.cycleId)} · 最终提交 ${escape(evidence.finalCommit)}${evidence.reviewedCommit ? ` · 原审查提交 ${escape(evidence.reviewedCommit)}` : ""}</p>` : ""}${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>${escape(evidence.reviewLabel || `独立审查 ${evidence.reviews.length} 次`)}</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
+    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.cycleId ? `<p class="ny-small">批次 ${escape(evidence.cycleId)} · 最终提交 ${escape(evidence.finalCommit)}${evidence.reviewedCommit ? ` · 原审查提交 ${escape(evidence.reviewedCommit)}` : ""}</p>` : ""}${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>${escape(evidence.reviewLabel || `独立审查 ${evidence.reviews.length} 次`)}</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence">${(c.artifacts||[]).filter(a=>a.kind==="static_page"&&(!e.data.cycleId||a.cycleId===e.data.cycleId)).slice(-1).map(a=>`<button data-open="${c.id}" data-preview="${a.artifactId}">打开作品预览</button><a href="/api/conversations/${c.id}/artifacts/${a.artifactId}/download">下载作品</a>`).join("")}<button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
   }).join('') : '<div class="card ny-small">还没有交付成果。</div>');
   if (s) {
     $("#statusQuery").hidden = s.workflowVersion !== "adaptive_v1";
+    $("#workflowBadge").textContent=`实际流程：${s.workflowVersion||"legacy"}${s.cycle?.policy?" · "+s.cycle.policy:""} · ${runtimeInfo?.buildCommit?"服务 "+runtimeInfo.buildCommit.slice(0,8)+(runtimeInfo.dirty?"（开发改动）":""):"服务版本未确认"}`;
+    previewPanel.update(s);
     $("#taskTitle").textContent = s.title;
     $("#taskTitle").title = s.title;
     $("#fullGoal").textContent = s.title;
@@ -1245,7 +1254,8 @@ $('#resultContent').onclick = async e => {
   const b = e.target.closest('[data-open]');
   if (!b) return;
   current = b.dataset.open; studioView = 'task'; render();
-  if (b.hasAttribute('data-changes')) { tab = 'changes'; updateTaskTab(); await loadStudioFiles(); }
+  if(b.dataset.preview){previewPanel.selected.set(current,b.dataset.preview);tab='preview';previewPanel.update(conversations.find(s=>s.id===current));updateTaskTab();}
+  else if (b.hasAttribute('data-changes')) { tab = 'changes'; updateTaskTab(); await loadStudioFiles(); }
   else if (b.dataset.event) jumpToEvent(b.dataset.event);
   else $('#input').focus();
 };

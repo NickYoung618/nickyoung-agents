@@ -623,7 +623,7 @@ export class Workflow {
     if (old) result = { exitCode: 0, output: "复用正式证据 " + old.evidenceId };
     else
       result = await this.worktree(c, commit, async (path) => {
-        const r = await executeCheck(this.e, c, path, gate, token);
+        const r = await executeCheck(this.e, c, path, gate, {...token,commit});
         const changes = unexpectedChanges(
           this.e.git.bind(this.e),
           path,

@@ -1106,13 +1106,8 @@ export class Engine {
           this.running.set(c + ":machine", proc);
           try {
             await proc.promise;
-            this.event(c, "check", {
-              task: t.id,
-              command: cmd,
-              passed: true,
-              output: output.join("\n"),
-              commit,
-            });
+            const evidence=this.event(c, "check", {task:t.id,command:cmd,passed:true,output:output.join("\n"),commit});
+            await this.previews?.completed(c,{cwd,command:cmd,commit,taskId:t.id,buildEvidenceIds:[evidence.id]});
           } catch (e) {
             if (e.signal && !e.timedOut) {
               this.event(c, "check_interrupted", {

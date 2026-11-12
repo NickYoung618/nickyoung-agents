@@ -35,6 +35,8 @@ export function project(events) {
     id: events[0]?.conversation,
     workflowVersion: "legacy",
     cycles: [],
+    artifacts: [],
+    preview: {status:"unavailable",reason:"尚无已登记的静态产物"},
     members: [],
     tasks: [],
     questions: [],
@@ -55,6 +57,9 @@ export function project(events) {
         s.cycles.find((x) => x.cycleId === d.cycleId) || {},
         structuredClone(d),
       );
+    if(e.type === "artifact_ready" && !s.artifacts.some(a=>a.artifactId===d.artifactId))s.artifacts.push({...d});
+    if(e.type === "artifact_validation")Object.assign(s.artifacts.find(a=>a.artifactId===d.artifactId)||{},d);
+    if(e.type === "preview_status")Object.assign(s.preview,d);
     if (e.type === "status") s.status = d.status;
     if (e.type === "leader_selection") s.leaderSelection = d;
     if (e.type === "recruit") s.members.push(d);
