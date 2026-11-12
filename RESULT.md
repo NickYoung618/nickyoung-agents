@@ -1,48 +1,49 @@
-# NickYoung 验收记录
+# NickYoung 交付与验收
 
-服务已在 https://43.156.51.71:8787 运行，用户级 `nickyoung.service` 已启用。公网和 localhost 登录页均返回 HTTPS 200。
+服务运行于 https://43.156.51.71:8787 ，用户级 `nickyoung.service` 已启用。当前负责人为 GPT-6.1-Sol / high，执行成员为 GPT-6.1-Sol / medium；当前不调用 Claude。
 
-当前负责人为 Sonnet / low，执行模型为 GPT-6.1-Sol / medium，辅助模型为 GPT-6-Astra / high。初始口令文件为 `data/initial-password`，权限 600。
+初始口令在 `data/initial-password`，文件权限 600。源码、说明、截图及验收事件保存于本目录，口令、私钥、数据库和日志不入库。
 
-## 已验证结果
+## 交付结果
 
-- 真实团队交付了零依赖 Node 待办 CLI，程序验收通过，另一位成员在独立 worktree 实际运行 11 个测试、跨进程持久化及错误退出码检查并通过，负责人读取核心代码后交付。
-- 真实请示、用户回答、暂停与继续均写入事件。原交付的补审已通过，关联遗留已关闭。
-- GPT 成员换到 Claude 后读取项目须知、实际执行测试、修改 README，并通过程序验收和独立成员审查。当前执行成员已按用户设置恢复为 GPT-6.1-Sol / medium。
-- 受控缺陷场景实际触发一次机器退回、一次模型审查退回，累计两次失败进入会诊状态。
-- 项目沙箱允许目录内写入、拒绝项目外写入，退出码 7 能原样返回。
-- 本地 17 项自动化测试通过：任务门槛、独立审查人、返修升级、遗留关联、已有目录建仓确认、取消与暂停、服务恢复、讨论上限、HTTPS 认证隔离与限速、改密注销、真实子进程终止、输出与退出码、事件重放、统计归属及缓存用量。
+- 真实模型完成零依赖 Node 待办 CLI 和 JSON 名字列表 CLI，均通过程序验收与独立成员实测审查。名字列表工具另经独立进程验证中文名字的添加、持久化及列出。
+- 受控缺陷完整经历机器退回、原成员返修、审查退回、第二次失败会诊、修复、机器复验和独立复审，最终通过。负责人亲读实际代码并给出具体改法。
+- 真实讨论收齐两位成员意见，负责人记录结论；是/否请示等待期间，无关 README 任务通过审查；回答后继续实现并交付。
+- 团队工作中重启服务，中断被记录，负责人恢复任务并完成交付。工作中插入新要求后，负责人安排补充任务，经实测和审查通过。
+- 已有仓库创建了新任务分支，原主分支提交未变化；新增档位实际招募了成员，测试后恢复原档位清单。
+- 新对话读取经验，实际回复建议使用 Sol / medium、不调用 Claude。配置、用量、失败与返修均有事件记录。
+- 项目沙箱允许目录内写入、拒绝目录外写入，保留实际退出码。讨论和执行共用成员并发上限，同一成员不会重复启动；取消与改派仅影响目标任务。
+- 历史发言显示该回合实际模型，换模不会重写旧消息标签。浅深色界面和协作图已截图，浏览器未发现脚本错误。
 
-## PLAN.md 场景对照
+## PLAN.md 验收对照
 
-| 场景 | 结果与证据 |
+| 场景 | 验证结果与证据 |
 |---|---|
-| 1 完整流程 | 真实开发、提交、机器验收、独立实测审查及交付已通过。`evidence/core-events.json` |
-| 2 返修闭环 | 机器退回和审查退回均已真实验证；两次受控缺陷的完整会诊后复验尚未完成。`evidence/repair-events.json`、`evidence/repair-run.txt` |
-| 3 逐级升级及方案问题 | 首次返修、二次会诊、三次停止及方案问题分流有自动化覆盖；真实缺陷场景已进入二次会诊，负责人的真实会诊意见待补。 |
-| 4 请我决定 | 真实是/否请示及用户选择“是”后继续交付已验证；等待期间的无关任务并行场景待补。`evidence/core-events.json` |
-| 5 讨论 | 工具和两轮上限已实现，上限自动化通过；完整真实讨论待补。 |
-| 6 插话、暂停、继续 | 项目中真实暂停和继续后完成交付；子进程终止与任务取消测试通过。工作中改变产品要求的完整场景待补。 |
-| 7 恢复 | 服务多次重启后记录保留，浏览器刷新及重连无脚本错误；中断恢复状态机测试通过。所有中断阶段的真实进程验收待补。 |
-| 8 已有项目 | 分支创建和非 Git 目录确认路径有测试，已有外部项目的完整模型验收待补。 |
-| 9 换模型 | 负责人 Opus/medium、Sonnet/low 均真实测试成功，当前 Sonnet/low；执行 Sol/medium 测试成功。模型保存门槛、档位增删排序、在岗换模已实现，完整组合验收待补。`evidence/current-models.json`、`evidence/leader-sonnet-low.json` |
-| 10 访问和登录 | 公网及 localhost 访问通过；认证隔离、5 次失败后限速、Cookie 属性、来源校验、改密后旧会话失效通过自动化。systemd 已运行并启用自启，未重启整台共享服务器。 |
-| 11 界面 | 已截图自查浅深色新对话、设置、已完成和展开协作图，浏览器脚本错误为 0；工作中和等待决定画面的最终截图待补。`evidence/browser.json` 及同目录 PNG |
-| 12 第二步 | 成员 GPT→Claude 接续及实际工作通过；经验写入和注入、按模型/档位用量及返修统计已实现，统计单元对账通过。负责人跨通道往返和经验影响的真实场景待补。 |
+| 1 完整流程 | 待办工具、名字列表工具均完成真实开发、提交、机器验收、独立实测审查与报告。`core-events.json`、`live-events.json` |
+| 2 返修闭环 | 两个受控缺陷分别被机器和模型发现，返修会诊后对新提交复验、复审通过，累计失败次数为 2。`repair-events.json`、`repair-run.txt` |
+| 3 升级与方案问题 | 真实二次失败会诊给出具体代码改法并完成修复；首次返修、第二次会诊、第三次停止及方案问题分流有自动化覆盖。`repair-events.json`、`unit-tests.txt` |
+| 4 请我决定 | 等待 JSON/CSV 选择期间，独立 README 任务先通过；测试驱动回答“是”后继续完成 JSON 实现。`independent-before-answer.json`、`live-events.json` |
+| 5 讨论 | 两位真实成员分别给出 JSON/CSV 意见，负责人记录结论，一轮结束；两轮上限自动化通过。`live-events.json` |
+| 6 插话、暂停、继续 | 暂停继续真实记录见核心事件；青禾正在审查时插入补充要求，新增任务执行、实测和审查通过。`interjection-at-running.json`、`existing-events.json` |
+| 7 恢复 | 青禾运行中重启服务，进程中断后负责人接手恢复，最终交付。刷新、重连和中断恢复状态机通过。`restart-before.json`、`restart-after.json`、`live-events.json` |
+| 8 已有项目 | 已有仓库新建任务分支，原 master 提交不变，插话后两句说明均已写入；CLI 独立运行通过。`existing-before.json`、`existing-after.json`、`existing-events.json` |
+| 9 换模型 | Sol / high、Sol / medium 等配置经真实测试保存；新增档位被实际招募，随后恢复档位清单；不存在的模型被拒绝且未改配置；同通道续用会话和对话专用设置有适配器测试。`leader-sol-high.json`、`current-models.json`、`invalid-model.json`、`existing-events.json` |
+| 10 访问与登录 | 公网和 localhost HTTPS 200；认证隔离、5 次失败限速、Cookie 属性、来源检查及改密注销通过自动化；systemd active、enabled。未重启整台共享服务器。 |
+| 11 界面 | 浅深色新对话、设置、工作中、等待决定、已完成和展开协作图已截图；浏览器脚本错误为 0。`browser.json`、`live-browser.json` 及 PNG |
+| 12 经验、统计及跨通道 | 经验在新对话中被实际采用；统计按交付模型归属，含缓存、失败及返修，对账测试通过；此前成员 GPT→Claude 实际工作通过，通道往返、会话接续及上下文交接有适配器测试。`experience-events.json`、`statistics.json`、`core-events.json`、`unit-tests.txt` |
 
-截图：`login-light.png`、`new-light.png`、`new-dark.png`、`settings-light.png`、`settings-dark.png`、`completed-light.png`、`completed-dark.png`、`graph-light.png`。
+本地 26 项自动化测试全部通过，覆盖状态重放、任务与收工门槛、角色与审查、返修升级、并发、排队取消与改派、提问接续、请示关闭、恢复、认证、进程终止、限流恢复、模型通道、历史模型标签和统计。
 
-## 费用与验证范围
+## 证据位置
 
-使用服务器现有订阅登录，无 API key。真实回合的 token 用量与耗时写在事件 `model_result` 中；订阅额度与美元费用无法等同，未估算费用。自动化测试与沙箱边界测试不调用模型。
+本表中的 JSON、TXT 和 PNG 均在 `evidence/`。
 
-继续验收时 Claude 返回 API 403，错误码 oauth_not_allowed_for_organization，当前订阅无法使用。已停止重试 Claude，受控缺陷场景停在会诊阶段。错误原文见 evidence/provider-block.json；未将失败计为通过。其余本地验证继续完成。
+截图包括 `new-light.png`、`new-dark.png`、`settings-light.png`、`settings-dark.png`、`working-light.png`、`working-dark.png`、`waiting-light.png`、`waiting-dark.png`、`completed-light.png`、`completed-dark.png`、`graph-light.png` 和登录页。`final-summary.json` 汇总模型、任务状态、团队工具实际调用及验收配置恢复结果。
 
-## 已知限制
+## 费用及边界
 
-- 未完成上表标明的组合场景和截图，当前不标记为 PLAN.md 全量验收通过。
-- Claude 文件读写使用其受限权限，命令通过 MCP 和 Codex 沙箱执行；原生 Bash 沙箱在此环境无法启动，原始验证保留于 `evidence/claude-workspace-sandbox.json`。当前实际项目命令边界验证见 `evidence/workspace-sandbox.json`。
-- 额度重试机制已实现，但未消耗额度人为触发服务商限流测试。
-- 单个附件最多 8 MB，单次请求最多 16 MB；不提供项目运行预览代理。
+真实调用使用服务器现有订阅登录，无 API key；模型回合用量和耗时记录在事件中。CLI 的费用字段不等同于用户实际账单，不折算美元费用。自动化测试和沙箱边界测试不调用真实模型；适配器及限流测试使用明确的测试进程，不作为真实模型场景证据。
 
-源码使用本目录正常 `.git` 仓库。运行数据、初始口令、私钥和日志均不入库。
+Claude 当前返回 API 403（`oauth_not_allowed_for_organization`），原始响应保存在 `provider-block.json`。按用户当前“不用 Claude”的设置，不再进行 Claude 回切实测；此前成功的成员跨通道记录保留。当前 GPT 配置的功能验收不依赖 Claude。
+
+任意模型及推理强度组合没有逐一消耗额度测试。整台共享服务器的重启和笔记本证书信任安装未执行；用户服务启用状态、服务重启恢复和 HTTPS 访问已验证。单个附件最多 8 MB，单次请求最多 16 MB，不提供项目运行预览代理。

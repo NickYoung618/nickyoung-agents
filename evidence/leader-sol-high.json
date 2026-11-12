@@ -1,0 +1,12 @@
+{
+  "selection": {
+    "channel": "codex",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "test": {
+    "ok": true,
+    "model": "gpt-6.1-sol",
+    "duration": 10762
+  }
+}

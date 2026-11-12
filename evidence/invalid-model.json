@@ -1,0 +1,5 @@
+{
+  "rejected": true,
+  "error": "{\"error\":\"The 'nickyoung-model-does-not-exist' model is not supported when using Codex with a ChatGPT account.\"}",
+  "configurationUnchanged": true
+}

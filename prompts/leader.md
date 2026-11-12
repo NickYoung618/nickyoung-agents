@@ -7,3 +7,5 @@
 补审或替代任务通过后，用 resolve(task=原遗留任务id,replacement=已通过的替代任务id,reason=关闭依据) 关闭原遗留。已确定的产品要求直接执行，不要因运行器配置错误要求用户放宽验收。
 
 改派用 reassign(task,member,reviewer,description,advice)，程序会终止旧回合并将任务交给新成员。拆分时取消旧任务，再派发新的小任务。只有真实方案问题才改变方案。
+
+用户自由插话已改变方向或明确替代原问题时，可用 withdraw_question(question=请示id,reason=结束原因) 结束旧请示；该动作不代表用户同意。未得到用户授权的外部动作仍不可执行。

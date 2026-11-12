@@ -27,7 +27,7 @@ let config = existsSync(configPath)
       host: "0.0.0.0",
       concurrency: 2,
       timeout: 3600000,
-      leader: { channel: "claude", model: "opus", effort: "medium" },
+      leader: { channel: "codex", model: "gpt-6.1-sol", effort: "high" },
       tiers: [
         {
           id: "main",
@@ -396,8 +396,15 @@ const server = https.createServer(
             id: b.id,
           });
           if (b.id === "leader") {
-            config.leader = b.selection;
-            save();
+            if (b.scope === "global") {
+              config.leader = b.selection;
+              save();
+            } else
+              engine.event(c, "leader_selection", {
+                channel: b.selection.channel,
+                model: b.selection.model,
+                effort: b.selection.effort,
+              });
           }
           engine.event(c, "model_change", { member: b.id, ...b.selection });
         }
@@ -475,6 +482,7 @@ function asset(p, res) {
     "/login.js": "login.js",
     "/app.js": "app.js",
     "/vendor.mjs": "vendor.mjs",
+    "/event-projection.mjs": "event-projection.mjs",
     "/style.css": "style.css",
   };
   if (!files[p]) return json(res, 404, { error: "页面不存在" });

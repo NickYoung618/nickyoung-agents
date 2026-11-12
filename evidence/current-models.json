@@ -1,8 +1,8 @@
 {
   "leader": {
-    "channel": "claude",
-    "model": "sonnet",
-    "effort": "low"
+    "channel": "codex",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
   },
   "tiers": [
     {
@@ -24,13 +24,15 @@
   ],
   "members": [
     {
+      "conversation": "8549110d-cf15-4c65-b8f6-9f993a92b804",
       "name": "知行",
       "role": "负责人",
-      "channel": "claude",
-      "model": "sonnet",
-      "effort": "low"
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
     },
     {
+      "conversation": "8549110d-cf15-4c65-b8f6-9f993a92b804",
       "name": "砚舟",
       "role": "实现",
       "channel": "codex",
@@ -38,10 +40,67 @@
       "effort": "medium"
     },
     {
+      "conversation": "8549110d-cf15-4c65-b8f6-9f993a92b804",
       "name": "青禾",
       "role": "审查",
       "channel": "codex",
       "model": "gpt-6-astra",
+      "effort": "high"
+    },
+    {
+      "conversation": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "name": "知行",
+      "role": "负责人",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    },
+    {
+      "conversation": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "name": "砚舟",
+      "role": "实现",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "conversation": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "name": "青禾",
+      "role": "审查",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "conversation": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "name": "知行",
+      "role": "负责人",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "high"
+    },
+    {
+      "conversation": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "name": "砚舟",
+      "role": "实现者",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "conversation": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "name": "青禾",
+      "role": "审查者",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "conversation": "9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "name": "知行",
+      "role": "负责人",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
       "effort": "high"
     }
   ]

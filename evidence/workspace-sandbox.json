@@ -14,15 +14,15 @@
     "events": [
       {
         "type": "stderr",
-        "text": "node:fs:2414\n    return binding.writeFileUtf8(\n                   ^\n\nError: EROFS: read-only file system, open '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794477383095'\n    at Object.writeFileSync (node:fs:2414:20)\n    at [eval]:1:20\n    at runScriptInThisContext (node:internal/vm:219:10)\n    at node:internal/process/execution:451:12\n    at [eval]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:449:60)\n    at evalFunction (node:internal/process/execution:283:30)\n    at evalTypeScript (node:internal/process/execution:295:3)\n    at node:internal/main/eval_string:71:3 {\n  errno: -30,\n  code: 'EROFS',\n  syscall: 'open',\n  path: '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794477383095'\n}\n\nNode.js v24.15.0\n"
+        "text": "node:fs:2414\n    return binding.writeFileUtf8(\n                   ^\n\nError: EROFS: read-only file system, open '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794481173211'\n    at Object.writeFileSync (node:fs:2414:20)\n    at [eval]:1:20\n    at runScriptInThisContext (node:internal/vm:219:10)\n    at node:internal/process/execution:451:12\n    at [eval]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:449:60)\n    at evalFunction (node:internal/process/execution:283:30)\n    at evalTypeScript (node:internal/process/execution:295:3)\n    at node:internal/main/eval_string:71:3 {\n  errno: -30,\n  code: 'EROFS',\n  syscall: 'open',\n  path: '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794481173211'\n}\n\nNode.js v24.15.0\n"
       }
     ],
-    "error": "node:fs:2414\n    return binding.writeFileUtf8(\n                   ^\n\nError: EROFS: read-only file system, open '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794477383095'\n    at Object.writeFileSync (node:fs:2414:20)\n    at [eval]:1:20\n    at runScriptInThisContext (node:internal/vm:219:10)\n    at node:internal/process/execution:451:12\n    at [eval]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:449:60)\n    at evalFunction (node:internal/process/execution:283:30)\n    at evalTypeScript (node:internal/process/execution:295:3)\n    at node:internal/main/eval_string:71:3 {\n  errno: -30,\n  code: 'EROFS',\n  syscall: 'open',\n  path: '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794477383095'\n}\n\nNode.js v24.15.0\n\n进程退出 1 "
+    "error": "node:fs:2414\n    return binding.writeFileUtf8(\n                   ^\n\nError: EROFS: read-only file system, open '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794481173211'\n    at Object.writeFileSync (node:fs:2414:20)\n    at [eval]:1:20\n    at runScriptInThisContext (node:internal/vm:219:10)\n    at node:internal/process/execution:451:12\n    at [eval]-wrapper:6:24\n    at runScriptInContext (node:internal/process/execution:449:60)\n    at evalFunction (node:internal/process/execution:283:30)\n    at evalTypeScript (node:internal/process/execution:295:3)\n    at node:internal/main/eval_string:71:3 {\n  errno: -30,\n  code: 'EROFS',\n  syscall: 'open',\n  path: '/home/ubuntu/disk/dzk/nickyoung-workspace/outside-probe-1794481173211'\n}\n\nNode.js v24.15.0"
   },
   "outsideExists": false,
   "exit": {
     "exitCode": 7,
     "events": [],
-    "error": "\n进程退出 7 "
+    "error": "进程退出 7 "
   }
 }

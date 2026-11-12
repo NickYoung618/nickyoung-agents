@@ -111,6 +111,11 @@ schema.properties.questions = {
   },
 };
 schema.required.push("questions");
+schema.properties.completion = {
+  type: "string",
+  enum: ["complete", "blocked"],
+};
+schema.required.push("completion");
 export function processFailure(events, stderr = "", fallback = "回合失败") {
   const error = events.findLast(
     (e) =>
@@ -210,7 +215,7 @@ export function runProcess(
                     `进程退出 ${code} ${signal || ""}`,
                   ),
             ),
-            { events, exitCode: code, signal },
+            { events, exitCode: code, signal, timedOut },
           ),
         );
       } else resolve({ events, stderr });
@@ -304,9 +309,11 @@ export function runModel({
       "-c",
       `sandbox_mode="${leader || readOnly ? "read-only" : "workspace-write"}"`,
       "-c",
-      "features.skills=false",
-      "-c",
       "sandbox_workspace_write.network_access=true",
+      "-c",
+      "skills.bundled.enabled=false",
+      "-c",
+      "skills.include_instructions=false",
     ];
     if (team)
       args.push(
@@ -316,6 +323,8 @@ export function runModel({
         `mcp_servers.nickyoung.args=${JSON.stringify([new URL("./team-mcp.mjs", import.meta.url).pathname])}`,
         "-c",
         'mcp_servers.nickyoung.env_vars=["NY_TEAM_TOKEN","NY_TEAM_URL","NY_TEAM_ROLE"]',
+        "-c",
+        'mcp_servers.nickyoung.tools.team_action.approval_mode="approve"',
       );
     if (session) args.push("resume", session);
     else

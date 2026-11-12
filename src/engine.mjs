@@ -14,6 +14,8 @@ export class Engine {
     this.busyProjects = new Set();
     this.teamTokens = new Map();
     this.retryTimers = new Map();
+    this.memberTurns = new Set();
+    this.memberQueue = [];
     for (const s of store.conversations()) {
       if (s.status === "working") {
         this.event(s.id, "status", { status: "interrupted" });
@@ -146,14 +148,61 @@ export class Engine {
         : this.config.experience || "",
     });
   }
+  memberSlot(c, member, taskId, taskRole) {
+    return new Promise((resolve, reject) => {
+      this.memberQueue.push({
+        c,
+        member,
+        key: c + ":" + member,
+        taskId,
+        taskRole,
+        resolve,
+        reject,
+      });
+      this.drainMembers();
+    });
+  }
+  drainMembers() {
+    for (const request of [...this.memberQueue]) {
+      const state = this.state(request.c),
+        task = state.tasks.find((t) => t.id === request.taskId);
+      if (
+        ["paused", "interrupted"].includes(state.status) ||
+        (task &&
+          (["cancelled", "deferred"].includes(task.status) ||
+            (request.taskRole && task[request.taskRole] !== request.member)))
+      ) {
+        this.memberQueue.splice(this.memberQueue.indexOf(request), 1);
+        request.reject(new Error("排队回合已取消"));
+      }
+    }
+    while (this.memberTurns.size < (this.config.concurrency || 2)) {
+      const index = this.memberQueue.findIndex(
+        (r) => !this.memberTurns.has(r.key),
+      );
+      if (index < 0) break;
+      const request = this.memberQueue.splice(index, 1)[0];
+      this.memberTurns.add(request.key);
+      request.resolve(() => {
+        this.memberTurns.delete(request.key);
+        this.drainMembers();
+      });
+    }
+  }
   async model(
     c,
     member,
     prompt,
-    { leader = false, cwd, readOnly = false } = {},
+    { leader = false, cwd, readOnly = false, taskId, taskRole } = {},
   ) {
+    if (!leader && !this.memberTurns.has(c + ":" + member.id))
+      this.event(c, "member", { id: member.id, status: "queued" });
+    const releaseMember = leader
+      ? () => {}
+      : await this.memberSlot(c, member.id, taskId, taskRole);
     const s = this.state(c);
-    const selection = leader ? this.config.leader : member;
+    member = s.members.find((m) => m.id === member.id) || member;
+    const selection = leader ? s.leaderSelection || this.config.leader : member;
     const key = c + ":" + member.id;
     const started = Date.now();
     this.event(c, "member", { ...selection, id: member.id, status: "running" });
@@ -165,6 +214,7 @@ export class Engine {
         member: member.id,
         cwd: cwd || s.path,
         readOnly: leader || readOnly,
+        taskId,
         leader,
       });
     const proc = runModel({
@@ -188,6 +238,7 @@ export class Engine {
       timeout: this.config.timeout,
       onEvent: (e) => this.event(c, "process", { member: member.id, event: e }),
     });
+    proc.taskId = taskId;
     this.running.set(key, proc);
     try {
       let r = await proc.promise;
@@ -207,9 +258,25 @@ export class Engine {
         result: r.result,
       });
       if (r.result.message)
-        this.event(c, "message", { member: member.id, text: r.result.message });
+        this.event(c, "message", {
+          member: member.id,
+          text: r.result.message,
+          model: r.model,
+          effort: selection.effort,
+          channel: selection.channel,
+        });
       return r.result;
     } catch (e) {
+      if (e.signal && !e.timedOut) {
+        this.event(c, "run_interrupted", {
+          member: member.id,
+          model: selection.model,
+          duration: Date.now() - started,
+          signal: e.signal,
+        });
+        this.event(c, "member", { id: member.id, status: "interrupted" });
+        throw e;
+      }
       this.event(c, "run_failed", {
         member: member.id,
         model: selection.model,
@@ -240,7 +307,30 @@ export class Engine {
     } finally {
       this.running.delete(key);
       this.teamTokens.delete(token);
+      releaseMember();
     }
+  }
+  settleIdle(c) {
+    const s = this.state(c),
+      result = s.events.findLast(
+        (e) => e.type === "model_result" && e.data.member === "leader",
+      ),
+      user = s.events.findLast(
+        (e) => e.type === "message" && e.data.member === "user",
+      );
+    if (
+      ["working", "interrupted"].includes(s.status) &&
+      !s.tasks.length &&
+      !s.questions.some((q) => !q.answered) &&
+      !s.members.some((m) => m.status === "running") &&
+      result &&
+      (!user || result.id > user.id) &&
+      !this.pending.has(c)
+    ) {
+      this.event(c, "status", { status: "idle" });
+      return true;
+    }
+    return false;
   }
   async wake(c) {
     if (this.state(c).status === "paused") return;
@@ -270,6 +360,7 @@ export class Engine {
       }
     } finally {
       this.waking.delete(c);
+      this.settleIdle(c);
       this.pump();
       if (
         this.pending.delete(c) &&
@@ -316,6 +407,7 @@ export class Engine {
         },
       },
     );
+    proc.taskId = scope.taskId;
     this.running.set(key, proc);
     try {
       await proc.promise;
@@ -413,6 +505,15 @@ export class Engine {
           no: a.no,
         });
         break;
+      case "withdraw_question": {
+        const question = s.questions.find(
+          (q) => q.id === a.question && !q.answered,
+        );
+        if (!question) throw new Error("没有待结束的请示");
+        if (!a.reason?.trim()) throw new Error("需要说明请示结束原因");
+        this.event(c, "question_closed", { id: question.id, reason: a.reason });
+        break;
+      }
       case "experience":
         this.config.experience = (this.config.experience || "") + "\n" + a.text;
         this.saveConfig();
@@ -434,8 +535,7 @@ export class Engine {
       case "reassign": {
         const task = s.tasks.find((t) => t.id === a.task);
         if (!task) throw new Error("未知任务");
-        const runningMember =
-          task.status === "reviewing" ? task.reviewer : task.member;
+
         if (a.type === "reassign") {
           const member = s.members.find(
             (m) =>
@@ -464,11 +564,9 @@ export class Engine {
             reason: a.reason,
           });
         for (const [key, process] of this.running)
-          if (
-            key === c + ":" + runningMember ||
-            key.startsWith(c + ":" + runningMember + ":")
-          )
+          if (key.startsWith(c + ":") && process.taskId === task.id)
             process.stop();
+        this.drainMembers();
         break;
       }
       case "resolve": {
@@ -529,7 +627,8 @@ export class Engine {
             );
             if (["cancelled", "deferred", "queued"].includes(current?.status))
               return;
-            this.event(s.id, "error", { text: e.message });
+            if (!["paused", "interrupted"].includes(this.state(s.id).status))
+              this.event(s.id, "error", { text: e.message });
             if (e.retryAt) {
               this.event(s.id, "task_update", {
                 id: t.id,
@@ -589,7 +688,7 @@ export class Engine {
           advice: t.advice,
           context: this.context(c),
         }),
-        { cwd },
+        { cwd, taskId: t.id, taskRole: review ? "reviewer" : "member" },
       );
       if (
         ["cancelled", "deferred", "queued"].includes(
@@ -604,7 +703,11 @@ export class Engine {
         });
         return;
       }
-      if (!review && result.blockers?.trim()) {
+      if (
+        !review &&
+        result.completion === "blocked" &&
+        !result.questions?.length
+      ) {
         this.event(c, "task_update", {
           id: t.id,
           status: "consultation",
@@ -614,6 +717,7 @@ export class Engine {
         return;
       }
       if (result.questions?.length) {
+        let unanswered = false;
         for (const q of result.questions) {
           this.event(c, "member_question", {
             from: m.id,
@@ -621,7 +725,7 @@ export class Engine {
             text: q.text,
             task: t.id,
           });
-          const peer = s.members.find(
+          const peer = this.state(c).members.find(
             (x) =>
               (x.name === q.to || x.id === q.to) &&
               x.id !== "leader" &&
@@ -639,27 +743,31 @@ export class Engine {
               }),
               { readOnly: true },
             );
+            if (answer.completion === "blocked") unanswered = true;
             this.event(c, "member_answer", {
               from: peer.id,
               to: m.id,
               task: t.id,
               text: answer.message,
             });
-          } else this.pending.add(c);
+          } else {
+            unanswered = true;
+            this.pending.add(c);
+          }
         }
         this.event(c, "task_update", {
           id: t.id,
-          status: "consultation",
-          advice: "请查看 member_question 与 member_answer，解决问题后重试。",
+          status: unanswered ? "consultation" : review ? "review" : "repair",
+          advice: "请查看 member_question 与 member_answer，按实际答复继续。",
         });
-        this.wake(c);
+        if (unanswered) this.wake(c);
         return;
       }
       if (review) {
         if (this.git(cwd, ["status", "--porcelain"]))
           throw new Error("审查者修改了成果，审查无效");
         this.event(c, "review", { task: t.id, commit: t.commit, ...result });
-        if (result.verdict !== "pass" || result.blockers) {
+        if (result.verdict !== "pass" || result.issues?.length) {
           this.fail(
             c,
             t,
@@ -704,6 +812,7 @@ export class Engine {
               },
             },
           );
+          proc.taskId = t.id;
           this.running.set(c + ":machine", proc);
           try {
             await proc.promise;
@@ -715,6 +824,15 @@ export class Engine {
               commit,
             });
           } catch (e) {
+            if (e.signal && !e.timedOut) {
+              this.event(c, "check_interrupted", {
+                task: t.id,
+                command: cmd,
+                commit,
+                signal: e.signal,
+              });
+              return;
+            }
             ok = false;
             this.event(c, "check", {
               task: t.id,
@@ -776,7 +894,8 @@ export class Engine {
   }
   recover() {
     for (const s of this.store.conversations())
-      if (s.status === "interrupted") this.resume(s.id);
+      if (s.status === "interrupted" && !this.settleIdle(s.id))
+        this.resume(s.id);
   }
   shutdown() {
     for (const timer of this.retryTimers.values()) clearTimeout(timer);
@@ -788,6 +907,7 @@ export class Engine {
         });
       }
     for (const p of this.running.values()) p.stop();
+    this.drainMembers();
   }
   pause(c) {
     for (const [key, timer] of this.retryTimers)
@@ -796,6 +916,7 @@ export class Engine {
         this.retryTimers.delete(key);
       }
     this.event(c, "status", { status: "paused" });
+    this.drainMembers();
     for (const [k, p] of this.running) if (k.startsWith(c + ":")) p.stop();
   }
   resume(c) {

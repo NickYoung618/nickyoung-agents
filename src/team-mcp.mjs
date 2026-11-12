@@ -25,7 +25,7 @@ for (const k of ["commands", "participants"])
 const tool = {
   name: "team_action",
   description:
-    "管理尼克杨助手团队：recruit 招募、assign 派活、notice 须知、decision 决定、ask 请示、discuss 讨论、retry 会诊重试、defer 遗留、cancel 取消、reassign 改派、resolve 关联通过任务关闭遗留、experience 经验、finish 交付。派活立即返回。",
+    "管理尼克杨助手团队：recruit 招募、assign 派活、notice 须知、decision 决定、ask 请示、withdraw_question 结束已被新需求替代的请示、discuss 讨论、retry 会诊重试、defer 遗留、cancel 取消、reassign 改派、resolve 关联通过任务关闭遗留、experience 经验、finish 交付。派活立即返回。",
   inputSchema: {
     type: "object",
     properties,

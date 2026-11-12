@@ -2,7 +2,7 @@
 
 尼克杨助手，通过真实 Claude / Codex CLI 组织开发、验收和审查。服务端使用 Node 24 内置 HTTPS 和 SQLite，前端资源随源码提供。
 
-当前模型：负责人 Sonnet / low，执行成员 GPT-6.1-Sol / medium，辅助成员 GPT-6-Astra / high。可以在设置中调整模型和成员档位。
+当前模型：负责人 GPT-6.1-Sol / high，执行成员 GPT-6.1-Sol / medium，辅助档位默认 GPT-6-Astra / high。目前不调用 Claude。可以在设置中调整模型和成员档位。
 
 ## 访问
 
@@ -67,7 +67,7 @@ npm run build
 - `experience`：经验内容，另保存于 `data/experience.md`，新对话交给负责人。
 - 环境变量 `NY_DATA`、`NY_PORT`、`NY_HOST` 指定数据目录、端口、监听地址；`NY_CLAUDE`、`NY_CODEX` 指定 CLI 路径。
 
-提示词在 `prompts/`。模型改变需真实测试成功后保存；负责人与在岗成员从下一回合生效，新档位对以后招募的成员生效。同一通道续用会话，跨通道通过事件与项目须知接手。
+提示词在 `prompts/`。模型改变需真实测试成功后保存；负责人与在岗成员从下一回合生效，新档位对以后招募的成员生效。同一通道续用会话，跨通道通过事件与项目须知接手。设置页修改全局负责人默认值；成员卡上的负责人换模仅影响本对话，对话专用设置优先。
 
 `data/events.sqlite` 保存事件与登录会话。备份时停止服务并复制整个 `data/`。统计按实际交付回合归属模型，Claude 输入包含缓存创建、缓存读取和普通输入；失败与返修按事件计数。
 
@@ -76,3 +76,5 @@ npm run build
 `npm test` 执行本地自动化验证。`node scripts/verify-sandbox.mjs` 验证项目命令的写入边界及退出码，不调用模型。
 
 `node scripts/acceptance-repair.mjs` 会消耗模型额度，运行受控缺陷的真实返修场景。日常开发使用本地测试即可。实际场景结果及尚未覆盖的验收见 [RESULT.md](RESULT.md)。
+
+Codex 的本应用团队工具使用按工具配置的 `approval_mode = "approve"`，命令执行仍受项目沙箱约束；配置字段见 [官方 MCP 文档](https://learn.chatgpt.com/docs/extend/mcp)。

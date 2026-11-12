@@ -1,4 +1,4 @@
-import { marked, DOMPurify, hljs } from "./vendor.mjs";
+import { marked, DOMPurify, hljs, speaker } from "./vendor.mjs";
 const markdown = (text) =>
   DOMPurify.sanitize(marked.parse(String(text || "")), {
     FORBID_TAGS: ["img", "style", "form", "input", "button"],
@@ -112,7 +112,7 @@ function render() {
       if (d.member === "user")
         html += `<div class="message user" id="e${e.id}">${escape(d.text)}${d.attachments?.length ? "\n附件：" + d.attachments.map((f) => escape(f.name)).join("、") : ""}</div>`;
       else {
-        let m = s.members.find((m) => m.id === d.member);
+        let m = speaker(s, e);
         html += `<article class="message" id="e${e.id}"><div class="who"><span class="avatar tone${s.members.findIndex((x) => x.id === m?.id)}">${escape(m?.name?.[0])}</span><div>${escape(m?.name)}<small>${escape(m?.role)} · ${escape(m?.model)}</small></div></div><div class="prose">${markdown(d.text)}</div></article>`;
       }
     } else if (e.type === "process") {
@@ -183,6 +183,7 @@ function render() {
         "interrupted",
         "question",
         "answer",
+        "question_closed",
         "notice",
       ].includes(e.type)
     ) {
@@ -199,9 +200,11 @@ function render() {
                   ? "请你决定 · " + d.question
                   : e.type === "answer"
                     ? "你的回答 · " + (d.answer ? "是" : "否")
-                    : e.type === "notice"
-                      ? "项目须知已更新"
-                      : d.text || "模型已更换";
+                    : e.type === "question_closed"
+                      ? "请示已结束 · " + d.reason
+                      : e.type === "notice"
+                        ? "项目须知已更新"
+                        : d.text || "模型已更换";
       html += `<div class="event" id="e${e.id}">${escape(text)}</div>`;
     }
   }
@@ -247,6 +250,8 @@ function graph(s) {
       "task_update",
       "run_start",
       "model_result",
+      "run_failed",
+      "run_interrupted",
       "review",
       "check",
       "member_question",
@@ -273,11 +278,16 @@ function graph(s) {
       starts.set(d.member, y);
       label = "开始工作";
     }
-    if (e.type === "model_result") {
+    if (["model_result", "run_failed", "run_interrupted"].includes(e.type)) {
       if (starts.has(d.member))
         out += `<line class="bar" x1="${x(d.member)}" y1="${starts.get(d.member)}" x2="${x(d.member)}" y2="${y}"/>`;
       starts.delete(d.member);
-      label = "交付结果";
+      label =
+        e.type === "model_result"
+          ? "交付结果"
+          : e.type === "run_failed"
+            ? "回合失败"
+            : "回合中断";
     }
     if (e.type === "task") {
       from = "leader";

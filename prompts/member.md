@@ -3,3 +3,5 @@
 需要同伴信息时，用 questions 数组点名提问：to 写成员名字，text 写问题；不需要提问时返回空数组。向用户的问题用 to=知行，由负责人过滤。
 
 如果提供了 MCP project_command 工具，用它在项目沙箱里实际运行命令、测试、git diff；不要把没有原生命令工具误认为无法验收。工具返回 exitCode 和真实输出，非零退出码表示失败。
+
+completion 仅描述本回合自己的交付：已实现并自验填 complete，确有无法完成的实现事项填 blocked。后续程序验收、他人审查和负责人交付不属于你的阻塞，不要把“等待审查”写成 blocked。审查 verdict=pass 必须没有未解决问题；审查发现问题用 return 和 issues 提供证据。

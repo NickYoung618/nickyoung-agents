@@ -150,6 +150,7 @@ test("取消正在执行的任务会终止对应成员，不影响其他任务",
   });
   let stopped = 0;
   e.running.set("a:m", {
+    taskId: "t",
     stop() {
       stopped++;
     },
@@ -224,3 +225,130 @@ test("请示未回答不能收工，等待期间无关任务仍能调度", async
   await e.action("a", { type: "finish", text: "交付" });
   assert.equal(e.state("a").status, "done");
 });
+
+test("同伴答复齐全后提问者自动继续，不经负责人", async () => {
+  const e = setup();
+  e.event("a", "recruit", { id: "m", name: "砚舟" });
+  e.event("a", "recruit", { id: "p", name: "青禾" });
+  e.event("a", "task", {
+    id: "t",
+    member: "m",
+    reviewer: "p",
+    status: "queued",
+  });
+  let calls = [];
+  e.model = async (c, m) => {
+    calls.push(m.id);
+    return m.id === "m"
+      ? {
+          completion: "blocked",
+          questions: [{ to: "青禾", text: "约定的值是什么？" }],
+        }
+      : { message: "约定值为 42", completion: "complete" };
+  };
+  e.wake = () => assert.fail("已拿到同伴答复，无需负责人介入");
+  await e.task("a", e.state("a").tasks[0]);
+  assert.deepEqual(calls, ["m", "p"]);
+  assert.equal(e.state("a").tasks[0].status, "repair");
+  assert.ok(
+    e
+      .state("a")
+      .events.some(
+        (x) => x.type === "member_answer" && x.data.text === "约定值为 42",
+      ),
+  );
+});
+
+test("被新需求替代的请示可明确结束，不伪造用户答案", async () => {
+  const e = setup();
+  e.event("a", "question", { id: "q", question: "选择旧方向吗" });
+  await e.action("a", {
+    type: "withdraw_question",
+    question: "q",
+    reason: "用户的新需求已替代该选择",
+  });
+  const q = e.state("a").questions[0];
+  assert.equal(q.answered, true);
+  assert.equal(q.status, "withdrawn");
+  assert.equal(q.answer, undefined);
+  assert.equal(
+    e.state("a").events.filter((x) => x.type === "answer").length,
+    0,
+  );
+});
+
+test("讨论和任务共用成员并发上限，同一成员不会重复启动", async () => {
+  const e = setup();
+  e.config.concurrency = 2;
+  const release1 = await e.memberSlot("a", "m1"),
+    release2 = await e.memberSlot("a", "m2");
+  let third = false;
+  const waiting = e.memberSlot("a", "m3").then((release) => {
+    third = true;
+    return release;
+  });
+  await new Promise((r) => setImmediate(r));
+  assert.equal(third, false);
+  release1();
+  const release3 = await waiting;
+  assert.equal(e.memberTurns.size, 2);
+  let duplicate = false;
+  const duplicateWait = e.memberSlot("a", "m3").then((release) => {
+    duplicate = true;
+    return release;
+  });
+  release2();
+  await new Promise((r) => setImmediate(r));
+  assert.equal(duplicate, false);
+  release3();
+  const release4 = await duplicateWait;
+  release4();
+  assert.equal(e.memberTurns.size, 0);
+});
+
+test("取消排队任务不会终止同一成员正在执行的另一任务", async () => {
+  const e = setup();
+  e.event("a", "task", {
+    id: "active",
+    member: "m",
+    reviewer: "r",
+    status: "running",
+  });
+  e.event("a", "task", {
+    id: "next",
+    member: "m",
+    reviewer: "r",
+    status: "queued",
+  });
+  e.running.set("a:m", {
+    taskId: "active",
+    stop() {
+      assert.fail("不能停止另一项任务");
+    },
+  });
+  await e.action("a", { type: "cancel", task: "next", reason: "取消后续任务" });
+  assert.equal(e.state("a").tasks[0].status, "running");
+  assert.equal(e.state("a").tasks[1].status, "cancelled");
+});
+
+test("简单回复结束后回到待命，不持续显示团队工作中", async () => {
+  const e = setup();
+  e.event("a", "status", { status: "working" });
+  e.event("a", "message", { member: "user", text: "给一句建议" });
+  e.model = async () => {
+    e.event("a", "model_result", {
+      member: "leader",
+      model: "fixture",
+      result: { message: "建议" },
+    });
+    return { message: "建议", actions: [] };
+  };
+  await e.wake("a");
+  assert.equal(e.state("a").status, "idle");
+  e.event("a", "status", { status: "working" });
+  e.event("a", "message", { member: "user", text: "还有新需求" });
+  assert.equal(e.settleIdle("a"), false);
+  assert.equal(e.state("a").status, "working");
+});
+
+test('改派会移除旧成员尚未启动的排队回合',async()=>{const e=setup();e.config.concurrency=1;for(const id of ['old','new','reviewer'])e.event('a','recruit',{id,name:id});e.event('a','task',{id:'t',member:'old',reviewer:'reviewer',status:'running'});const release=await e.memberSlot('a','busy');const pending=e.memberSlot('a','old','t','member');const rejected=assert.rejects(pending,/已取消/);await e.action('a',{type:'reassign',task:'t',member:'new',reviewer:'reviewer'});await rejected;release();assert.equal(e.memberTurns.size,0);assert.equal(e.state('a').tasks[0].member,'new');assert.equal(e.state('a').tasks[0].status,'queued');});

@@ -44,6 +44,7 @@ export function project(events) {
     if (e.type === "created" || e.type === "project_update")
       Object.assign(s, d);
     if (e.type === "status") s.status = d.status;
+    if (e.type === "leader_selection") s.leaderSelection = d;
     if (e.type === "recruit") s.members.push(d);
     if (e.type === "member")
       Object.assign(s.members.find((m) => m.id === d.id) || {}, d);
@@ -51,6 +52,12 @@ export function project(events) {
     if (e.type === "task_update")
       Object.assign(s.tasks.find((t) => t.id === d.id) || {}, d);
     if (e.type === "question") s.questions.push({ ...d, answered: false });
+    if (e.type === "question_closed")
+      Object.assign(s.questions.find((q) => q.id === d.id) || {}, {
+        answered: true,
+        status: "withdrawn",
+        reason: d.reason,
+      });
     if (e.type === "answer")
       Object.assign(s.questions.find((q) => q.id === d.id) || {}, {
         answered: true,

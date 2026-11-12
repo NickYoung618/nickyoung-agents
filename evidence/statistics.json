@@ -82,5 +82,53 @@
     "tasks": 1,
     "firstPassed": 1,
     "repairs": 0
+  },
+  {
+    "model": "sonnet",
+    "tier": "负责人",
+    "turns": 1,
+    "failed": 1,
+    "duration": 4096,
+    "input": 0,
+    "output": 0,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6.1-sol",
+    "tier": "负责人",
+    "turns": 14,
+    "failed": 0,
+    "duration": 454232,
+    "input": 7345690,
+    "output": 56168,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6.1-sol",
+    "tier": "main",
+    "turns": 14,
+    "failed": 1,
+    "duration": 457559,
+    "input": 5458809,
+    "output": 23626,
+    "tasks": 3,
+    "firstPassed": 2,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6.1-sol",
+    "tier": "compact-acceptance",
+    "turns": 2,
+    "failed": 0,
+    "duration": 86579,
+    "input": 276179,
+    "output": 3519,
+    "tasks": 2,
+    "firstPassed": 2,
+    "repairs": 0
   }
 ]

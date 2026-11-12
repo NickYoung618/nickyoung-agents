@@ -1,0 +1,83 @@
+{
+  "leader": {
+    "channel": "codex",
+    "model": "gpt-6.1-sol",
+    "effort": "high"
+  },
+  "execution": {
+    "id": "main",
+    "name": "主力",
+    "channel": "codex",
+    "model": "gpt-6.1-sol",
+    "effort": "medium",
+    "description": "实现、重构和返修"
+  },
+  "conversations": [
+    {
+      "id": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "status": "done",
+      "tasks": [
+        {
+          "title": "实现待办 CLI（含 node:test 测试与使用说明）",
+          "status": "resolved",
+          "failures": 1
+        },
+        {
+          "title": "确认待办 CLI 交付并补做实测审查",
+          "status": "passed",
+          "failures": 0
+        },
+        {
+          "title": "README 末尾补一句本机存储说明",
+          "status": "passed",
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "id": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "status": "done",
+      "tasks": [
+        {
+          "title": "创建 README 并独立实测审查",
+          "status": "passed",
+          "failures": 0
+        },
+        {
+          "title": "README 独立实测补审",
+          "status": "cancelled",
+          "failures": 0
+        },
+        {
+          "title": "实现 JSON 名字列表 CLI 与两个集成测试",
+          "status": "passed",
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "id": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "status": "done",
+      "tasks": [
+        {
+          "title": "README 末尾追加格式说明并独立实测审查",
+          "status": "passed",
+          "failures": 0
+        },
+        {
+          "title": "README 补充中文名字说明并验收最终两句",
+          "status": "passed",
+          "failures": 0
+        }
+      ]
+    },
+    {
+      "id": "9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "status": "idle",
+      "tasks": []
+    }
+  ],
+  "successfulTeamMcpCalls": 10,
+  "acceptanceTierRemoved": true,
+  "ownerPreferenceApplied": true
+}
