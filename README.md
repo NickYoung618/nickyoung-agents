@@ -52,7 +52,7 @@ npm run build
 
 新对话输入需求，可指定已有项目目录。默认新项目位于 `/home/ubuntu/disk/dzk/nickyoung-workspace/`。已有项目在 `nickyoung/` 分支工作；非 Git 目录先出现初始化仓库的确认卡片；有未提交改动的 Git 项目需先提交。
 
-负责人使用 MCP 团队工具招募、派活、讨论、写须知、记录决定和请示。程序先运行验收命令，再将交付提交交给独立 worktree 中的另一位成员审查。第一次失败直接返修，第二次会诊，第三次停止。未审查通过的任务必须明确列为遗留才能交付。
+legacy 流程中，负责人使用 MCP 团队工具招募、派活、讨论、写须知、记录决定和请示。程序先运行验收命令，再将交付提交交给独立 worktree 中的另一位成员审查。第一次失败直接返修，第二次会诊，第三次停止。未审查通过的任务必须明确列为遗留才能交付。
 
 成员命令在项目沙箱中运行。Codex 使用 workspace-write；Claude 使用受限文件工具及 MCP `project_command`，命令通过同一 Codex 沙箱执行。负责人只有只读文件工具和团队工具。程序保留每轮提交、命令输出、退出状态和模型用量。
 
@@ -84,3 +84,9 @@ Codex 的本应用团队工具使用按工具配置的 `approval_mode = "approve
 ## vNext 使用体验优化
 
 新增项目选择、任务首屏摘要、会话草稿恢复、稳定的实时更新、自适应真实协作图、决策选项与交付证据台。桌面支持专注阅读，手机团队抽屉支持键盘关闭和焦点返回。实施与验证边界见 [UX-VNEXT.md](docs/UX-VNEXT.md)，截图和事件证据在 `evidence/ux-vnext/`。浏览器回归：`npm run test:ui`。
+
+## 自适应流程（显式试用）
+
+新会话在工作台「执行策略」选择 adaptive_v1，未选择仍运行 legacy。支持 checks_only、final_review、checkpoint_plus_final：首次规划同时分流，任务连续实现，程序记录正式检查和固定提交审查；普通成功不调用负责人，建议不触发返修。完整 direct 预设才可零规划。旧会话不切换引擎。
+
+`npm run test:workflow` 运行无模型调度测试；`npm run trace:workflow` 保存受控调用轨迹。`npm run evaluate:workflow` 默认标注真实评估未运行，真实模型必须显式 --live 和预算。规范、启用参数、证据与回滚见 [ADAPTIVE-WORKFLOW.md](docs/ADAPTIVE-WORKFLOW.md)。本轮代码尚未部署，生产默认配置保持原样。

@@ -5,9 +5,10 @@ import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
 const out = new URL('../evidence/ux-vnext/', import.meta.url);
+const adaptiveOut=new URL('../evidence/adaptive/ui/',import.meta.url);mkdirSync(adaptiveOut,{recursive:true});
 mkdirSync(out, {recursive:true});
 const evidence = [], errors = [], streams = new Set();
-let createBody;
+let createBody,lastMessage;
 let baseline = false, failCreate = true, createCount = 0, version='20261113-ux-1';
 const makeState = (n=3,count=30) => ({ id:'fixture', title:'为现有项目增加命令行工具并完成独立审查与验收', path:'/isolated/ux-fixture', branch:'ux-fixture',status:'working',
   members:Array.from({length:n},(_,i)=>({id:i===0?'leader':`m${i}`,name:['知行','砚舟','青禾','时雨','松间','北辰','鹿鸣','云起'][i]||`成员${i}`,role:i===0?'负责人':i===2?'审查者':'实现者',model:'fixture-model',effort:'medium',status:i===1?'running':'idle'})),
@@ -25,7 +26,7 @@ const server = createServer(async (req,res)=>{
   if(url.pathname.endsWith('/answer')){state[0].questions=[];return json({ok:true});}
   if(url.pathname.endsWith('/pause')){state[0].status='paused';return json({ok:true});}
   if(url.pathname.endsWith('/resume')){state[0].status='working';return json({ok:true});}
-  if(url.pathname.endsWith('/message')) return json({ok:true});
+  if(url.pathname.endsWith('/message')) {let body='';for await(const chunk of req)body+=chunk;lastMessage=JSON.parse(body);return json({ok:true});}
   if(url.pathname.endsWith('/files')) return json({files:['README.md']});
   if(url.pathname==='/api/config') return json({leader:{channel:'codex',model:'fixture-model',effort:'medium'},tiers:[],names:[],concurrency:2,timeout:60000});
   if(url.pathname==='/api/model-catalog/scan') return json({channels:[],models:[],scannedAt:new Date().toISOString(),note:'隔离目录'});
@@ -50,11 +51,11 @@ try {
  const load=async()=>{await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#homeRecent button'));};
  baseline=true;await load();await page.screenshot({animations:'disabled',path:new URL('baseline-home.png',out).pathname});await page.click('[data-view-nav="task"]');await page.screenshot({animations:'disabled',path:new URL('baseline-task.png',out).pathname});baseline=false;
  await load();
- await page.fill('#homeInput','创建失败后仍保留的需求');await page.selectOption('#projectSelect','__custom');await page.fill('#path','/isolated/new-project');
+ await page.locator('details').filter({has:page.locator('#workflowVersion')}).locator('summary').click();await page.selectOption('#workflowVersion','adaptive_v1');await page.fill('#homeInput','创建失败后仍保留的需求');await page.selectOption('#projectSelect','__custom');await page.fill('#path','/isolated/new-project');
  await page.locator('#fileInput').setInputFiles({name:'reference.txt',mimeType:'text/plain',buffer:Buffer.from('fixture attachment')});
  await page.evaluate(()=>{document.querySelector('#homeStart').click();document.querySelector('#homeStart').click();}); await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('发送未完成'));
- assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');assert.equal(createCount,1);assert.equal(createBody.files[0].name,'reference.txt');assert.match(await page.locator('#homeAttachments').textContent(),/reference.txt/);
- await page.reload();await page.waitForSelector('#homeRecent button');assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');
+ assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');assert.equal(createCount,1);assert.equal(createBody.workflowVersion,'adaptive_v1');assert.equal(createBody.files[0].name,'reference.txt');assert.match(await page.locator('#homeAttachments').textContent(),/reference.txt/);
+ await page.reload();await page.waitForSelector('#homeRecent button');assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');assert.equal(await page.inputValue('#workflowVersion'),'adaptive_v1');
  evidence.push('创建失败保留需求与项目选择，刷新恢复草稿');
  await page.click('[data-view-nav="task"]');await page.screenshot({animations:'disabled',path:new URL('working-light.png',out).pathname});await page.fill('#input','会话独立草稿');
  await page.click('#executionLog > summary');await page.waitForSelector('#rawEvents details');await page.click('#rawEvents details:last-child > summary');
@@ -98,6 +99,23 @@ try {
  await page.waitForSelector('#questions .question');await page.click('[data-view-nav="decision"]');await page.screenshot({animations:'disabled',path:new URL('decisions-pending-light.png',out).pathname});await page.click('#decisionContent [data-decision="true"]');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('决定已记录'));evidence.push('决策选项清楚，答复后确认');
  state[0].status='done';state[0].tasks[0].status='passed';state[0].events.push({id:99,type:'task_update',time:new Date().toISOString(),data:{id:'t1',status:'passed'}},{id:100,type:'check',time:new Date().toISOString(),data:{task:'t1',passed:true,command:'node --test',output:'fixture only'}},{id:101,type:'review',time:new Date().toISOString(),data:{task:'t1',verdict:'pass',commit:'fixture123'}},{id:102,type:'report',time:new Date().toISOString(),data:{text:'已完成命令行工具。\n使用：node cli.mjs\n本页是 UI 测试夹具。'}});send();
  await page.click('[data-view-nav="result"]');await page.waitForSelector('.evidence-strip');assert.match(await page.locator('#resultContent').textContent(),/机器验收通过 1 次/);evidence.push('交付摘要和真实事件计数入口');
+ for(const mode of ['checks_only','final_review','local_repair','checkpoint_wait','escalation','paused','resumed']) {
+   const policy=mode==='checks_only'?'checks_only':mode==='checkpoint_wait'?'checkpoint_plus_final':'final_review';
+   const x={cycleId:'cycle-'+mode,policy,reason:'明确范围、可逆修改与客观检查',phase:mode==='checkpoint_wait'?'validating':mode==='escalation'?'blocked':['paused','resumed'].includes(mode)?'executing':'delivered',blockedReason:'公共约定改变，需要有证据升级',tasks:[{id:'t1',title:'实现工具',member:'m1',status:mode==='resumed'?'running':'implemented',summary:'实现完成'}],gates:[{id:'check',kind:'check',status:['checkpoint_wait','resumed'].includes(mode)?'pending':'passed'},...(policy==='checks_only'?[]:[{id:'review',kind:'model',status:['checkpoint_wait','paused','resumed'].includes(mode)?'pending':'passed',coverage:mode==='local_repair'?'reviewed_plus_checked_patch':'full'}])]};
+   const a=makeState();a.title='自适应 '+mode;a.workflowVersion='adaptive_v1';a.cycle=x;a.cycleId=x.cycleId;a.tasks=x.tasks;a.status=mode==='paused'?'paused':x.phase==='delivered'?'done':'working';a.members.forEach(m=>m.status=mode==='resumed'&&m.id==='m1'?'running':'idle');
+   a.events=[{id:1000,type:'cycle_phase',time:new Date().toISOString(),data:{cycleId:x.cycleId,phase:x.phase}}];
+   if(policy!=='checks_only'&&['delivered','blocked'].includes(x.phase))a.events.push({id:1001,type:'cycle_review_start',time:new Date().toISOString(),data:{cycleId:x.cycleId,from:'m1',to:'m2'}});
+   if(x.phase==='delivered'&&policy!=='checks_only')a.events.push({id:1002,type:'cycle_review',time:new Date().toISOString(),data:{cycleId:x.cycleId,reviewedCommit:'reviewed-'+mode,criteriaIds:['c'],blockingIssues:mode==='local_repair'?[{issueId:'bug'}]:[],advisories:[],needsVerification:[]}});
+   if(mode==='local_repair')a.events.push({id:1004,type:'cycle_repair',time:new Date().toISOString(),data:{cycleId:x.cycleId,from:'m2',to:'m1',issueIds:['bug']}});
+   if(x.phase==='delivered')a.events.push({id:1005,type:'report',time:new Date().toISOString(),data:{text:'实现完成，固定提交已验证。',cycleId:x.cycleId,policy,finalCommit:'final-'+mode,reviewedCommit:policy==='checks_only'?null:'reviewed-'+mode,checks:[{result:'passed'}],reviewCoverage:x.gates.filter(g=>g.kind==='model'),tasks:x.tasks,unresolvedIssues:[],usage:'node cli.mjs'}});
+   state=[a];send();await page.click('[data-view-nav="task"]');await page.waitForFunction(mode=>document.querySelector('#taskTitle').textContent==='自适应 '+mode,mode);assert.match(await page.locator('#taskCounts').textContent(),/必需检查/);
+   if(mode==='checks_only'){await page.click('#statusQuery');assert.equal(lastMessage.intent,'status');assert.match(await page.locator('#nextAction').textContent(),/按策略无需模型审查/);assert.equal(await page.locator('animateMotion').count(),0);assert.ok(!(await page.locator('#liveEvents').textContent()).includes('送审'));}
+   if(mode==='local_repair')assert.match(await page.locator('#liveEvents').textContent(),/局部返修/);
+   await page.screenshot({animations:'disabled',path:new URL(mode+'-task.png',adaptiveOut).pathname});
+   if(x.phase==='delivered'){await page.click('[data-view-nav="result"]');assert.match(await page.locator('#resultContent').textContent(),new RegExp(x.cycleId));if(mode==='checks_only')assert.match(await page.locator('#resultContent').textContent(),/按策略无需模型审查/);if(mode==='local_repair')assert.match(await page.locator('#resultContent').textContent(),/原提交已审查＋后续补丁经指定检查/);await page.screenshot({animations:'disabled',path:new URL(mode+'-result.png',adaptiveOut).pathname});}
+ }
+ evidence.push('自适应：免审、整体审查、局部修复、检查点等待、升级和暂停均绑定批次真实字段；交付提交与审查覆盖分开');
+ state=[makeState(4)];state[0].status='done';state[0].tasks[0].status='passed';state[0].events.push({id:10000,type:'report',time:new Date().toISOString(),data:{text:'旧报告兼容'}});send();
  for(const theme of ['light','dark'])for(const [width,height] of [[1536,864],[1366,768],[1280,720],[800,800],[390,844],[360,740]]) {
    await page.emulateMedia({colorScheme:theme});await page.setViewportSize({width,height});
    for(const view of ['home','task','decision','result','settings']) {
@@ -111,6 +129,7 @@ try {
  await page.emulateMedia({colorScheme:'light'});await page.setViewportSize({width:1280,height:720});await page.click('#settings');await page.waitForSelector('.modelrow');const model=await page.inputValue('.modelrow .model');await page.click('#refreshModels');await page.waitForFunction(()=>!document.querySelector('#refreshModels').disabled);assert.equal(await page.inputValue('.modelrow .model'),model);evidence.push('扫描目录保留当前模型配置');await page.click('.testModel');await page.waitForFunction(()=>document.querySelector('.testResult').textContent.includes('连接测试失败'));await page.click('#refreshModels');await page.waitForFunction(()=>!document.querySelector('#refreshModels').disabled);assert.match(await page.locator('.testResult').textContent(),/连接测试失败/);evidence.push('测试失败保留原因，目录扫描不清除测试结果');
  failCreate=false; await page.setViewportSize({width:1280,height:720});await page.click('#new');await page.fill('#homeInput','新建隔离测试项目');await page.selectOption('#projectSelect','');await page.click('#homeStart');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('已发送'));assert.equal(createCount,2);evidence.push('新建项目成功后进入任务并清理已发送草稿');
  assert.deepEqual(errors,[]);evidence.push('页面脚本异常 0');
+ writeFileSync(new URL('browser.json',adaptiveOut),JSON.stringify({fixture:true,checks:evidence,errors},null,2));
  writeFileSync(new URL('browser.json',out),JSON.stringify({fixture:true,baseline:'b517b30',checks:evidence,errors},null,2));
  console.log(JSON.stringify(evidence,null,2));
 } catch(error) { console.error(error); throw error; } finally { if(browser)await browser.close();for(const stream of streams)stream.end();server.closeAllConnections();await new Promise(r=>server.close(r)); }

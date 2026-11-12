@@ -1,3 +1,10 @@
+import {
+  plannerSchema,
+  executorSchema,
+  reviewerSchema,
+  actionProperties,
+  validateRoleResult,
+} from "./contracts.mjs";
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -44,47 +51,8 @@ export const leaderSchema = {
       type: "array",
       items: {
         type: "object",
-        properties: Object.fromEntries(
-          [
-            "type",
-            "name",
-            "role",
-            "tier",
-            "member",
-            "reviewer",
-            "title",
-            "description",
-            "text",
-            "question",
-            "yes",
-            "no",
-            "task",
-            "advice",
-            "reason",
-          ]
-            .map((x) => [x, { type: "string" }])
-            .concat([
-              ["commands", { type: "array", items: { type: "string" } }],
-            ]),
-        ),
-        required: [
-          "type",
-          "name",
-          "role",
-          "tier",
-          "member",
-          "reviewer",
-          "title",
-          "description",
-          "text",
-          "question",
-          "yes",
-          "no",
-          "task",
-          "advice",
-          "reason",
-          "commands",
-        ],
+        properties: actionProperties,
+        required: Object.keys(actionProperties),
         additionalProperties: false,
       },
     },
@@ -92,15 +60,6 @@ export const leaderSchema = {
   required: ["message", "actions"],
   additionalProperties: false,
 };
-leaderSchema.properties.actions.items.properties.participants = {
-  type: "array",
-  items: { type: "string" },
-};
-leaderSchema.properties.actions.items.required.push("participants");
-leaderSchema.properties.actions.items.properties.replacement = {
-  type: "string",
-};
-leaderSchema.properties.actions.items.required.push("replacement");
 schema.properties.questions = {
   type: "array",
   items: {
@@ -233,11 +192,29 @@ export function runModel({
   timeout,
   team,
   readOnly = false,
+  role,
 }) {
-  const outputSchema = leader ? leaderSchema : schema;
+  if (role === "planner") {
+    leader = true;
+    readOnly = true;
+  }
+  if (role === "executor") leader = false;
+  if (role === "reviewer") {
+    readOnly = true;
+    session = undefined;
+  }
+  const outputSchema =
+    {
+      planner: plannerSchema,
+      executor: executorSchema,
+      reviewer: reviewerSchema,
+    }[role] || (leader ? leaderSchema : schema);
   let bin, args;
   const system = readFileSync(
-    new URL(`../prompts/${leader ? "leader" : "member"}.md`, import.meta.url),
+    new URL(
+      `../prompts/${role || (leader ? "leader" : "member")}.md`,
+      import.meta.url,
+    ),
     "utf8",
   );
   if (selection.channel === "claude") {
@@ -293,7 +270,7 @@ export function runModel({
     mkdirSync(dir, { recursive: true });
     const file = join(
       dir,
-      leader ? "leader-schema.json" : "member-schema.json",
+      `${role || (leader ? "leader" : "member")}-schema.json`,
     );
     writeFileSync(file, JSON.stringify(outputSchema));
     args = [
@@ -353,33 +330,39 @@ export function runModel({
     },
   });
   proc.promise = proc.promise.then(({ events }) => {
-    let sid = session,
-      result,
-      usage,
-      actual = selection.model;
-    for (const e of events) {
-      sid = e.session_id || e.thread_id || sid;
-      if (e.type === "system" && e.model) actual = e.model;
-      if (e.type === "result") {
-        result = e.structured_output || e.result;
-        usage = e.usage;
-        if (e.is_error)
-          throw Object.assign(new Error(processFailure(events)), { events });
+    try {
+      let sid = session,
+        result,
+        usage,
+        actual = selection.model;
+      for (const e of events) {
+        sid = e.session_id || e.thread_id || sid;
+        if (e.type === "system" && e.model) actual = e.model;
+        if (e.type === "result") {
+          result = e.structured_output || e.result;
+          usage = e.usage;
+          if (e.is_error)
+            throw Object.assign(new Error(processFailure(events)), { events });
+        }
+        if (e.type === "item.completed" && e.item?.type === "agent_message")
+          result = e.item.text;
+        if (e.type === "turn.completed") usage = e.usage;
       }
-      if (e.type === "item.completed" && e.item?.type === "agent_message")
-        result = e.item.text;
-      if (e.type === "turn.completed") usage = e.usage;
-    }
-    if (typeof result === "string") {
-      try {
-        result = JSON.parse(result);
-      } catch {
-        throw new Error("模型没有返回结构化结果：" + result);
+      if (typeof result === "string") {
+        try {
+          result = JSON.parse(result);
+        } catch {
+          throw new Error("模型没有返回结构化结果：" + result);
+        }
       }
+      if (!result || typeof result.message !== "string")
+        throw new Error("模型未返回有效结果");
+      if (role) validateRoleResult(role, result);
+      return { result, session: sid, usage, model: actual };
+    } catch (error) {
+      error.events ??= events;
+      throw error;
     }
-    if (!result || typeof result.message !== "string")
-      throw new Error("模型未返回有效结果");
-    return { result, session: sid, usage, model: actual };
   });
   return proc;
 }

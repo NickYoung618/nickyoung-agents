@@ -1,0 +1,2422 @@
+{
+  "fixture": true,
+  "realModels": false,
+  "formalCommandsActuallyExecuted": true,
+  "name": "local_repair",
+  "status": "done",
+  "workflowVersion": "adaptive_v1",
+  "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+  "metrics": [
+    {
+      "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+      "calls": {
+        "plan": 1,
+        "execute": 1,
+        "review": 1,
+        "repair": 1
+      },
+      "byPurpose": {
+        "plan": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 0,
+          "waitDuration": 0
+        },
+        "execute": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 1,
+          "waitDuration": 0
+        },
+        "review": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 1,
+          "waitDuration": 0
+        },
+        "repair": {
+          "calls": 1,
+          "known": 0,
+          "unknown": 1,
+          "input": 0,
+          "output": 0,
+          "cached": 0,
+          "cacheCreation": 0,
+          "failed": 0,
+          "interrupted": 0,
+          "duration": 1,
+          "waitDuration": 0
+        }
+      },
+      "usageTotalsAreKnownSubtotal": true,
+      "failed": 0,
+      "interrupted": 0,
+      "usageKnown": 0,
+      "usageUnknown": 4,
+      "input": 0,
+      "output": 0,
+      "cached": 0,
+      "cacheCreation": 0,
+      "modelDuration": 3,
+      "waitDuration": 0,
+      "wallDuration": 1663,
+      "humanDecisions": 0,
+      "usageCoverage": 0
+    }
+  ],
+  "events": [
+    {
+      "id": 1,
+      "conversation": "a",
+      "type": "created",
+      "data": {
+        "workflowVersion": "adaptive_v1",
+        "path": "/tmp/ny-workflow-tAxcLy/source",
+        "branch": "fixture",
+        "status": "working"
+      },
+      "time": "2026-11-12T19:23:13.178Z"
+    },
+    {
+      "id": 2,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "leader"
+      },
+      "time": "2026-11-12T19:23:13.178Z"
+    },
+    {
+      "id": 3,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "m",
+        "name": "实现"
+      },
+      "time": "2026-11-12T19:23:13.178Z"
+    },
+    {
+      "id": 4,
+      "conversation": "a",
+      "type": "recruit",
+      "data": {
+        "id": "r",
+        "name": "审查"
+      },
+      "time": "2026-11-12T19:23:13.179Z"
+    },
+    {
+      "id": 5,
+      "conversation": "a",
+      "type": "cycle",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "goal": "local_repair",
+        "planRevision": 0,
+        "goalRevision": 0,
+        "generation": 0,
+        "phase": "planning",
+        "tasks": [],
+        "gates": [],
+        "evidence": [],
+        "issues": [],
+        "repairs": {},
+        "replans": 0,
+        "rechecks": 0,
+        "policy": "final_review",
+        "budgets": {
+          "taskRepairs": 2,
+          "cycleRepairs": 6,
+          "replans": 1,
+          "rechecks": 1
+        }
+      },
+      "time": "2026-11-12T19:23:13.179Z"
+    },
+    {
+      "id": 6,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "a85d9745-9a9b-4954-bff0-9ea6d997829c",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "role": "planner",
+        "purpose": "plan",
+        "trigger": "new_goal",
+        "model": "controlled-fixture",
+        "member": "leader"
+      },
+      "time": "2026-11-12T19:23:13.184Z"
+    },
+    {
+      "id": 7,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "a85d9745-9a9b-4954-bff0-9ea6d997829c",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "role": "planner",
+        "purpose": "plan",
+        "trigger": "new_goal",
+        "model": "controlled-fixture",
+        "member": "leader",
+        "result": {
+          "message": "受控规划",
+          "recruits": [],
+          "actions": [],
+          "plan": {
+            "goal": "连续实现",
+            "scope": [
+              "src/"
+            ],
+            "conventions": [
+              "接口不变"
+            ],
+            "contractPaths": [
+              "src/api/"
+            ],
+            "criteria": [
+              {
+                "id": "c",
+                "text": "运行正确"
+              }
+            ],
+            "tasks": [
+              {
+                "id": "t0",
+                "title": "实现0",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              }
+            ],
+            "gates": [
+              {
+                "id": "check",
+                "kind": "check",
+                "phase": "final",
+                "scope": [
+                  "src/"
+                ],
+                "afterTasks": [],
+                "criteriaIds": [
+                  "c"
+                ],
+                "commands": [
+                  "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+                ],
+                "reviewerId": "",
+                "assumption": "",
+                "deterministic": true,
+                "outputs": []
+              },
+              {
+                "id": "review",
+                "kind": "model",
+                "phase": "final",
+                "scope": [
+                  "src/"
+                ],
+                "afterTasks": [],
+                "criteriaIds": [
+                  "c"
+                ],
+                "commands": [],
+                "reviewerId": "r",
+                "assumption": "",
+                "deterministic": true,
+                "outputs": []
+              }
+            ],
+            "policy": "final_review",
+            "reason": "明确范围和客观测试；可逆本地修改",
+            "facts": [
+              "没有外部操作",
+              "已有覆盖测试"
+            ]
+          }
+        },
+        "duration": 0
+      },
+      "time": "2026-11-12T19:23:13.184Z"
+    },
+    {
+      "id": 8,
+      "conversation": "a",
+      "type": "task",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "title": "实现0",
+        "description": "实现独立步骤",
+        "executorId": "m",
+        "dependsOn": [],
+        "gateIds": [],
+        "waitsForQuestions": [],
+        "scope": [
+          "src/"
+        ],
+        "localId": "t0",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "member": "m",
+        "dispatcher": "leader",
+        "definition": {
+          "id": "t0",
+          "title": "实现0",
+          "description": "实现独立步骤",
+          "executorId": "m",
+          "dependsOn": [],
+          "gateIds": [],
+          "waitsForQuestions": [],
+          "scope": [
+            "src/"
+          ]
+        },
+        "planRevision": 1,
+        "generation": 1,
+        "status": "implemented",
+        "failures": 1,
+        "activeToken": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+        "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "summary": "实现0",
+        "files": [],
+        "selfTests": [],
+        "handoff": "node --test",
+        "advice": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false,
+            "kind": "blocking",
+            "closed": false
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:13.192Z"
+    },
+    {
+      "id": 9,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "goal": "连续实现",
+        "scope": [
+          "src/"
+        ],
+        "conventions": [
+          "接口不变"
+        ],
+        "contractPaths": [
+          "src/api/"
+        ],
+        "criteria": [
+          {
+            "id": "c",
+            "text": "运行正确"
+          }
+        ],
+        "policy": "final_review",
+        "reason": "明确范围和客观测试；可逆本地修改",
+        "facts": [
+          "没有外部操作",
+          "已有覆盖测试"
+        ],
+        "planSignature": "5207aeba6049715677e0b2152c2053ff4b33b2f90041e38a3183b1a6471b5db7",
+        "planRevision": 1,
+        "generation": 1,
+        "replans": 0,
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ],
+        "issues": [],
+        "finalCommit": null,
+        "reviewedCommit": null
+      },
+      "time": "2026-11-12T19:23:13.196Z"
+    },
+    {
+      "id": 10,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "executing"
+      },
+      "time": "2026-11-12T19:23:13.196Z"
+    },
+    {
+      "id": 11,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "attempt": 1,
+        "scheduleId": "93e79e3321c1a7159291bb448418227029e90ec501abc9f281bfa893bca278d3"
+      },
+      "time": "2026-11-12T19:23:13.203Z"
+    },
+    {
+      "id": 12,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "status": "running",
+        "activeToken": "93e79e3321c1a7159291bb448418227029e90ec501abc9f281bfa893bca278d3"
+      },
+      "time": "2026-11-12T19:23:13.203Z"
+    },
+    {
+      "id": 13,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "78e10de2-fc80-445a-8247-37c92d553d79",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "scheduleId": "93e79e3321c1a7159291bb448418227029e90ec501abc9f281bfa893bca278d3",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m"
+      },
+      "time": "2026-11-12T19:23:13.247Z"
+    },
+    {
+      "id": 14,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "78e10de2-fc80-445a-8247-37c92d553d79",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "scheduleId": "93e79e3321c1a7159291bb448418227029e90ec501abc9f281bfa893bca278d3",
+        "role": "executor",
+        "purpose": "execute",
+        "trigger": "dependency_ready",
+        "model": "controlled-fixture",
+        "member": "m",
+        "result": {
+          "message": "implemented",
+          "completion": "complete",
+          "summary": "实现0",
+          "files": [
+            "src/t0.txt"
+          ],
+          "selfTests": [],
+          "blockers": "",
+          "handoff": "node --test"
+        },
+        "duration": 1
+      },
+      "time": "2026-11-12T19:23:13.248Z"
+    },
+    {
+      "id": 15,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "status": "implemented",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "summary": "实现0",
+        "files": [
+          "src/t0.txt"
+        ],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:23:13.409Z"
+    },
+    {
+      "id": 16,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "finalCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "phase": "executing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:13.415Z"
+    },
+    {
+      "id": 17,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "attempt": 1,
+        "scheduleId": "93e79e3321c1a7159291bb448418227029e90ec501abc9f281bfa893bca278d3",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3"
+      },
+      "time": "2026-11-12T19:23:13.415Z"
+    },
+    {
+      "id": 18,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08"
+      },
+      "time": "2026-11-12T19:23:13.421Z"
+    },
+    {
+      "id": 19,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "running",
+            "evidenceIds": [],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08"
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:13.422Z"
+    },
+    {
+      "id": 20,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "validating",
+        "finalCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3"
+      },
+      "time": "2026-11-12T19:23:13.437Z"
+    },
+    {
+      "id": 21,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "validating"
+      },
+      "time": "2026-11-12T19:23:13.438Z"
+    },
+    {
+      "id": 22,
+      "conversation": "a",
+      "type": "command_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+        "commandId": "9cff50f9fb2e5bf8e797975a476aff5bd6c381d053a3c65905363b477bc6af79",
+        "index": 0,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\"",
+        "started": "2026-11-12T19:23:13.517Z"
+      },
+      "time": "2026-11-12T19:23:13.517Z"
+    },
+    {
+      "id": 23,
+      "conversation": "a",
+      "type": "command_result",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+        "commandId": "9cff50f9fb2e5bf8e797975a476aff5bd6c381d053a3c65905363b477bc6af79",
+        "index": 0,
+        "exitCode": 0,
+        "interrupted": false,
+        "ended": "2026-11-12T19:23:14.609Z"
+      },
+      "time": "2026-11-12T19:23:14.609Z"
+    },
+    {
+      "id": 24,
+      "conversation": "a",
+      "type": "check",
+      "data": {
+        "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "checkId": "check",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+        "fingerprint": "28c3929f99e94ab2bbcc2adbb7fc88c418ae3e879fa4cc402d6b00fee5b81a86",
+        "commandSpecHash": "a73b99301d7fe1898a96b2ac77a1132dff916b0c06ec7583bfac5649ab86e4ea",
+        "environment": {
+          "node": "v24.15.0",
+          "platform": "linux",
+          "arch": "x64",
+          "runtime": "local",
+          "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+        },
+        "source": "executed",
+        "result": "passed",
+        "exitCode": 0,
+        "output": "",
+        "started": "2026-11-12T19:23:13.461Z",
+        "ended": "2026-11-12T19:23:14.685Z",
+        "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/28ee9b7c-a755-4b5b-8704-78ed1a35a028.log",
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+        "passed": true,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+      },
+      "time": "2026-11-12T19:23:14.685Z"
+    },
+    {
+      "id": 25,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "evidence": [
+          {
+            "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+            "fingerprint": "28c3929f99e94ab2bbcc2adbb7fc88c418ae3e879fa4cc402d6b00fee5b81a86",
+            "commandSpecHash": "a73b99301d7fe1898a96b2ac77a1132dff916b0c06ec7583bfac5649ab86e4ea",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:23:13.461Z",
+            "ended": "2026-11-12T19:23:14.685Z",
+            "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/28ee9b7c-a755-4b5b-8704-78ed1a35a028.log"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.687Z"
+    },
+    {
+      "id": 26,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.689Z"
+    },
+    {
+      "id": 27,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "issues": [],
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": []
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.691Z"
+    },
+    {
+      "id": 28,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 1,
+        "scheduleId": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+      },
+      "time": "2026-11-12T19:23:14.691Z"
+    },
+    {
+      "id": 29,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0"
+      },
+      "time": "2026-11-12T19:23:14.694Z"
+    },
+    {
+      "id": 30,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "running",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.699Z"
+    },
+    {
+      "id": 31,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "reviewing",
+        "finalCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3"
+      },
+      "time": "2026-11-12T19:23:14.722Z"
+    },
+    {
+      "id": 32,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "reviewing"
+      },
+      "time": "2026-11-12T19:23:14.722Z"
+    },
+    {
+      "id": 33,
+      "conversation": "a",
+      "type": "cycle_review_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+        "gateId": "review",
+        "from": "m",
+        "to": "r",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3"
+      },
+      "time": "2026-11-12T19:23:14.722Z"
+    },
+    {
+      "id": 34,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "c072426e-38c0-49a3-a512-d4145f62a239",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gateId": "review",
+        "scheduleId": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+        "role": "reviewer",
+        "purpose": "review",
+        "trigger": "formal_checks_passed",
+        "model": "controlled-fixture",
+        "member": "r"
+      },
+      "time": "2026-11-12T19:23:14.762Z"
+    },
+    {
+      "id": 35,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "c072426e-38c0-49a3-a512-d4145f62a239",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gateId": "review",
+        "scheduleId": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+        "role": "reviewer",
+        "purpose": "review",
+        "trigger": "formal_checks_passed",
+        "model": "controlled-fixture",
+        "member": "r",
+        "result": {
+          "message": "受控阻塞",
+          "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+          "criteriaIds": [
+            "c"
+          ],
+          "blockingIssues": [
+            {
+              "issueId": "fixture-bug",
+              "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+              "criterionId": "c",
+              "location": "src/t0.txt:1",
+              "evidence": "局部修复路径夹具，不是真实模型缺陷",
+              "expected": "指定检查成功",
+              "checkIds": [
+                "check"
+              ],
+              "semantic": false
+            }
+          ],
+          "advisories": [],
+          "needsVerification": []
+        },
+        "duration": 1
+      },
+      "time": "2026-11-12T19:23:14.763Z"
+    },
+    {
+      "id": 36,
+      "conversation": "a",
+      "type": "cycle_review",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "review",
+        "attempt": 1,
+        "scheduleId": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+        "gateId": "review",
+        "reviewer": "r",
+        "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "message": "受控阻塞",
+        "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "criteriaIds": [
+          "c"
+        ],
+        "blockingIssues": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false
+          }
+        ],
+        "advisories": [],
+        "needsVerification": []
+      },
+      "time": "2026-11-12T19:23:14.822Z"
+    },
+    {
+      "id": 37,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "advisories": []
+      },
+      "time": "2026-11-12T19:23:14.823Z"
+    },
+    {
+      "id": 38,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "changes_requested",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.825Z"
+    },
+    {
+      "id": 39,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "repairing",
+        "issues": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false,
+            "kind": "blocking",
+            "closed": false
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.826Z"
+    },
+    {
+      "id": 40,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "repairing"
+      },
+      "time": "2026-11-12T19:23:14.826Z"
+    },
+    {
+      "id": 41,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "repairing",
+        "repairs": {
+          "efca699d-1c89-43a6-b57f-d139d2136bb5:t0": 1
+        }
+      },
+      "time": "2026-11-12T19:23:14.829Z"
+    },
+    {
+      "id": 42,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "status": "repair",
+        "failures": 1,
+        "advice": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false,
+            "kind": "blocking",
+            "closed": false
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.829Z"
+    },
+    {
+      "id": 43,
+      "conversation": "a",
+      "type": "cycle_repair",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "task": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "from": "r",
+        "to": "m",
+        "issueIds": [
+          "fixture-bug"
+        ],
+        "evidenceIds": [
+          "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0"
+        ]
+      },
+      "time": "2026-11-12T19:23:14.829Z"
+    },
+    {
+      "id": 44,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "attempt": 2,
+        "scheduleId": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2"
+      },
+      "time": "2026-11-12T19:23:14.832Z"
+    },
+    {
+      "id": 45,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "status": "running",
+        "activeToken": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2"
+      },
+      "time": "2026-11-12T19:23:14.832Z"
+    },
+    {
+      "id": 46,
+      "conversation": "a",
+      "type": "run_start",
+      "data": {
+        "runId": "2cacc9d7-3edc-4337-951e-f4bccfac8b1a",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "scheduleId": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+        "role": "executor",
+        "purpose": "repair",
+        "trigger": "blocking_issue",
+        "model": "controlled-fixture",
+        "member": "m"
+      },
+      "time": "2026-11-12T19:23:14.846Z"
+    },
+    {
+      "id": 47,
+      "conversation": "a",
+      "type": "model_result",
+      "data": {
+        "runId": "2cacc9d7-3edc-4337-951e-f4bccfac8b1a",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "scheduleId": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+        "role": "executor",
+        "purpose": "repair",
+        "trigger": "blocking_issue",
+        "model": "controlled-fixture",
+        "member": "m",
+        "result": {
+          "message": "implemented",
+          "completion": "complete",
+          "summary": "实现0",
+          "files": [
+            "src/t0.txt"
+          ],
+          "selfTests": [],
+          "blockers": "",
+          "handoff": "node --test"
+        },
+        "duration": 1
+      },
+      "time": "2026-11-12T19:23:14.847Z"
+    },
+    {
+      "id": 48,
+      "conversation": "a",
+      "type": "task_update",
+      "data": {
+        "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "status": "implemented",
+        "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "summary": "实现0",
+        "files": [],
+        "selfTests": [],
+        "handoff": "node --test"
+      },
+      "time": "2026-11-12T19:23:14.922Z"
+    },
+    {
+      "id": 49,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "finalCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "phase": "repairing",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "changes_requested",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.927Z"
+    },
+    {
+      "id": 50,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "pending",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "34724bed75cb8861026c8866bcef8118f3007c71406b9dcbab7cec18a106fe08",
+            "commit": null,
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "changes_requested",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1
+          }
+        ],
+        "issues": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false,
+            "kind": "blocking",
+            "closed": false,
+            "patchCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.935Z"
+    },
+    {
+      "id": 51,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "task",
+        "unitId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+        "attempt": 2,
+        "scheduleId": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+        "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c"
+      },
+      "time": "2026-11-12T19:23:14.936Z"
+    },
+    {
+      "id": 52,
+      "conversation": "a",
+      "type": "workflow_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 2,
+        "scheduleId": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd"
+      },
+      "time": "2026-11-12T19:23:14.944Z"
+    },
+    {
+      "id": 53,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "running",
+            "evidenceIds": [
+              "28ee9b7c-a755-4b5b-8704-78ed1a35a028"
+            ],
+            "activeToken": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+            "commit": null,
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "changes_requested",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:14.951Z"
+    },
+    {
+      "id": 54,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "validating",
+        "finalCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c"
+      },
+      "time": "2026-11-12T19:23:14.976Z"
+    },
+    {
+      "id": 55,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "validating"
+      },
+      "time": "2026-11-12T19:23:14.976Z"
+    },
+    {
+      "id": 56,
+      "conversation": "a",
+      "type": "command_start",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 2,
+        "scheduleId": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+        "commandId": "7e3728b3b66cc5de551e12b2cb6eaebf91eadbda4cad4d7979d679f1538189ee",
+        "index": 0,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\"",
+        "started": "2026-11-12T19:23:15.058Z"
+      },
+      "time": "2026-11-12T19:23:15.058Z"
+    },
+    {
+      "id": 57,
+      "conversation": "a",
+      "type": "command_result",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 2,
+        "scheduleId": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+        "commandId": "7e3728b3b66cc5de551e12b2cb6eaebf91eadbda4cad4d7979d679f1538189ee",
+        "index": 0,
+        "exitCode": 0,
+        "interrupted": false,
+        "ended": "2026-11-12T19:23:17.690Z"
+      },
+      "time": "2026-11-12T19:23:17.690Z"
+    },
+    {
+      "id": 58,
+      "conversation": "a",
+      "type": "check",
+      "data": {
+        "evidenceId": "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "checkId": "check",
+        "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+        "fingerprint": "f41a0eec3004e620c470b4dfe3938858453fcc56cbf92445814658b89d8352c9",
+        "commandSpecHash": "25b753c4b9adb57114bdbc2693ef2d904d8d6395104f45bcd2ffcefafd1d6526",
+        "environment": {
+          "node": "v24.15.0",
+          "platform": "linux",
+          "arch": "x64",
+          "runtime": "local",
+          "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+        },
+        "source": "executed",
+        "result": "passed",
+        "exitCode": 0,
+        "output": "",
+        "started": "2026-11-12T19:23:14.986Z",
+        "ended": "2026-11-12T19:23:17.797Z",
+        "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/10c393d6-b03f-4ea2-b1ba-0bf49ee1589a.log",
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 2,
+        "scheduleId": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+        "passed": true,
+        "command": "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+      },
+      "time": "2026-11-12T19:23:17.797Z"
+    },
+    {
+      "id": 59,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "evidence": [
+          {
+            "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+            "fingerprint": "28c3929f99e94ab2bbcc2adbb7fc88c418ae3e879fa4cc402d6b00fee5b81a86",
+            "commandSpecHash": "a73b99301d7fe1898a96b2ac77a1132dff916b0c06ec7583bfac5649ab86e4ea",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:23:13.461Z",
+            "ended": "2026-11-12T19:23:14.685Z",
+            "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/28ee9b7c-a755-4b5b-8704-78ed1a35a028.log"
+          },
+          {
+            "evidenceId": "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+            "fingerprint": "f41a0eec3004e620c470b4dfe3938858453fcc56cbf92445814658b89d8352c9",
+            "commandSpecHash": "25b753c4b9adb57114bdbc2693ef2d904d8d6395104f45bcd2ffcefafd1d6526",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:23:14.986Z",
+            "ended": "2026-11-12T19:23:17.797Z",
+            "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/10c393d6-b03f-4ea2-b1ba-0bf49ee1589a.log"
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:17.812Z"
+    },
+    {
+      "id": 60,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+            ],
+            "activeToken": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "changes_requested",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:17.817Z"
+    },
+    {
+      "id": 61,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "issues": [
+          {
+            "issueId": "fixture-bug",
+            "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "criterionId": "c",
+            "location": "src/t0.txt:1",
+            "evidence": "局部修复路径夹具，不是真实模型缺陷",
+            "expected": "指定检查成功",
+            "checkIds": [
+              "check"
+            ],
+            "semantic": false,
+            "kind": "blocking",
+            "closed": true,
+            "patchCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "closedBy": "check",
+            "closedCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c"
+          }
+        ],
+        "gates": [
+          {
+            "id": "check",
+            "kind": "check",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [
+              "node -e \"const fs=require('node:fs'),assert=require('node:assert/strict');for(let i=0;i<1;i++)assert.equal(fs.readFileSync('src/t'+i+'.txt','utf8'),'实现'+i)\""
+            ],
+            "reviewerId": "",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [
+              "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+            ],
+            "activeToken": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "planRevision": 1
+          },
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1,
+            "coverage": "reviewed_plus_checked_patch",
+            "patchEvidenceIds": [
+              "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+            ]
+          }
+        ]
+      },
+      "time": "2026-11-12T19:23:17.824Z"
+    },
+    {
+      "id": 62,
+      "conversation": "a",
+      "type": "workflow_complete",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "planRevision": 1,
+        "generation": 1,
+        "kind": "gate",
+        "unitId": "check",
+        "attempt": 2,
+        "scheduleId": "48830140d4ac77fbac56a5357ccf94a61d9c4a005f75d8dc6849842c52641ebd",
+        "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "evidenceId": "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+      },
+      "time": "2026-11-12T19:23:17.824Z"
+    },
+    {
+      "id": 63,
+      "conversation": "a",
+      "type": "cycle_update",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "delivered",
+        "delivery": {
+          "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+          "finalCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+          "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+          "policy": "final_review",
+          "checks": [
+            {
+              "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028",
+              "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+              "planRevision": 1,
+              "checkId": "check",
+              "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+              "fingerprint": "28c3929f99e94ab2bbcc2adbb7fc88c418ae3e879fa4cc402d6b00fee5b81a86",
+              "commandSpecHash": "a73b99301d7fe1898a96b2ac77a1132dff916b0c06ec7583bfac5649ab86e4ea",
+              "environment": {
+                "node": "v24.15.0",
+                "platform": "linux",
+                "arch": "x64",
+                "runtime": "local",
+                "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+              },
+              "source": "executed",
+              "result": "passed",
+              "exitCode": 0,
+              "output": "",
+              "started": "2026-11-12T19:23:13.461Z",
+              "ended": "2026-11-12T19:23:14.685Z",
+              "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/28ee9b7c-a755-4b5b-8704-78ed1a35a028.log"
+            },
+            {
+              "evidenceId": "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a",
+              "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+              "planRevision": 1,
+              "checkId": "check",
+              "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+              "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+              "fingerprint": "f41a0eec3004e620c470b4dfe3938858453fcc56cbf92445814658b89d8352c9",
+              "commandSpecHash": "25b753c4b9adb57114bdbc2693ef2d904d8d6395104f45bcd2ffcefafd1d6526",
+              "environment": {
+                "node": "v24.15.0",
+                "platform": "linux",
+                "arch": "x64",
+                "runtime": "local",
+                "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+              },
+              "source": "executed",
+              "result": "passed",
+              "exitCode": 0,
+              "output": "",
+              "started": "2026-11-12T19:23:14.986Z",
+              "ended": "2026-11-12T19:23:17.797Z",
+              "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/10c393d6-b03f-4ea2-b1ba-0bf49ee1589a.log"
+            }
+          ],
+          "reviewCoverage": [
+            {
+              "id": "review",
+              "kind": "model",
+              "phase": "final",
+              "scope": [
+                "src/"
+              ],
+              "afterTasks": [],
+              "criteriaIds": [
+                "c"
+              ],
+              "commands": [],
+              "reviewerId": "r",
+              "assumption": "",
+              "deterministic": true,
+              "outputs": [],
+              "status": "passed",
+              "evidenceIds": [],
+              "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+              "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "reviewEvidence": {
+                "message": "受控阻塞",
+                "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+                "criteriaIds": [
+                  "c"
+                ],
+                "blockingIssues": [
+                  {
+                    "issueId": "fixture-bug",
+                    "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                    "criterionId": "c",
+                    "location": "src/t0.txt:1",
+                    "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                    "expected": "指定检查成功",
+                    "checkIds": [
+                      "check"
+                    ],
+                    "semantic": false
+                  }
+                ],
+                "advisories": [],
+                "needsVerification": []
+              },
+              "planRevision": 1,
+              "coverage": "reviewed_plus_checked_patch",
+              "patchEvidenceIds": [
+                "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+              ]
+            }
+          ],
+          "unresolvedIssues": [],
+          "tasks": [
+            {
+              "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+              "title": "实现0",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ],
+              "localId": "t0",
+              "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+              "member": "m",
+              "dispatcher": "leader",
+              "definition": {
+                "id": "t0",
+                "title": "实现0",
+                "description": "实现独立步骤",
+                "executorId": "m",
+                "dependsOn": [],
+                "gateIds": [],
+                "waitsForQuestions": [],
+                "scope": [
+                  "src/"
+                ]
+              },
+              "planRevision": 1,
+              "generation": 1,
+              "status": "implemented",
+              "failures": 1,
+              "activeToken": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+              "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+              "summary": "实现0",
+              "files": [],
+              "selfTests": [],
+              "handoff": "node --test",
+              "advice": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false,
+                  "kind": "blocking",
+                  "closed": false
+                }
+              ]
+            }
+          ],
+          "usage": "node --test"
+        }
+      },
+      "time": "2026-11-12T19:23:17.867Z"
+    },
+    {
+      "id": 64,
+      "conversation": "a",
+      "type": "cycle_phase",
+      "data": {
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "phase": "delivered"
+      },
+      "time": "2026-11-12T19:23:17.867Z"
+    },
+    {
+      "id": 65,
+      "conversation": "a",
+      "type": "report",
+      "data": {
+        "text": "连续实现\n- 实现0：实现0\n最终提交：274cd1f0680bad667e13cc11fc9b163f41caba8c\n检查：check passed\n独立审查提交：46d68964cef4d54769704857ed84c9f7082ee3a3\nnode --test",
+        "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+        "finalCommit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+        "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+        "policy": "final_review",
+        "checks": [
+          {
+            "evidenceId": "28ee9b7c-a755-4b5b-8704-78ed1a35a028",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+            "fingerprint": "28c3929f99e94ab2bbcc2adbb7fc88c418ae3e879fa4cc402d6b00fee5b81a86",
+            "commandSpecHash": "a73b99301d7fe1898a96b2ac77a1132dff916b0c06ec7583bfac5649ab86e4ea",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:23:13.461Z",
+            "ended": "2026-11-12T19:23:14.685Z",
+            "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/28ee9b7c-a755-4b5b-8704-78ed1a35a028.log"
+          },
+          {
+            "evidenceId": "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "planRevision": 1,
+            "checkId": "check",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "tree": "e0e972f96cb56692f442288dc8c512c32e3acd80",
+            "fingerprint": "f41a0eec3004e620c470b4dfe3938858453fcc56cbf92445814658b89d8352c9",
+            "commandSpecHash": "25b753c4b9adb57114bdbc2693ef2d904d8d6395104f45bcd2ffcefafd1d6526",
+            "environment": {
+              "node": "v24.15.0",
+              "platform": "linux",
+              "arch": "x64",
+              "runtime": "local",
+              "environment": "f1b3cc45fec3684328823d5f70aefabe7e32a709fe2d80c3659ba6bb670a2008"
+            },
+            "source": "executed",
+            "result": "passed",
+            "exitCode": 0,
+            "output": "",
+            "started": "2026-11-12T19:23:14.986Z",
+            "ended": "2026-11-12T19:23:17.797Z",
+            "outputPath": "/tmp/ny-workflow-tAxcLy/data/evidence/efca699d-1c89-43a6-b57f-d139d2136bb5/10c393d6-b03f-4ea2-b1ba-0bf49ee1589a.log"
+          }
+        ],
+        "reviewCoverage": [
+          {
+            "id": "review",
+            "kind": "model",
+            "phase": "final",
+            "scope": [
+              "src/"
+            ],
+            "afterTasks": [],
+            "criteriaIds": [
+              "c"
+            ],
+            "commands": [],
+            "reviewerId": "r",
+            "assumption": "",
+            "deterministic": true,
+            "outputs": [],
+            "status": "passed",
+            "evidenceIds": [],
+            "activeToken": "331cbac8db5ffc44a64c1f19d201dfb3ce8e2985884ce43b1afdd9d0db9f43e0",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+            "reviewEvidence": {
+              "message": "受控阻塞",
+              "reviewedCommit": "46d68964cef4d54769704857ed84c9f7082ee3a3",
+              "criteriaIds": [
+                "c"
+              ],
+              "blockingIssues": [
+                {
+                  "issueId": "fixture-bug",
+                  "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                  "criterionId": "c",
+                  "location": "src/t0.txt:1",
+                  "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                  "expected": "指定检查成功",
+                  "checkIds": [
+                    "check"
+                  ],
+                  "semantic": false
+                }
+              ],
+              "advisories": [],
+              "needsVerification": []
+            },
+            "planRevision": 1,
+            "coverage": "reviewed_plus_checked_patch",
+            "patchEvidenceIds": [
+              "10c393d6-b03f-4ea2-b1ba-0bf49ee1589a"
+            ]
+          }
+        ],
+        "unresolvedIssues": [],
+        "tasks": [
+          {
+            "id": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+            "title": "实现0",
+            "description": "实现独立步骤",
+            "executorId": "m",
+            "dependsOn": [],
+            "gateIds": [],
+            "waitsForQuestions": [],
+            "scope": [
+              "src/"
+            ],
+            "localId": "t0",
+            "cycleId": "efca699d-1c89-43a6-b57f-d139d2136bb5",
+            "member": "m",
+            "dispatcher": "leader",
+            "definition": {
+              "id": "t0",
+              "title": "实现0",
+              "description": "实现独立步骤",
+              "executorId": "m",
+              "dependsOn": [],
+              "gateIds": [],
+              "waitsForQuestions": [],
+              "scope": [
+                "src/"
+              ]
+            },
+            "planRevision": 1,
+            "generation": 1,
+            "status": "implemented",
+            "failures": 1,
+            "activeToken": "ffa645ccfbca54f814fcdab97c73cfe992757840beb26a084f95d43f4e7ffea2",
+            "commit": "274cd1f0680bad667e13cc11fc9b163f41caba8c",
+            "summary": "实现0",
+            "files": [],
+            "selfTests": [],
+            "handoff": "node --test",
+            "advice": [
+              {
+                "issueId": "fixture-bug",
+                "taskId": "efca699d-1c89-43a6-b57f-d139d2136bb5:t0",
+                "criterionId": "c",
+                "location": "src/t0.txt:1",
+                "evidence": "局部修复路径夹具，不是真实模型缺陷",
+                "expected": "指定检查成功",
+                "checkIds": [
+                  "check"
+                ],
+                "semantic": false,
+                "kind": "blocking",
+                "closed": false
+              }
+            ]
+          }
+        ],
+        "usage": "node --test"
+      },
+      "time": "2026-11-12T19:23:17.867Z"
+    },
+    {
+      "id": 66,
+      "conversation": "a",
+      "type": "status",
+      "data": {
+        "status": "done"
+      },
+      "time": "2026-11-12T19:23:17.867Z"
+    }
+  ]
+}

@@ -17,9 +17,12 @@ export function studioEdges(s) {
   return s.events.flatMap(e => {
     const d = e.data, t = tasks.get(d.task || d.id);
     let from, to, label;
-    if (e.type === 'task') { from = 'leader'; to = d.member; label = '派发任务'; }
+    if (e.type === 'task' && d.dispatcher !== 'system') { from = 'leader'; to = d.member; label = '派发任务'; }
     if (e.type === 'task_update' && d.status === 'review') { from = t?.member; to = t?.reviewer; label = '送审'; }
     if (e.type === 'review') { from = t?.reviewer; to = d.verdict === 'pass' ? 'leader' : t?.member; label = d.verdict === 'pass' ? '审查通过' : '退回修改'; }
+    if (e.type === 'cycle_review_start') { from=d.from;to=d.to;label='整批送审 / 范围复查'; }
+    if (e.type === 'cycle_repair') { from=d.from;to=d.to;label='局部返修'; }
+    if (e.type === 'planner_trigger') { from=s.cycle?.tasks.at(-1)?.member;to='leader';label='有证据升级'; }
     if (e.type === 'member_question' || e.type === 'member_answer') { from = d.from; to = d.to; label = e.type === 'member_question' ? '提问' : '答复'; }
     if (!find(from) || !find(to) || find(from) === find(to)) return [];
     return [{ id: e.id, from: find(from), to: find(to), label, time: e.time, task: t?.title, event: e }];

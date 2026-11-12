@@ -77,6 +77,7 @@
                       开始<i data-lucide="arrow-up-right"></i>
                     </button>
                   </div>
+                  <details><summary>执行策略</summary><label>新会话流程 <select id="workflowVersion"><option value="legacy">现有流程</option><option value="adaptive_v1">自适应流程（试用）</option></select></label><p class="ny-small">自适应流程按整批需求安排检查与审查。已有会话继续使用创建时的流程。</p></details>
                   <div id="projectAdvanced" hidden><input id="path" placeholder="输入项目目录" aria-label="项目目录" /></div>
                   <button id="homeAttach" class="ny-button ny-quiet">
                     <i data-lucide="paperclip"></i>添加参考文件
@@ -127,7 +128,7 @@
                       ><input id="fileInput" type="file" multiple hidden /><i
                         data-lucide="paperclip"
                       ></i></label
-                    ><span class="ny-small">交给知行处理</span
+                    ><button id="statusQuery" type="button" hidden>查看进度</button><span class="ny-small">交给知行处理</span
                     ><button class="ny-send" aria-label="发送补充要求">
                       <i data-lucide="arrow-up"></i>
                     </button>

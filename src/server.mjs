@@ -1,5 +1,5 @@
 import { ModelCatalog } from "./model-catalog.mjs";
-import { statistics } from "./statistics.mjs";
+import { statistics, cycleStatistics } from "./statistics.mjs";
 import https from "node:https";
 import {
   readFileSync,
@@ -244,7 +244,7 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-ux-1" });
+        return json(res, 200, { version: "20261113-adaptive-1" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === "/api/models")
         return json(
@@ -349,8 +349,11 @@ const server = https.createServer(
       if (p === "/api/conversations" && req.method === "POST") {
         let b = await body(req);
         if (!b.text?.trim()) throw new Error("请输入需求");
-        let c = await engine.create(b.text, b.path);
-        await engine.message(c, b.text, b.files);
+        let c = await engine.create(b.text, b.path, {
+          workflowVersion: b.workflowVersion,
+          directPlan: b.directPlan,
+        });
+        await engine.message(c, b.text, b.files, { intent: b.intent });
         return json(res, 200, { id: c });
       }
       const match = p.match(
@@ -365,7 +368,7 @@ const server = https.createServer(
         let b = req.method === "POST" ? await body(req) : {};
         if (action === "message") {
           if (!b.text?.trim()) throw new Error("消息不能为空");
-          await engine.message(c, b.text, b.files);
+          await engine.message(c, b.text, b.files, { intent: b.intent });
         }
         if (action === "pause") engine.pause(c);
         if (action === "resume") engine.resume(c);
@@ -376,14 +379,22 @@ const server = https.createServer(
           )
             throw new Error("无效回答");
           const question = s.questions.find((q) => q.id === b.id);
-          engine.event(c, "answer", b);
+          engine.event(c, "answer", { ...b, cycleId: question.cycleId });
           if (question.purpose === "init_repo") {
             if (b.answer) {
               engine.initialize(c);
+              if (s.workflowVersion === "adaptive_v1")
+                engine.workflow.start(
+                  c,
+                  s.events.findLast(
+                    (e) => e.type === "message" && e.data.member === "user",
+                  )?.data.text || s.title,
+                );
               engine.event(c, "status", { status: "working" });
-              engine.wake(c);
+              engine.wake(c, { reason: "new_goal" });
             } else engine.event(c, "status", { status: "cancelled" });
-          } else engine.wake(c);
+          } else if (s.workflowVersion === "adaptive_v1") engine.pump();
+          else engine.wake(c);
         }
         if (action === "member") {
           let m = s.members.find((m) => m.id === b.id);
@@ -467,6 +478,8 @@ const server = https.createServer(
           });
         return json(res, 200, { ok: true });
       }
+      if (p === "/api/stats/cycles")
+        return json(res, 200, cycleStatistics(store.conversations()));
       if (p === "/api/stats")
         return json(res, 200, statistics(store.conversations()));
       if (p.startsWith("/api/")) return json(res, 404, { error: "接口不存在" });
