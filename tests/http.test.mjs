@@ -68,6 +68,11 @@ test("HTTPS 登录隔离、限速、来源校验及改密注销", async () => {
     assert.match(login.cookie, /SameSite=Strict/);
     const cookie = login.cookie.split(";")[0];
     assert.equal((await call("/api/state", undefined, cookie)).status, 200);
+    for (const file of ['event-projection', 'draft-manager', 'agent-graph']) {
+      const asset = await call(`/studio/${file}.mjs`, undefined, cookie);
+      assert.equal(asset.status, 200, `前端模块 ${file} 可通过 HTTPS 加载`);
+      assert.match(asset.body, /export/);
+    }
     assert.equal(
       (
         await call(

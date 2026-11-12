@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" data-ui-version="20261112-screen-4">
+<html lang="zh-CN" data-ui-version="20261113-ux-1">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="/favicon.svg" />
     <title>NickYoung · 工作台</title>
-    <link rel="stylesheet" href="/ui-package.css?v=20261112-screen-4" />
-    <link rel="stylesheet" href="/style.css?v=20261112-screen-4" />
-    <link rel="stylesheet" href="/viewport.css?v=20261112-screen-4" />
+    <link rel="stylesheet" href="/ui-package.css?v=20261113-ux-1" />
+    <link rel="stylesheet" href="/style.css?v=20261113-ux-1" />
+    <link rel="stylesheet" href="/viewport.css?v=20261113-ux-1" />
   </head>
   <body>
     <div id="ny-live-studio">
@@ -56,14 +56,14 @@
               <i data-lucide="panel-left"></i>
             </button>
             <div id="heading" class="ny-breadcrumb">工作台</div>
-            <span id="overall" class="ny-badge"></span
+            <button id="focusMode" class="ny-button">专注阅读</button><span id="overall" class="ny-badge"></span
             ><button id="toggleRight" hidden>团队</button>
           </header>
           <div class="ny-columns">
             <main class="ny-center">
               <section id="homeView" class="ny-view ny-home">
-                <div class="ny-eyebrow">YOUR PERSONAL STUDIO</div>
-                <h1>想把什么做出来？</h1>
+
+                <h1>想让团队帮你完成什么？</h1>
                 <p>说清目标，剩下的交给团队。</p>
                 <div class="ny-composer">
                   <textarea
@@ -73,14 +73,11 @@
                     placeholder="描述你想完成的事…"
                   ></textarea>
                   <div class="ny-composer-bottom">
-                    <input
-                      id="path"
-                      placeholder="项目位置 · 留空新建"
-                      aria-label="项目目录"
-                    /><button id="homeStart" class="ny-button ny-primary">
+                    <label class="project-picker">选择项目<select id="projectSelect" aria-label="选择项目"><option value="">新建空项目</option></select></label><button id="homeStart" class="ny-button ny-primary">
                       开始<i data-lucide="arrow-up-right"></i>
                     </button>
                   </div>
+                  <div id="projectAdvanced" hidden><input id="path" placeholder="输入项目目录" aria-label="项目目录" /></div>
                   <button id="homeAttach" class="ny-button ny-quiet">
                     <i data-lucide="paperclip"></i>添加参考文件
                   </button>
@@ -96,9 +93,9 @@
               </section>
               <section id="taskView" class="ny-view" hidden>
                 <div class="ny-heading">
-                  <div class="ny-eyebrow">DEVELOPMENT TASK</div>
+
                   <h1 id="taskTitle">当前任务</h1>
-                  <p id="projectPath"></p>
+                  <details id="projectDetails"><summary>完整目标与项目详情</summary><p id="fullGoal"></p><p id="projectPath"></p><button id="copyPath">复制目录</button></details>
                 </div>
                 <div class="ny-focus">
                   <div class="ny-focus-top">
@@ -106,15 +103,15 @@
                     ><span id="taskStatus" class="ny-badge"></span>
                   </div>
                   <div id="focusTitle" class="ny-focus-title"></div>
-                  <div id="taskCounts" class="ny-small"></div>
+                  <div id="taskCounts" class="ny-small"></div><div id="nextAction"></div>
                 </div>
                 <div class="ny-tabs tabs">
                   <button data-tab="team" class="ny-active">进展对话</button
                   ><button data-tab="graph">任务清单</button
                   ><button data-tab="changes">代码改动</button>
                 </div>
-                <section id="messages"></section>
-                <section id="taskList" hidden></section>
+                <button id="newProgress" hidden></button><section id="messages"></section>
+                <select id="taskFilter" aria-label="筛选任务" hidden><option value="all">全部任务</option><option value="blocked">只看等待与阻塞</option></select><section id="taskList" hidden></section>
                 <section id="changesPanel" hidden></section>
                 <div id="questions"></div>
                 <form id="composer" class="ny-composer">
@@ -154,7 +151,7 @@
               <section id="settingsDialog" class="ny-view" hidden>
                 <button class="close ny-button" type="button">返回任务</button>
                 <h2>设置</h2>
-                <p class="muted">模型 · 更改后先测试，再保存</p>
+                <p class="muted">模型 · 测试连接确认可用，再保存。保存影响全局默认配置和以后创建的成员；现有成员配置不变。</p>
                 <button id="refreshModels">扫描本机模型与强度</button>
                 <p id="catalogMeta" class="ny-small"></p>
                 <label class="catalog-toggle"
@@ -169,7 +166,7 @@
                   <div id="catalogTable"></div>
                 </details>
                 <div id="modelSettings"></div>
-                <button id="addTier">＋ 新增档位</button
+                <details><summary>高级参数、档位与经验</summary><button id="addTier">＋ 新增档位</button
                 ><label
                   >并发成员数<input
                     id="concurrency"
@@ -184,7 +181,7 @@
                 ><label>成员名单<input id="names" /></label
                 ><label
                   >经验<textarea id="experience" rows="5"></textarea></label
-                ><button id="saveSettings" class="primary">保存设置</button>
+                ></details><button id="saveSettings" class="primary">保存设置</button>
                 <p id="settingsResult" role="status"></p>
                 <details>
                   <summary>表现</summary>
@@ -201,9 +198,9 @@
                   ><button id="logout">退出登录</button>
                 </details>
               </section>
-              <div id="notice" role="status"></div>
+              <div id="updateBanner" hidden>新版本可用，草稿已保存。<button id="applyUpdate">更新</button></div><div id="notice" role="status" aria-live="polite"></div>
             </main>
-            <aside class="ny-live inspector">
+            <button id="drawerBackdrop" hidden aria-label="关闭团队面板"></button><aside class="ny-live inspector" aria-label="团队协作"><button id="closeTeam" class="ny-button">关闭团队面板</button>
               <div class="ny-between">
                 <div class="ny-live-title">
                   <i data-lucide="radio"></i>团队协作
@@ -237,7 +234,7 @@
         </div>
       </div>
     </div>
-    <script src="/lucide.min.js?v=20261112-screen-4"></script>
-    <script type="module" src="/app.js?v=20261112-screen-4"></script>
+    <script src="/lucide.min.js?v=20261113-ux-1"></script>
+    <script type="module" src="/app.js?v=20261113-ux-1"></script>
   </body>
 </html>

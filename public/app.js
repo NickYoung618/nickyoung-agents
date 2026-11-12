@@ -1,6 +1,10 @@
+const modelTests = new Map();
 let modelCatalog = null,
   showHiddenModels = false;
 import { marked, DOMPurify, hljs, speaker } from "./vendor.mjs";
+import { labels, progress, timeline, eventText, deliveryEvidence } from "./studio/event-projection.mjs";
+import { draftManager } from "./studio/draft-manager.mjs";
+import { studioEdges, graphPositions } from "./studio/agent-graph.mjs";
 let studioView = "home",
   studioGraphCache = null;
 const studioSeenEdges = new Map();
@@ -23,6 +27,20 @@ const $ = (s) => document.querySelector(s),
         })[c],
     );
 let attachments = [];
+let attachmentContext = "new";
+const attachmentSelections = new Map([["new", attachments]]);
+function syncAttachments() {
+  const key = studioView === "home" ? "new" : current || "new";
+  attachmentSelections.set(attachmentContext, attachments);
+  attachmentContext = key;
+  attachments = attachmentSelections.get(key) || [];
+  attachmentSelections.set(key, attachments);
+  for (const [id, context] of [["#homeAttachments", "new"], ["#attachments", current]]) {
+    const selected = attachmentSelections.get(context) || [];
+    const saved = drafts.read(context === "new" ? undefined : context).attachmentNames || [];
+    $(id).textContent = selected.length ? selected.map(f => f.name).join(" · ") : saved.length ? `附件需重新选择：${saved.join("、")}` : "";
+  }
+}
 let conversations = [],
   current,
   tab = "team",
@@ -47,36 +65,31 @@ async function api(path, data) {
   if (!r.ok) throw Error(d.error);
   return d;
 }
-const labels = {
-  idle: "待命",
-  working: "团队工作中",
-  paused: "已暂停",
-  done: "已完成",
-  error: "回合出错",
-  interrupted: "已中断",
-  queued: "待办",
-  running: "进行中",
-  review: "待审查",
-  reviewing: "审查中",
-  repair: "返修中",
-  consultation: "等待会诊",
-  stopped: "已停止",
-  passed: "已通过",
-  deferred: "遗留",
-  cancelled: "已取消",
-  resolved: "遗留已解决",
-  rate_wait: "等待额度恢复",
-  rate_limited: "额度受限",
-  waiting_setup: "等你决定",
-};
+function memberStatus(s, m) {
+  return s.status === "done" ? "本次已交付" : m.status === "idle" ? "空闲" : m.status === "running" ? "正在处理任务" : labels[m.status] || m.status || "空闲";
+}
 function name(s, id) {
   return id === "user"
     ? "尼克杨先生"
     : s.members.find((m) => m.id === id)?.name || id;
 }
+let refreshing, refreshAgain = false;
 async function refresh() {
-  conversations = await api("state");
-  render();
+  if (refreshing) { refreshAgain = true; return refreshing; }
+  refreshing = (async () => {
+    do { refreshAgain = false; conversations = await api("state"); render(); } while (refreshAgain);
+  })();
+  try { await refreshing; } finally { refreshing = null; }
+}
+function updateRegion(selector, html) {
+  const box = $(selector);
+  if (box.dataset.html === html) return;
+  const top = box.scrollTop;
+  const open = [...box.querySelectorAll('details[open]')].map((n, i) => n.id || `index:${[...box.querySelectorAll('details')].indexOf(n)}`);
+  box.innerHTML = html;
+  for (const [i, node] of [...box.querySelectorAll('details')].entries()) if (open.includes(node.id || `index:${i}`)) node.open = true;
+  box.scrollTop = top;
+  box.dataset.html = html;
 }
 function render() {
   let s = conversations.find((s) => s.id === current);
@@ -86,7 +99,8 @@ function render() {
         `<button data-id="${s.id}" class="${current === s.id ? "active" : ""}">◦ ${escape(s.title)}<span class="badge"> · ${labels[s.status] || s.status}</span></button>`,
     )
     .join("");
-  $("#path").hidden = !!s;
+  syncDraftContext();
+  drawProjects();
   $("#pause").hidden = !s || s.status === "done";
   if (!s) {
     $("#overall").textContent = "";
@@ -98,7 +112,7 @@ function render() {
     : labels[s.status];
   $("#overall").dataset.status = s.status;
   $("#heading").innerHTML =
-    `${escape(s.title)}<span>${escape(s.path)} · ${escape(s.branch)} · ${labels[s.status]}</span>`;
+    `<strong title="${escape(s.title)}">${escape(s.title)}</strong>`;
   $("#pause").textContent = ["paused", "error", "interrupted"].includes(
     s.status,
   )
@@ -110,123 +124,8 @@ function render() {
       : s.status === "done"
         ? "已完成 · "
         : "") + "NickYoung";
-  let html = "";
-  const seenRuns = new Set();
-  for (const e of s.events) {
-    const d = e.data;
-    if (e.type === "message") {
-      if (d.member === "user")
-        html += `<div class="message user" id="e${e.id}">${escape(d.text)}${d.attachments?.length ? "\n附件：" + d.attachments.map((f) => escape(f.name)).join("、") : ""}</div>`;
-      else {
-        let m = speaker(s, e);
-        html += `<article class="message" id="e${e.id}"><div class="who"><span class="avatar tone${s.members.findIndex((x) => x.id === m?.id)}">${escape(m?.name?.[0])}</span><div>${escape(m?.name)}<small>${escape(m?.role)} · ${escape(m?.model)}</small></div></div><div class="prose">${markdown(d.text)}</div></article>`;
-      }
-    } else if (e.type === "process") {
-      const run = s.events
-        .filter(
-          (x) =>
-            x.id < e.id && x.type === "run_start" && x.data.member === d.member,
-        )
-        .at(-1);
-      const key = run?.id || d.member;
-      if (seenRuns.has(key)) continue;
-      seenRuns.add(key);
-      const next = s.events.find(
-        (x) =>
-          x.id > (run?.id || 0) &&
-          x.type === "run_start" &&
-          x.data.member === d.member,
-      );
-      const logs = s.events
-        .filter(
-          (x) =>
-            x.type === "process" &&
-            x.data.member === d.member &&
-            x.id >= (run?.id || 0) &&
-            (!next || x.id < next.id),
-        )
-        .map((x) => {
-          const p = x.data.event;
-          if (p.item?.type === "command_execution")
-            return p.item.command + "\n" + (p.item.aggregated_output || "");
-          if (p.item?.type === "file_change")
-            return JSON.stringify(p.item.changes);
-          if (p.type === "output" || p.type === "stderr") return p.text;
-          if (p.message?.content)
-            return p.message.content
-              .filter((b) => b.type === "tool_use" || b.type === "text")
-              .map((b) =>
-                b.type === "tool_use"
-                  ? b.name + " " + JSON.stringify(b.input)
-                  : b.text,
-              )
-              .join("\n");
-          return "";
-        })
-        .filter(Boolean);
-      html += `<details class="worklog" id="e${e.id}"><summary>${escape(name(s, d.member))} · 工作过程 · ${logs.length} 条记录</summary><pre>${escape(logs.join("\n\n"))}</pre></details>`;
-    } else if (
-      e.type === "report" ||
-      e.type === "review" ||
-      e.type === "check" ||
-      e.type === "error"
-    ) {
-      if (e.type === "check")
-        html += `<details class="checkline" id="e${e.id}"><summary>「${escape(s.tasks.find((t) => t.id === d.task)?.title || "任务")}」验收${d.passed ? "通过" : "未通过，已退回"}</summary><pre>${escape(d.command)}${d.output ? "\n" + escape(d.output) : ""}</pre></details>`;
-      else if (e.type === "report")
-        html += `<article class="card" id="e${e.id}"><h3>交付报告</h3><div class="prose">${markdown(d.text)}</div></article>`;
-      else if (e.type === "review")
-        html += `<article class="card" id="e${e.id}"><h3>审查${d.verdict === "pass" ? "通过" : "退回"}</h3><div class="prose">${markdown(d.message)}</div>${(d.issues || []).map((i) => `<p><strong>${escape(i.title)}</strong> · ${escape({ minor: "小问题", major: "一般问题", design: "方案问题" }[i.severity] || i.severity)}<br>${escape(i.evidence)}<br>${escape(i.suggestion)}</p>`).join("")}<details><summary>验证证据 · ${escape(d.commit?.slice(0, 8))}</summary><pre>${escape(d.verification)}</pre></details></article>`;
-      else
-        html += `<details class="card" id="e${e.id}"><summary>运行问题</summary><pre>${escape(d.text)}</pre></details>`;
-    } else if (
-      [
-        "recruit",
-        "task",
-        "task_update",
-        "decision",
-        "model_change",
-        "interrupted",
-        "question",
-        "answer",
-        "question_closed",
-        "notice",
-      ].includes(e.type)
-    ) {
-      let text =
-        e.type === "recruit"
-          ? `知行邀请 ${d.name} · ${d.role}`
-          : e.type === "task"
-            ? `知行请 ${name(s, d.member)} 完成「${d.title}」，交给 ${name(s, d.reviewer)} 审查`
-            : e.type === "task_update"
-              ? `「${s.tasks.find((t) => t.id === d.id)?.title}」${labels[d.status] || ""}${d.commit ? " · " + d.commit.slice(0, 8) : ""}`
-              : e.type === "decision"
-                ? "决定 · " + d.text
-                : e.type === "question"
-                  ? "请你决定 · " + d.question
-                  : e.type === "answer"
-                    ? "你的回答 · " + (d.answer ? "是" : "否")
-                    : e.type === "question_closed"
-                      ? "请示已结束 · " + d.reason
-                      : e.type === "notice"
-                        ? "项目须知已更新"
-                        : d.text || "模型已更换";
-      html += `<div class="event" id="e${e.id}">${escape(text)}</div>`;
-    }
-  }
-  const box = $("#messages"),
-    bottom = box.scrollHeight - box.scrollTop - box.clientHeight < 150;
-  box.innerHTML = html;
-  for (const code of box.querySelectorAll(".prose pre code"))
-    hljs.highlightElement(code);
-  if (bottom) box.scrollTop = box.scrollHeight;
-  $("#questions").innerHTML = s.questions
-    .filter((q) => !q.answered)
-    .map(
-      (q) =>
-        `<div class="card question"><h3>${escape(q.question)}</h3><p>是：${escape(q.yes)}<br>否：${escape(q.no)}</p><button data-answer="true" data-id="${q.id}">是</button><button data-answer="false" data-id="${q.id}">否</button><button data-other>我想说点别的</button></div>`,
-    )
-    .join("");
+  renderTimeline(s);
+  updateRegion("#questions", s.questions.filter(q => !q.answered).map(q => decisionCard(s, q, true)).join(""));
   panel(s);
   drawStudio(s);
 }
@@ -236,7 +135,7 @@ function panel(s) {
       s.members
         .map(
           (m) =>
-            `<div class="member ${m.status}"><div class="who"><span class="avatar tone${s.members.findIndex((x) => x.id === m.id)}">${escape(m.name[0])}</span><div>${escape(m.name)}<small>${escape(m.role)} · ${labels[m.status] || "待命"}</small></div></div><small>${escape(m.model)} · ${escape(m.effort)}</small><button data-model="${m.id}">更换模型</button></div>`,
+            `<div class="member ${m.status}"><div class="who"><span class="avatar tone${s.members.findIndex((x) => x.id === m.id)}">${escape(m.name[0])}</span><div>${escape(m.name)}<small>${escape(m.role)} · ${escape(memberStatus(s, m))}</small></div></div><small>${escape(m.model)} · ${escape(m.effort)}</small><button data-model="${m.id}">更换模型</button></div>`,
         )
         .join("") +
       "<h3>任务</h3>" +
@@ -348,8 +247,7 @@ $("#conversations").onclick = (e) => {
 };
 $("#new").onclick = () => {
   current = undefined;
-  $("#heading").innerHTML =
-    "新的想法，从这里开始<span>尼克杨先生的工作助手</span>";
+  $("#heading").textContent = "工作台";
   $("#messages").innerHTML =
     '<div class="welcome"><div class="monogram">N</div><h1>把想法，交给团队。</h1><p>描述你想完成的事，知行会组织成员一起推进。</p></div>';
   $("#panel").innerHTML = "还没有成员";
@@ -359,33 +257,47 @@ $("#new").onclick = () => {
   $("#overall").textContent = "";
   $("#input").focus();
 };
-$("#composer").onsubmit = async (e) => {
-  e.preventDefault();
-  let text = $("#input").value.trim();
-  if (!text) return;
+let sending = false;
+async function sendRequest(home = false) {
+  if (sending) return;
+  const field = $(home ? '#homeInput' : '#input');
+  const text = field.value.trim();
+  if (!text) { field.focus(); return; }
+  const target = home ? undefined : current;
+  const files = [...attachments];
+  sending = true;
+  saveDrafts();
+  $("#homeStart").disabled = true;
+  $("#composer button").disabled = true;
+  $("#homeStart").textContent = '正在创建任务…';
+  $("#notice").textContent = target ? '正在发送补充要求…' : '正在创建任务，随后由负责人理解需求…';
   try {
-    if (current)
-      await api(`conversations/${current}/message`, {
-        text,
-        files: attachments,
-      });
+    if (target) await api(`conversations/${target}/message`, { text, files });
     else {
-      let r = await api("conversations", {
-        text,
-        path: $("#path").value,
-        files: attachments,
-      });
+      const r = await api('conversations', { text, path: selectedPath(), files });
       current = r.id;
+      studioView = 'task';
     }
-    $("#input").value = "";
+    if (field.value.trim() === text) field.value = '';
+    drafts.clear(target);
+    attachmentSelections.set(home ? "new" : target, []);
     attachments = [];
-    $("#attachments").textContent = "";
+    $("#attachments").textContent = '';
+    $("#homeAttachments").textContent = '';
+    if (field.value.trim()) saveDrafts();
     await refresh();
+    $("#notice").textContent = '已发送，负责人将处理你的要求。';
     $("#messages").scrollTop = $("#messages").scrollHeight;
-  } catch (e) {
-    $("#notice").textContent = e.message;
+  } catch (error) {
+    $("#notice").textContent = `发送未完成：${error.message}。输入和附件已保留，可重试。`;
+  } finally {
+    sending = false;
+    $("#homeStart").disabled = false;
+    $("#composer button").disabled = false;
+    $("#homeStart").textContent = '开始';
   }
-};
+}
+$("#composer").onsubmit = e => { e.preventDefault(); sendRequest(); };
 $("#input").onkeydown = (e) => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
@@ -413,11 +325,7 @@ $("#pause").onclick = async () => {
 $("#questions").onclick = async (e) => {
   let b = e.target.closest("[data-answer]");
   if (b) {
-    await api(`conversations/${current}/answer`, {
-      id: b.dataset.id,
-      answer: b.dataset.answer === "true",
-    });
-    refresh();
+    await answerQuestion(b, current, b.dataset.id, b.dataset.answer === 'true');
   }
   if (e.target.matches("[data-other]")) $("#input").focus();
 };
@@ -444,7 +352,7 @@ $("#panel").onclick = async (e) => {
     }
   }
   const jump = e.target.closest("[data-jump]");
-  if (jump) document.getElementById(jump.dataset.jump)?.scrollIntoView();
+  if (jump) jumpToEvent(jump.dataset.jump.slice(1));
   if (e.target.id === "expandGraph") {
     let dialog = $("#graphDialog");
     if (!dialog) {
@@ -464,7 +372,7 @@ $("#panel").onclick = async (e) => {
       const jump = e.target.closest("[data-jump]");
       if (jump) {
         dialog.close();
-        document.getElementById(jump.dataset.jump)?.scrollIntoView();
+        jumpToEvent(jump.dataset.jump.slice(1));
       }
     };
     dialog.showModal();
@@ -489,8 +397,32 @@ $("#panel").onclick = async (e) => {
     }
   }
 };
+$("#focusMode").onclick = () => { const hidden = $(".shell").classList.toggle("hide-right"); $("#focusMode").textContent = hidden ? "显示团队" : "专注阅读"; };
 $("#toggleLeft").onclick = () => $(".shell").classList.toggle("hide-left");
-$("#toggleRight").onclick = () => $(".shell").classList.toggle("show-live");
+function setDrawer(open) {
+  $('.shell').classList.toggle('show-live', open);
+  $('.ny-live').classList.toggle('drawer-open', open);
+  $('#drawerBackdrop').hidden = !open;
+  $('#toggleRight').setAttribute('aria-expanded', String(open));
+  if (matchMedia('(max-width: 600px)').matches) {
+    $('.ny-live').setAttribute('role', open ? 'dialog' : 'complementary');
+    $('.ny-live').setAttribute('aria-modal', String(open));
+    if (open) $('#closeTeam').focus(); else $('#toggleRight').focus();
+  }
+}
+$('#toggleRight').onclick = () => setDrawer(!$('.shell').classList.contains('show-live'));
+$('#closeTeam').onclick = () => setDrawer(false);
+$('#drawerBackdrop').onclick = () => setDrawer(false);
+document.addEventListener('keydown', e => {
+  if (!$('.shell').classList.contains('show-live') || !matchMedia('(max-width: 600px)').matches) return;
+  if (e.key === 'Escape') { e.preventDefault(); setDrawer(false); }
+  if (e.key === 'Tab') {
+    const items = [...$('.ny-live').querySelectorAll('button:not(:disabled), summary, [tabindex="0"]')].filter(n => n.getClientRects().length);
+    const first = items[0], last = items.at(-1);
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  }
+});
 const effortLabels = {
   low: "低",
   medium: "中",
@@ -545,10 +477,15 @@ function drawCatalog() {
       .join("") +
     "</tbody></table>";
 }
+const modelKey = s => `${s.channel}/${s.model}/${s.effort}`;
 function drawSettings() {
   $("#modelSettings").innerHTML =
     modelrow(config.leader, -1) + config.tiers.map(modelrow).join("");
-  for (const row of document.querySelectorAll(".modelrow")) updateEfforts(row);
+  for (const row of document.querySelectorAll(".modelrow")) {
+    updateEfforts(row);
+    const i = Number(row.dataset.index), selection = i < 0 ? config.leader : config.tiers[i];
+    row.querySelector('.testResult').textContent = modelTests.get(modelKey(selection)) || '目录可见不代表连接可用，尚无本次测试记录';
+  }
   drawCatalog();
 }
 function readSettings() {
@@ -607,10 +544,11 @@ $("#modelSettings").onclick = async (e) => {
     try {
       let r = await api("test", s);
       row.querySelector(".testResult").textContent =
-        `通过 · ${r.model} · ${(r.duration / 1000).toFixed(1)} 秒`;
+        `连接测试通过 · ${r.model} · ${new Date().toLocaleTimeString()} · ${(r.duration / 1000).toFixed(1)} 秒`;
     } catch (e) {
-      row.querySelector(".testResult").textContent = e.message;
+      row.querySelector(".testResult").textContent = "连接测试失败：" + e.message;
     } finally {
+      modelTests.set(modelKey(s), row.querySelector(".testResult").textContent);
       e.target.disabled = false;
     }
   }
@@ -652,7 +590,7 @@ $("#saveSettings").onclick = async () => {
   });
   try {
     await api("config", config);
-    $("#settingsResult").textContent = "已保存";
+    $("#settingsResult").textContent = "已保存全局默认配置；现有成员保持原配置。";
   } catch (e) {
     $("#settingsResult").textContent = e.message;
   }
@@ -670,6 +608,140 @@ $("#logout").onclick = async () => {
   location.href = "/login";
 };
 let timer;
+const drafts = draftManager(localStorage, () => { $("#notice").textContent = '本地草稿保存不可用，请保留输入内容后再刷新。'; });
+let draftContext, connectionReady = false, selectedMember = null, selectedEdge = null;
+let messageSession, messageSignature, timelineLimit = 8;
+const readingPositions = new Map();
+function selectedPath() { return $("#projectSelect").value === '__custom' ? $("#path").value.trim() : $("#projectSelect").value; }
+function saveDrafts() {
+  drafts.write(undefined, { text: $("#homeInput").value, project: $("#projectSelect").value, path: $("#path").value, attachmentNames: (attachmentSelections.get("new") || []).map(f => f.name) });
+  if (draftContext) drafts.write(draftContext, { text: $("#input").value, attachmentNames: (attachmentSelections.get(draftContext) || []).map(f => f.name) });
+}
+function restoreHomeDraft() {
+  const d = drafts.read();
+  $("#homeInput").value = d.text || '';
+  $("#path").value = d.path || '';
+  drawProjects();
+  $("#projectSelect").value = d.project || '';
+  if ($("#projectSelect").selectedIndex < 0) $("#projectSelect").value = '__custom';
+  $("#projectAdvanced").hidden = $("#projectSelect").value !== '__custom';
+  $("#homeAttachments").textContent = d.attachmentNames?.length ? `附件需重新选择：${d.attachmentNames.join('、')}` : '';
+}
+function syncDraftContext() {
+  if (draftContext === current) return;
+  if (draftContext) drafts.write(draftContext, { text: $("#input").value, attachmentNames: (attachmentSelections.get(draftContext) || []).map(f => f.name) });
+  draftContext = current;
+  const d = drafts.read(current);
+  $("#input").value = current ? d.text || '' : '';
+  $("#attachments").textContent = current && d.attachmentNames?.length ? `附件需重新选择：${d.attachmentNames.join('、')}` : '';
+}
+function drawProjects() {
+  const select = $("#projectSelect"), value = select.value;
+  const paths = [...new Set(conversations.map(c => c.path).filter(Boolean))];
+  const html = '<option value="">新建空项目</option>' + paths.map(path => `<option value="${escape(path)}">${escape(path.split('/').filter(Boolean).at(-1))} · ${escape(path)}</option>`).join('') + '<option value="__custom">高级：输入目录</option>';
+  if (select.innerHTML !== html) { select.innerHTML = html; select.value = value; }
+}
+function showMemberDetail(s, id) {
+  if (id === "__others") { $("#liveDetailTitle").textContent = "其他团队成员"; $("#liveDetailText").textContent = s.members.slice(7).map(m => `${m.name} · ${m.role} · ${memberStatus(s,m)}`).join("；"); return; }
+  const m = s.members.find(m => m.id === id);
+  if (!m) return;
+  const task = s.tasks.find(t => (t.member === id || t.reviewer === id) && !['passed','cancelled','deferred'].includes(t.status));
+  $("#liveDetailTitle").textContent = m.name + ' · ' + m.role;
+  $("#liveDetailText").textContent = `${m.model} / ${m.effort} · ${s.status === 'done' ? '本次已交付' : m.status === 'idle' ? '空闲' : labels[m.status] || m.status}` + (task ? ` · ${task.title}` : '');
+}
+function renderTimeline(s) {
+  const box = $("#messages");
+  if (messageSession !== s.id) {
+    if (messageSession) readingPositions.set(messageSession, { top: box.scrollTop, limit: timelineLimit });
+    const saved = readingPositions.get(s.id);
+    timelineLimit = saved?.limit || 8;
+    box.replaceChildren();
+    messageSession = s.id;
+    messageSignature = undefined;
+    $("#newProgress").hidden = true;
+  }
+  const selected = timeline(s.events, timelineLimit);
+  const signature = `${s.id}:${s.events.length}:${s.events.at(-1)?.id}:${timelineLimit}`;
+  if (signature === messageSignature) return;
+  const changed = messageSignature !== undefined;
+  const top = box.scrollTop, bottom = box.scrollHeight - top - box.clientHeight < 100;
+  let html = selected.length >= timelineLimit ? '<button data-more>显示更早的关键进展</button>' : '';
+  for (const e of selected) {
+    const d = e.data;
+    if (e.type === 'message') {
+      const m = speaker(s, e);
+      html += `<article class="message ${d.member === 'user' ? 'user' : ''}" id="e${e.id}"><div class="who">${escape(d.member === 'user' ? '你' : m?.name)} <small>${escape(d.member === 'user' ? '' : m?.model)}</small></div><div class="prose">${d.member === 'user' ? escape(d.text) : markdown(d.text)}</div></article>`;
+    } else html += `<div class="event" id="e${e.id}">${escape(eventText(s, e))}<button data-evidence="${e.id}">查看证据</button></div>`;
+  }
+  html += `<details id="executionLog"><summary>完整执行日志 · ${s.events.length} 条事件（按需加载）</summary><div id="rawEvents"></div></details>`;
+  const old = new Map([...box.children].filter(n => n.id).map(n => [n.id, n]));
+  const fragment = document.createElement('template'); fragment.innerHTML = html;
+  for (const node of [...fragment.content.children]) {
+    const previous = old.get(node.id);
+    if (previous && (node.id === 'executionLog' || previous.outerHTML === node.outerHTML)) node.replaceWith(previous);
+  }
+  box.replaceChildren(fragment.content);
+  $('#executionLog > summary').textContent = `完整执行日志 · ${s.events.length} 条事件（按需加载）`;
+  if ($('#executionLog').open) renderRaw(s);
+  for (const code of box.querySelectorAll('.prose pre code:not([data-highlighted])')) hljs.highlightElement(code);
+  box.scrollTop = changed ? (bottom ? box.scrollHeight : top) : readingPositions.get(s.id)?.top || 0;
+  if (changed && !bottom) { $('#newProgress').hidden = false; $('#newProgress').textContent = '有新进展 · 跳到最新'; }
+  messageSignature = signature;
+}
+function renderRaw(s, target) {
+  const raw = $('#rawEvents');
+  if (target) raw.dataset.target = target;
+  if (!target && raw.dataset.target) target = raw.dataset.target;
+  const limit = Number(raw.dataset.limit) || 100;
+  const opened = new Set([...raw.querySelectorAll('details[open]')].map(n => Number(n.id.slice(3))));
+  const recent = s.events.slice(-limit);
+  const ids = new Set(recent.map(e => e.id));
+  const events = target ? s.events.filter(e => e.id === Number(target)) : [...s.events.filter(e => opened.has(e.id) && !ids.has(e.id)), ...recent];
+  const old = new Map([...raw.children].map(n => [n.id, n]));
+  raw.replaceChildren(...events.map(e => {
+    if (old.has(`raw${e.id}`)) return old.get(`raw${e.id}`);
+    const detail = document.createElement('details'); detail.id = `raw${e.id}`;
+    const summary = document.createElement('summary'); summary.textContent = `#${e.id} · ${e.type === 'model_change' ? '模型配置已更新' : e.type} · ${new Date(e.time).toLocaleTimeString()}`;
+    detail.append(summary);
+    detail.addEventListener('toggle', () => {
+      if (!detail.open || detail.querySelector('pre')) return;
+      const pre = document.createElement('pre'); pre.textContent = JSON.stringify(e.data, null, 2); detail.append(pre);
+    });
+    return detail;
+  }));
+  if (!target && s.events.length > 100) {
+    const button = document.createElement('button'); button.textContent = '加载更早的原始记录';
+    button.onclick = () => { const first = events[0]?.id; const older = s.events.filter(e => e.id < first).slice(-100); renderRawPage(s, older, raw); button.remove(); };
+    raw.prepend(button);
+  }
+}
+function renderRawPage(s, events, raw) {
+  const fragment = document.createDocumentFragment();
+  for (const e of events) { const details = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = `#${e.id} · ${e.type}`; const pre = document.createElement('pre'); pre.textContent = JSON.stringify(e.data, null, 2); details.append(summary, pre); fragment.append(details); }
+  if (events.length && s.events.some(e => e.id < events[0].id)) { const b = document.createElement('button'); b.textContent = '加载更早的原始记录'; b.onclick = () => { renderRawPage(s, s.events.filter(e => e.id < events[0].id).slice(-100), raw); b.remove(); }; fragment.prepend(b); }
+  raw.dataset.limit = (Number(raw.dataset.limit) || 100) + events.length;
+  raw.prepend(fragment);
+}
+function jumpToEvent(id) {
+  studioView = 'task'; tab = 'team'; showStudioView('task'); updateTaskTab();
+  $('#executionLog').open = true;
+  const s = conversations.find(s => s.id === current); renderRaw(s, id);
+  const detail = document.getElementById(`raw${id}`); if (detail) { detail.open = true; detail.scrollIntoView({ block: 'center' }); }
+}
+$('#messages').addEventListener('toggle', e => { if (e.target.id === 'executionLog' && e.target.open) renderRaw(conversations.find(s => s.id === current)); }, true);
+$('#messages').onclick = e => {
+  const evidence = e.target.closest('[data-evidence]');
+  if (evidence) jumpToEvent(evidence.dataset.evidence);
+  if (e.target.closest('[data-more]')) { timelineLimit += 30; render(); }
+};
+$('#newProgress').onclick = () => { $('#messages').scrollTop = $('#messages').scrollHeight; $('#newProgress').hidden = true; };
+$('#homeInput').addEventListener('input', saveDrafts); $('#input').addEventListener('input', saveDrafts);
+$('#path').addEventListener('input', saveDrafts);
+$('#projectSelect').onchange = () => { $('#projectAdvanced').hidden = $('#projectSelect').value !== '__custom'; saveDrafts(); };
+window.addEventListener('pagehide', saveDrafts);
+$('#applyUpdate').onclick = () => { saveDrafts(); location.reload(); };
+$('#copyPath').onclick = () => navigator.clipboard.writeText(conversations.find(s => s.id === current)?.path || '').catch(e => $('#notice').textContent = e.message);
+restoreHomeDraft();
 const events = new EventSource("/api/events");
 events.onmessage = (event) => {
   const e = JSON.parse(event.data);
@@ -695,17 +767,25 @@ events.onopen = () => {
   fetch("/api/ui-version", { cache: "no-store" })
     .then((response) => response.ok ? response.json() : null)
     .then((version) => {
-      if (version && document.documentElement.dataset.uiVersion !== version.version)
-        location.reload();
+      if (version && document.documentElement.dataset.uiVersion !== version.version) {
+        saveDrafts();
+        $("#updateBanner").hidden = false;
+      }
     })
     .catch(() => {});
-  $("#connectionState").textContent = "已连接";
+  connectionReady = true;
+  studioGraphCache = null;
+  for (const c of conversations) studioSeenEdges.delete(c.id);
+  $("#connectionState").textContent = "实时连接正常";
   $("#notice").textContent = "";
-  refresh();
+  refresh().catch(e => $("#notice").textContent = e.message);
 };
 events.onerror = () => {
+  connectionReady = false;
+  studioGraphCache = null;
+  drawStudioGraph(conversations.find(s => s.id === current));
   $("#notice").textContent = "连接中断，正在重连…";
-  $("#connectionState").textContent = "连接中断";
+  $("#connectionState").textContent = "正在重连 · 任务状态保留";
 };
 await refresh();
 if (conversations.length) {
@@ -838,10 +918,11 @@ $("#notifications").onclick = async () => {
 
 function showStudioView(view) {
   studioView = view;
+  syncAttachments();
   const active = conversations.find((s) => s.id === current);
   $("#heading").innerHTML =
     view === "task" && active
-      ? `${escape(active.title)}<span>${escape(active.path)}</span>`
+      ? `<strong title="${escape(active.title)}">${escape(active.title)}</strong>`
       : {
           home: "工作台",
           task: "当前任务",
@@ -867,7 +948,9 @@ function showStudioView(view) {
   }
   window.lucide?.createIcons();
 }
+$("#taskFilter").onchange = () => render();
 function updateTaskTab() {
+  $("#taskFilter").hidden = tab !== "graph";
   $("#messages").hidden = tab !== "team";
   $("#taskList").hidden = tab !== "graph";
   $("#changesPanel").hidden = tab !== "changes";
@@ -893,51 +976,22 @@ async function loadStudioFiles() {
     $("#notice").textContent = e.message;
   }
 }
-function studioEdges(s) {
-  if (!s) return [];
-  const find = (id) => s.members.find((m) => m.id === id || m.name === id)?.id;
-  const edges = [];
-  for (const e of s.events) {
-    const d = e.data;
-    const t = s.tasks.find((t) => t.id === (d.task || d.id));
-    let from, to, label;
-    if (e.type === "task") {
-      from = "leader";
-      to = d.member;
-      label = "派发任务";
-    }
-    if (e.type === "task_update" && d.status === "review") {
-      from = t?.member;
-      to = t?.reviewer;
-      label = "送审";
-    }
-    if (e.type === "review") {
-      from = t?.reviewer;
-      to = d.verdict === "pass" ? "leader" : t?.member;
-      label = d.verdict === "pass" ? "审查通过" : "退回修改";
-    }
-    if (e.type === "member_question") {
-      from = d.from;
-      to = find(d.to);
-      label = "提问";
-    }
-    if (e.type === "member_answer") {
-      from = d.from;
-      to = d.to;
-      label = "答复";
-    }
-    if (find(from) && find(to) && find(from) !== find(to))
-      edges.push({
-        id: e.id,
-        from: find(from),
-        to: find(to),
-        label,
-        time: e.time,
-        task: t?.title,
-        event: e,
-      });
-  }
-  return edges;
+function taskGroup(t) {
+  return ['running','reviewing','repair','consultation'].includes(t.status) ? '1进行中' : ['queued','review','rate_wait'].includes(t.status) ? '2等待' : t.status === 'passed' ? '3已通过' : '4遗留与已停止';
+}
+function taskNext(t) {
+  const next = {queued:'等待成员执行',running:'等待实现结果与机器验收',review:'等待独立审查',reviewing:'审查者正在核验',repair:'等待实现者修复后重新验收',consultation:'等待负责人给出处理方案',passed:'验收与独立审查已通过',rate_wait:'等待额度恢复',deferred:'遗留项，可补充处理要求',stopped:'已停止，需负责人处理',cancelled:'任务已取消'};
+  return (next[t.status] || '下一步尚未确定') + (t.reason ? ` · ${t.reason}` : '');
+}
+function decisionCard(c, q, local = false) {
+  const button = (answer, text) => `<button ${local ? `data-answer="${answer}" data-id="${q.id}"` : `data-decision="${answer}" data-conversation="${c.id}" data-question="${q.id}"`}>${answer ? '是' : '否'}：${escape(text || '负责人尚未说明此选项后果')}</button>`;
+  return `<article class="card question"><div class="ny-small">${escape(c.title)}</div><h3>${escape(q.question)}</h3><p>${escape(q.context || '背景与影响范围未单独记录，可请负责人补充解释。')}</p><div class="question-options">${button(true,q.yes)}${button(false,q.no)}</div><button ${local ? 'data-other' : `data-open="${c.id}"`}>补充说明或提出其他方案</button></article>`;
+}
+async function answerQuestion(button, conversation, question, answer) {
+  button.disabled = true;
+  try { await api(`conversations/${conversation}/answer`, { id: question, answer }); await refresh(); $('#notice').textContent = '决定已记录，团队将按你的答复继续处理。'; }
+  catch(error) { $('#notice').textContent = error.message; }
+  finally { button.disabled = false; }
 }
 function drawStudio(s) {
   $("#homeRecent").innerHTML = conversations.length
@@ -954,63 +1008,40 @@ function drawStudio(s) {
     c.questions.filter((q) => !q.answered).map((q) => ({ q, c })),
   );
   $("#decisionCount").textContent = pending.length || "";
-  $("#decisionContent").innerHTML = pending.length
-    ? pending
-        .map(
-          ({ q, c }) =>
-            `<article class="card question"><div class="ny-small">${escape(c.title)}</div><h3>${escape(q.question)}</h3><p>是：${escape(q.yes)}<br>否：${escape(q.no)}</p><button data-decision="true" data-conversation="${c.id}" data-question="${q.id}">是</button><button data-decision="false" data-conversation="${c.id}" data-question="${q.id}">否</button><button data-open="${c.id}">我想说点别的</button></article>`,
-        )
-        .join("")
-    : '<div class="card"><h3>暂时没有待决定事项</h3><p class="ny-small">需要你拍板时，会在这里显示。</p></div>';
+  updateRegion('#decisionContent', pending.length ? pending.map(({q,c}) => decisionCard(c,q)).join('') : '<div class="card">暂时没有待决定事项。</div>');
   const reports = conversations
     .flatMap((c) =>
       c.events.filter((e) => e.type === "report").map((e) => ({ c, e })),
     )
     .reverse();
-  $("#resultContent").innerHTML = reports.length
-    ? reports
-        .map(
-          ({ c, e }) =>
-            `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><div class="prose">${markdown(e.data.text)}</div><button class="ny-button" data-open="${c.id}">查看任务和证据</button></article>`,
-        )
-        .join("")
-    : '<div class="card ny-small">还没有交付成果。</div>';
+  updateRegion('#resultContent', reports.length ? reports.map(({c,e}) => {
+    const evidence = deliveryEvidence(c, e);
+    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
+  }).join('') : '<div class="card ny-small">还没有交付成果。</div>');
   if (s) {
     $("#taskTitle").textContent = s.title;
+    $("#taskTitle").title = s.title;
+    $("#fullGoal").textContent = s.title;
     $("#projectPath").textContent = s.path + (s.branch ? " · " + s.branch : "");
-    $("#taskStatus").textContent = s.questions.some((q) => !q.answered)
-      ? "等你决定"
-      : labels[s.status];
-    const running = s.tasks.filter((t) =>
-      ["running", "reviewing", "repair", "consultation"].includes(t.status),
-    );
-    $("#focusTitle").textContent =
-      s.status === "paused"
-        ? s.members.some((m) => m.status === "running")
-          ? "工作流已暂停，正在等待进程结束。"
-          : "工作流已暂停。"
-        : running.length
-          ? running.map((t) => `${t.title} · ${labels[t.status]}`).join("；")
-          : s.status === "done"
-            ? "成果已交付，验收记录可查看。"
-            : s.questions.some((q) => !q.answered)
-              ? "重要决定等待你的答复，其余任务继续推进。"
-              : s.status === "paused"
-                ? "工作流已暂停。"
-                : "知行正在处理你的目标。";
-    $("#taskCounts").textContent = s.tasks.length
-      ? `${s.tasks.length} 项任务 · ${s.tasks.filter((t) => t.status === "passed").length} 项已通过审查`
-      : "还没有派发任务";
-    $("#taskList").innerHTML = s.tasks.length
-      ? s.tasks
+    const summary = progress(s);
+    $("#taskStatus").textContent = summary.waiting ? `等你决定 · ${summary.waiting} 项` : labels[s.status];
+    $("#focusTitle").textContent = summary.action;
+    $("#focusTitle").title = summary.action;
+    $("#nextAction").textContent = summary.next;
+    const handoff = studioEdges(s).at(-1);
+    $("#taskCounts").textContent = `${summary.passed} / ${s.tasks.length} 项已通过 · 需要你 ${summary.waiting} 项` +
+      (handoff ? ` · 最近交接：${name(s, handoff.from)} → ${name(s, handoff.to)}` : '') +
+      (summary.last ? ` · 最后事件 ${new Date(summary.last.time).toLocaleTimeString()}` : '');
+    updateRegion("#taskList", s.tasks.length
+      ? [...s.tasks].filter(t => $("#taskFilter").value !== "blocked" || ["queued","review","consultation","rate_wait","stopped","deferred"].includes(t.status)).sort((a,b) => taskGroup(a).localeCompare(taskGroup(b)))
           .map(
             (
               t,
-            ) => `<div class="task"><strong>${escape(t.title)}</strong><div class="ny-small">${escape(name(s, t.member))} → ${escape(name(s, t.reviewer))} · ${escape(labels[t.status])} · 返修 ${t.failures} 次</div><details><summary>验收标准</summary><pre>${escape(t.description)}
-${escape(t.commands?.join("\n"))}</pre></details></div>`,
+            ) => `<div class="task"><span class="ny-small">${escape(taskGroup(t).slice(1))}</span><br><strong>${escape(t.title)}</strong><div class="ny-small">${escape(name(s, t.member))} → ${escape(name(s, t.reviewer))} · ${escape(labels[t.status])} · 返修 ${t.failures} 次</div><p class="ny-small">${escape(taskNext(t))}</p><details><summary>验收标准</summary><pre>${escape(t.description)}
+${escape(t.commands?.join("\n"))}</pre></details><div class="task-evidence">${s.events.filter(e => ["check","review"].includes(e.type) && e.data.task === t.id).slice(-2).map(e => `<button data-evidence="${e.id}">${e.type === "check" ? "机器验收" : "独立审查"} · 查看证据</button>`).join("")}</div></div>`,
           )
           .join("")
-      : '<p class="ny-small">还没有任务。</p>';
+      : '<p class="ny-small">还没有任务。</p>');
   }
   $("#liveStatus").textContent = s
     ? s.questions.some((q) => !q.answered)
@@ -1018,7 +1049,7 @@ ${escape(t.commands?.join("\n"))}</pre></details></div>`,
       : labels[s.status]
     : "待命";
   $("#memberCount").textContent = s
-    ? `${s.members.length} 位成员 · ${s.members.filter((m) => m.status === "running").length} 人在忙`
+    ? `${s.members.length} 位成员 · ${s.status === "done" ? "本次已交付" : s.members.filter((m) => m.status === "running").length + " 人在忙"}${s.members.length > 8 ? " · 其余成员已聚合，点击聚合节点查看" : ""}`
     : "还没有成员";
   $("#expandGraph").disabled = !s;
   drawStudioGraph(s);
@@ -1027,21 +1058,22 @@ ${escape(t.commands?.join("\n"))}</pre></details></div>`,
 }
 function drawStudioGraph(s) {
   const box = $("#liveGraph"),
-    members = s?.members || [],
-    edges = studioEdges(s),
+    members = (s?.members?.length > 8 ? [...s.members.slice(0,7), {id:"__others",name:`其他 ${s.members.length-7} 人`,role:"点击查看全部",status:"idle"}] : s?.members || []),
+    edges = studioEdges(s).filter(e => members.some(m => m.id === e.from) && members.some(m => m.id === e.to)),
     edge = edges.at(-1),
-    width = Math.max(250, box.clientWidth),
-    height = Math.max(280, box.clientHeight);
+    width = Math.max(220, box.clientWidth),
+    height = Math.max(members.length > 4 ? Math.ceil(members.length / 2) * 106 : 280, Math.round(Math.min(382, Math.max(282, window.innerHeight * 0.36))));
+  box.style.minHeight = height + "px";
   const cache = studioGraphCache;
   if (
     cache &&
     cache.id === s?.id &&
     cache.width === width &&
     cache.height === height &&
-    cache.edge === edge?.id &&
+    cache.edge === edge?.id && cache.status === s?.status && cache.connected === connectionReady &&
     cache.members.length === members.length &&
     cache.members.every(
-      (m, i) => m.id === members[i].id && m.status === members[i].status,
+      (m, i) => m.id === members[i].id && m.status === members[i].status && m.model === members[i].model,
     )
   )
     return;
@@ -1049,8 +1081,8 @@ function drawStudioGraph(s) {
     id: s?.id,
     width,
     height,
-    edge: edge?.id,
-    members: members.map((m) => ({ id: m.id, status: m.status })),
+    edge: edge?.id, status: s?.status, connected: connectionReady,
+    members: members.map((m) => ({ id: m.id, status: m.status, model: m.model })),
   };
   if (!members.length) {
     box.innerHTML =
@@ -1060,27 +1092,7 @@ function drawStudioGraph(s) {
     $("#liveDetailText").textContent = "创建任务后，成员和交接将显示在这里。";
     return;
   }
-  const positions = new Map();
-  const leader = members.find((m) => m.id === "leader") || members[0],
-    others = members.filter((m) => m !== leader);
-  positions.set(leader.id, {
-    x: width / 2,
-    y: members.length === 1 ? 180 : 62,
-  });
-  if (others.length === 1)
-    positions.set(others[0].id, { x: width / 2, y: 280 });
-  else if (others.length === 2) {
-    positions.set(others[0].id, { x: 60, y: 285 });
-    positions.set(others[1].id, { x: width - 60, y: 285 });
-  } else if (others.length === 3) {
-    positions.set(others[0].id, { x: 60, y: 192 });
-    positions.set(others[1].id, { x: width - 60, y: 192 });
-    positions.set(others[2].id, { x: width / 2, y: 326 });
-  } else
-    others.forEach((m, i) =>
-      positions.set(m.id, { x: i % 2 ? width - 60 : 60, y: i < 2 ? 180 : 315 }),
-    );
-  for (const point of positions.values()) point.y *= height / 382;
+  const positions = graphPositions(members, width, height);
   const pathFor = (e) => {
     const a = positions.get(e.from),
       b = positions.get(e.to);
@@ -1108,11 +1120,11 @@ function drawStudioGraph(s) {
     animate =
       edge &&
       seen !== undefined &&
-      edge.id > seen &&
+      edge.id > seen && connectionReady && s.status === "working" &&
       !matchMedia("(prefers-reduced-motion: reduce)").matches;
   studioSeenEdges.set(s.id, edge?.id || 0);
   let svg = `<svg class="ny-graph-svg" viewBox="0 0 ${width} ${height}" role="img" aria-label="真实任务交接">`;
-  for (const e of unique) svg += `<path class="ny-wire" d="${pathFor(e)}"/>`;
+  for (const e of unique) svg += `<path class="ny-wire" d="${pathFor(e)}"/><path class="ny-wire-hit" data-studio-edge="${e.id}" tabindex="0" role="button" aria-label="${escape(e.label)}" d="${pathFor(e)}"/>`;
   if (edge) {
     const path = pathFor(edge);
     svg += `<path class="ny-wire-active" d="${path}"/><path class="ny-wire-hit" data-studio-edge="${edge.id}" d="${path}"/>`;
@@ -1120,16 +1132,26 @@ function drawStudioGraph(s) {
       svg += `<circle class="ny-particle" r="3"><animateMotion dur="1.1s" repeatCount="1" fill="remove" path="${path}"/></circle>`;
   }
   svg += "</svg>";
+  const focusedMember = document.activeElement?.dataset.studioMember;
+  const previousNodes = new Map([...box.querySelectorAll("[data-studio-member]")].map(n => [n.dataset.studioMember, n]));
   box.innerHTML =
     svg +
     members
       .map(
         (m) =>
-          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running"}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(labels[m.status] || "待命")}</span></button>`,
+          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running" && s.status === "working" && connectionReady}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(s.status === "done" ? "本次已交付" : m.status === "idle" ? "空闲" : labels[m.status] || m.status)}</span></button>`,
       )
       .join("");
   for (const node of box.querySelectorAll("[data-studio-member]")) {
     const p = positions.get(node.dataset.studioMember);
+    const previous = previousNodes.get(node.dataset.studioMember);
+    if (previous) {
+      if (previous.innerHTML !== node.innerHTML) previous.innerHTML = node.innerHTML;
+      previous.dataset.busy = node.dataset.busy;
+      node.replaceWith(previous);
+      previous.style.left = p.x - 50 + 'px'; previous.style.top = p.y - 41 + 'px';
+      continue;
+    }
     node.style.left = p.x - 50 + "px";
     node.style.top = p.y - 41 + "px";
   }
@@ -1151,9 +1173,15 @@ function drawStudioGraph(s) {
     $("#liveDetailText").textContent =
       "成员来自当前项目，交接发生后会在此显示。";
   }
+  if (focusedMember) box.querySelector(`[data-studio-member="${focusedMember}"]`)?.focus({preventScroll:true});
+  if (selectedMember?.conversation === s.id) showMemberDetail(s, selectedMember.id);
+  if (selectedEdge?.conversation === s.id) {
+    const selected = studioEdges(s).find(e => e.id === selectedEdge.id);
+    if (selected) { $("#liveDetailTitle").textContent = `${name(s,selected.from)} → ${name(s,selected.to)} · ${selected.label}`; $("#liveDetailText").textContent = `${selected.task || ''} · ${new Date(selected.time).toLocaleString()}`; }
+  }
   $("#liveEvents").innerHTML =
     edges
-      .slice(-5)
+      .slice(-3)
       .reverse()
       .map(
         (e) =>
@@ -1164,10 +1192,9 @@ function drawStudioGraph(s) {
 const previousNew = $("#new").onclick;
 $("#new").onclick = (e) => {
   previousNew(e);
-  attachments = [];
-  $("#attachments").textContent = "";
-  $("#homeAttachments").textContent = "";
-  $("#path").value = "";
+  saveDrafts();
+  syncDraftContext();
+  restoreHomeDraft();
   studioView = "home";
   studioGraphCache = null;
   drawStudio(null);
@@ -1175,19 +1202,7 @@ $("#new").onclick = (e) => {
 };
 for (const b of document.querySelectorAll("[data-view-nav]"))
   b.onclick = () => showStudioView(b.dataset.viewNav);
-$("#homeStart").onclick = () => {
-  if (!$("#homeInput").value.trim()) {
-    $("#homeInput").focus();
-    return;
-  }
-  current = undefined;
-  studioView = "task";
-  drawStudio(null);
-  $("#panel").textContent = "正在创建任务…";
-  $("#input").value = $("#homeInput").value;
-  showStudioView("task");
-  $("#composer").requestSubmit();
-};
+$("#homeStart").onclick = () => sendRequest(true);
 $("#homeInput").onkeydown = (e) => {
   if (e.key === "Enter" && !e.shiftKey && !e.isComposing) {
     e.preventDefault();
@@ -1206,15 +1221,7 @@ $("#homeRecent").onclick = (e) => {
 $("#decisionContent").onclick = async (e) => {
   const b = e.target.closest("[data-decision]");
   if (b) {
-    try {
-      await api(`conversations/${b.dataset.conversation}/answer`, {
-        id: b.dataset.question,
-        answer: b.dataset.decision === "true",
-      });
-      await refresh();
-    } catch (e) {
-      $("#notice").textContent = e.message;
-    }
+    await answerQuestion(b, b.dataset.conversation, b.dataset.question, b.dataset.decision === 'true');
   }
   const open = e.target.closest("[data-open]");
   if (open) {
@@ -1224,14 +1231,20 @@ $("#decisionContent").onclick = async (e) => {
     $("#input").focus();
   }
 };
-$("#resultContent").onclick = (e) => {
-  const b = e.target.closest("[data-open]");
-  if (b) {
-    current = b.dataset.open;
-    studioView = "task";
-    render();
+$('#resultContent').onclick = async e => {
+  const copy = e.target.closest('[data-copy-report]');
+  if (copy) {
+    const report = conversations.flatMap(c => c.events).find(e => e.id === Number(copy.dataset.copyReport));
+    try { await navigator.clipboard.writeText(report?.data.text || ''); $('#notice').textContent = '交付报告已复制。'; } catch (error) { $('#notice').textContent = error.message; }
   }
+  const b = e.target.closest('[data-open]');
+  if (!b) return;
+  current = b.dataset.open; studioView = 'task'; render();
+  if (b.hasAttribute('data-changes')) { tab = 'changes'; updateTaskTab(); await loadStudioFiles(); }
+  else if (b.dataset.event) jumpToEvent(b.dataset.event);
+  else $('#input').focus();
 };
+$('#taskList').onclick = e => { const b = e.target.closest('[data-evidence]'); if (b) jumpToEvent(b.dataset.evidence); };
 $("#settingsDialog .close").onclick = () =>
   showStudioView(current ? "task" : "home");
 $("#changesPanel").onclick = (e) => $("#panel").onclick(e);
@@ -1243,10 +1256,9 @@ function studioGraphClick(e) {
   if (!s) return;
   const member = e.target.closest("[data-studio-member]");
   if (member) {
-    const m = s.members.find((m) => m.id === member.dataset.studioMember);
-    $("#liveDetailTitle").textContent = m.name + " · " + m.role;
-    $("#liveDetailText").textContent =
-      `${m.model} / ${m.effort} · ${labels[m.status] || "待命"}`;
+    selectedEdge = null;
+    selectedMember = { conversation: s.id, id: member.dataset.studioMember };
+    showMemberDetail(s, selectedMember.id);
   }
   const edge = e.target.closest("[data-studio-edge]");
   if (edge) {
@@ -1254,26 +1266,23 @@ function studioGraphClick(e) {
       (x) => x.id === Number(edge.dataset.studioEdge),
     );
     if (item) {
+      selectedMember = null;
+      selectedEdge = {conversation:s.id,id:item.id};
       $("#liveDetailTitle").textContent =
         `${name(s, item.from)} → ${name(s, item.to)} · ${item.label}`;
       $("#liveDetailText").textContent =
         (item.task || "") + " · " + new Date(item.time).toLocaleString();
-      studioView = "task";
-      tab = "team";
-      showStudioView("task");
-      updateTaskTab();
-      document
-        .getElementById("e" + item.id)
-        ?.scrollIntoView({ block: "center" });
+      jumpToEvent(item.id);
     }
   }
 }
 $("#liveGraph").onclick = studioGraphClick;
+$("#liveGraph").onkeydown = e => { if (["Enter", " "].includes(e.key) && e.target.matches("[data-studio-edge]")) { e.preventDefault(); studioGraphClick(e); } };
 $("#liveEvents").onclick = studioGraphClick;
-new ResizeObserver(() => {
+new ResizeObserver(() => requestAnimationFrame(() => {
   studioGraphCache = null;
   drawStudioGraph(conversations.find((s) => s.id === current));
-}).observe($("#liveGraph"));
+})).observe($("#liveGraph"));
 showStudioView("home");
 drawStudio(conversations.find((s) => s.id === current));
 

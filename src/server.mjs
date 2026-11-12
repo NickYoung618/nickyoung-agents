@@ -244,7 +244,7 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261112-screen-4" });
+        return json(res, 200, { version: "20261113-ux-1" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === "/api/models")
         return json(
@@ -484,6 +484,9 @@ function asset(p, res) {
     "/app.js": "app.js",
     "/vendor.mjs": "vendor.mjs",
     "/event-projection.mjs": "event-projection.mjs",
+    "/studio/event-projection.mjs": "studio/event-projection.mjs",
+    "/studio/draft-manager.mjs": "studio/draft-manager.mjs",
+    "/studio/agent-graph.mjs": "studio/agent-graph.mjs",
     "/style.css": "style.css",
     "/viewport.css": "viewport.css",
     "/ui-package.css": "ui-package.css",
