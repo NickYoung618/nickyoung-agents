@@ -113,8 +113,11 @@ test("P0：runtime 信息在启动时固定，脏源码不冒充干净 SHA", () 
     const dirty = captureRuntime(f.path);
     assert.equal(dirty.buildCommit, clean.buildCommit);
     assert.equal(dirty.dirty, true);
+    assert.match(dirty.contentVersion,/^[a-f0-9]{64}$/);
     assert.notEqual(dirty.contentVersion, clean.contentVersion);
     assert.equal(clean.dirty, false);
+    writeFileSync(join(f.path,'untracked.png'),Buffer.alloc(2*1024*1024,123));
+    assert.match(captureRuntime(f.path).contentVersion,/^[a-f0-9]{64}$/);
   } finally {
     f.clean();
   }
@@ -258,4 +261,27 @@ test('P1：切换批次拒绝迟到产物；相同提交在新批次重新关联
     assert.equal(f.p.store.list('c')[1].cycleId,'two');
     assert.equal(f.p.store.list('c')[1].validationStatus,'draft');
   } finally {f.clean();}
+});
+test('P2：桥消息只接受对应预览窗口、标识和有限结构，不能执行业务命令',async()=>{
+  const {previewMessage}=await import('../public/studio/preview-panel.mjs');
+  const frame={contentWindow:{}},a={artifactId:'artifact',artifactVersion:2};
+  const event={source:frame.contentWindow,origin:'null',data:{source:'nickyoung-preview',artifactId:'artifact',version:2,type:'ready',message:''}};
+  assert.equal(previewMessage(event,frame,a),true);
+  for(const bad of [{source:{}},{origin:'https://workbench'},{data:{...event.data,artifactId:'other'}},{data:{...event.data,version:1}},{data:{...event.data,type:'delete'}},{data:{...event.data,message:'x'.repeat(1001)}}])assert.equal(!!previewMessage({...event,...bad},frame,a),false);
+});
+test('P2：团队命令工具的真实构建完成自动登记产物并关联原命令日志',async()=>{
+  const f=setup();
+  try{
+    f.e.previews=f.p;
+    writeFileSync(join(f.path,'package.json'),JSON.stringify({scripts:{build:`node -e "require('node:fs').mkdirSync('dist',{recursive:true});require('node:fs').writeFileSync('dist/index.html','<h1>tool preview</h1>')"`}}));
+    f.e.teamTokens.set('tool',{conversation:'c',member:'m',cwd:f.path,readOnly:false,leader:false,runId:'tool-run'});
+    const result=await f.e.teamAction('tool',{type:'project_command',command:'npm run build'});
+    assert.equal(result.exitCode,0,JSON.stringify(result));
+    const a=f.p.store.list('c')[0];assert.ok(a);
+    const ev=f.e.state('c').events.find(e=>e.id===a.buildEvidenceIds[0]);
+    assert.equal(ev.type,'command_result');assert.equal(ev.data.exitCode,0);assert.equal(ev.data.runId,'tool-run');
+    const {projectActivities}=await import('../src/activity-projector.mjs');
+    assert.equal(projectActivities(f.e.state('c')).byMember.m.kind,'command_finished');
+    assert.equal(a.validationStatus,'draft');
+  }finally{f.clean();}
 });

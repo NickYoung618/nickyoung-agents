@@ -275,10 +275,14 @@ const server = https.createServer(
           )
         )
           throw Error("文件路径不支持");
-        const content = readFileSync(safeFile(s.path, file)),
+        const deleted = !existsSync(resolve(s.path, file));
+        const content = deleted
+            ? Buffer.from(engine.git(s.path, ['show', 'HEAD:' + file]))
+            : readFileSync(safeFile(s.path, file)),
           image = /\.(?:png|jpe?g|webp)$/i.test(file);
         return json(res, 200, {
           file,
+          deleted,
           image,
           content: content.toString(image ? "base64" : "utf8"),
           diff: engine.git(s.path, ["diff", "HEAD", "--", file]),

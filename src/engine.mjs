@@ -309,6 +309,7 @@ export class Engine {
         taskId,
         leader,
         cycleId: s.cycleId,
+        runId: trace.runId,
         generation: s.cycle?.generation,
       });
     try {
@@ -567,6 +568,10 @@ export class Engine {
     if (scope.leader) throw new Error("负责人仅使用只读文件工具");
     if (typeof action.command !== "string") throw new Error("缺少命令");
     const key = scope.conversation + ":" + scope.member + ":command";
+    const commandId = id();
+    const trace = {commandId, member:scope.member, runId:scope.runId, cycleId:scope.cycleId, taskId:scope.taskId, command:action.command};
+    this.event(scope.conversation,'command_start',{...trace,started:new Date().toISOString()});
+    if (!scope.readOnly) this.previews?.started(scope.conversation,{command:action.command});
     const output = [];
     const proc = runProcess(
       "codex",
@@ -588,6 +593,7 @@ export class Engine {
           output.push(event);
           this.event(scope.conversation, "process", {
             member: scope.member,
+            runId: scope.runId,
             event,
           });
         },
@@ -597,8 +603,12 @@ export class Engine {
     this.running.set(key, proc);
     try {
       await proc.promise;
+      const result=this.event(scope.conversation,'command_result',{...trace,exitCode:0,ended:new Date().toISOString()});
+      if (!scope.readOnly) await this.previews?.completed(scope.conversation,{cwd:scope.cwd,command:action.command,cycleId:scope.cycleId,taskId:scope.taskId,runId:scope.runId,buildEvidenceIds:[result.id]});
       return { exitCode: 0, events: output };
     } catch (e) {
+      this.event(scope.conversation,'command_result',{...trace,exitCode:e.exitCode??1,interrupted:!!e.signal,ended:new Date().toISOString()});
+      if (!scope.readOnly) this.previews?.failed(scope.conversation,{command:action.command,output:e.message,interrupted:!!e.signal});
       return { exitCode: e.exitCode ?? 1, events: output, error: e.message };
     } finally {
       this.running.delete(key);

@@ -9,7 +9,8 @@ const adaptiveOut=new URL('../evidence/adaptive/ui/',import.meta.url);mkdirSync(
 mkdirSync(out, {recursive:true});
 const evidence = [], errors = [], streams = new Set();
 let createBody,lastMessage;
-let baseline = false, failCreate = true, createCount = 0, version='20261113-ux-1';
+const currentUiVersion=readFileSync(new URL('../public/index.html',import.meta.url),'utf8').match(/data-ui-version="([^"]+)"/)[1];
+let baseline = false, failCreate = true, createCount = 0, version=currentUiVersion;
 const makeState = (n=3,count=30) => ({ id:'fixture', title:'为现有项目增加命令行工具并完成独立审查与验收', path:'/isolated/ux-fixture', branch:'ux-fixture',status:'working',
   members:Array.from({length:n},(_,i)=>({id:i===0?'leader':`m${i}`,name:['知行','砚舟','青禾','时雨','松间','北辰','鹿鸣','云起'][i]||`成员${i}`,role:i===0?'负责人':i===2?'审查者':'实现者',model:'fixture-model',effort:'medium',status:i===1?'running':'idle'})),
   tasks:[{id:'t1',title:'实现命令行工具',member:'m1',reviewer:'m2',status:'running',failures:0,description:'实际运行命令验收',commands:['node --test']}],questions:[],
@@ -64,10 +65,11 @@ try {
  await page.waitForFunction(()=>document.querySelector('#messages').textContent.includes('新的实际事件'));
  assert.ok(await page.locator('#executionLog').getAttribute('open')!==null);assert.equal(await page.inputValue('#input'),'会话独立草稿');assert.ok(Math.abs(await page.locator('#messages').evaluate(n=>n.scrollTop)-before)<4);
  assert.ok(await page.locator('#rawEvents details[open]').count());evidence.push('SSE 更新保留输入、滚动位置和展开日志');
+ assert.equal(await page.locator('#updateBanner').isVisible(),false);
  version='new-fixture-version'; await page.evaluate(()=>{for(const item of []){} });
  // Reconnecting re-checks version and must offer a user-controlled update.
  for(const stream of streams) stream.end();
- await page.waitForSelector('#updateBanner:not([hidden])',{timeout:10000});assert.equal(await page.inputValue('#input'),'会话独立草稿');evidence.push('版本变化提示主动更新，保留输入');version='20261113-ux-1';
+ await page.waitForSelector('#updateBanner:not([hidden])',{timeout:10000});assert.equal(await page.inputValue('#input'),'会话独立草稿');evidence.push('版本变化提示主动更新，保留输入');version=currentUiVersion;
  await page.click('#new');await page.click('#homeRecent button');assert.equal(await page.inputValue('#input'),'会话独立草稿');
  for(const n of [1,2,3,4,6,8]) {
    state=[makeState(n)];send(); await page.waitForFunction(n=>document.querySelectorAll('#liveGraph .ny-node').length===n,n);

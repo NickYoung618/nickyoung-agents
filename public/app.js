@@ -621,7 +621,7 @@ $("#logout").onclick = async () => {
   await api("logout", {});
   location.href = "/login";
 };
-let timer;
+let timer, needsStateRefresh=false;
 const drafts = draftManager(localStorage, () => { $("#notice").textContent = '本地草稿保存不可用，请保留输入内容后再刷新。'; });
 let draftContext, connectionReady = false, selectedMember = null, selectedEdge = null;
 let messageSession, messageSignature, timelineLimit = 8;
@@ -777,7 +777,8 @@ events.onmessage = (event) => {
   }
   let applied=false;
   if(e.id&&e.conversation){const s=conversations.find(s=>s.id===e.conversation);if(s){s.artifacts ||= [];s.preview ||= {status:'unavailable'};s.cycles ||= [];applied=applyStateEvent(s,e);if(refreshing){const pending=liveBuffer.get(s.id)||[];pending.push(e);if(pending.length>1024){pending.shift();refreshAgain=true;}liveBuffer.set(s.id,pending);}}}
-  if(!timer)timer=setTimeout(()=>{timer=null;if(applied)render();else refresh().catch(e=>$('#notice').textContent=e.message);},200);
+  if(!applied)needsStateRefresh=true;
+  if(!timer)timer=setTimeout(()=>{timer=null;const fetchState=needsStateRefresh;needsStateRefresh=false;if(fetchState)refresh().catch(e=>$('#notice').textContent=e.message);else render();},200);
 };
 events.onopen = () => {
   fetch("/api/ui-version", { cache: "no-store" })
@@ -966,6 +967,7 @@ function showStudioView(view) {
 }
 $("#taskFilter").onchange = () => render();
 function updateTaskTab() {
+  $("#taskView").dataset.tab = tab;
   $("#taskFilter").hidden = tab !== "graph";
   $("#messages").hidden = tab !== "team";
   $("#previewPanel").hidden = tab !== "preview";
@@ -981,7 +983,9 @@ async function loadStudioFiles() {
     return;
   }
   try {
+    const fileConversation = current;
     const d = await api(`conversations/${current}/files`);
+    if (current !== fileConversation) return;
     $("#changesPanel").innerHTML = d.files.length
       ? d.files
           .map(

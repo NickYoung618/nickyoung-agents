@@ -162,8 +162,8 @@ export async function bundleStatic(root, entry = "index.html") {
     }
   }
   const html = serialize(doc);
-  if (Buffer.byteLength(html) > 16 * 1024 * 1024)
-    throw Error("预览产物超过 16 MiB");
+  if (Buffer.byteLength(html) > 8 * 1024 * 1024)
+    throw Error("预览产物超过 8 MiB");
   return html;
 }
 export const previewCsp =

@@ -132,7 +132,7 @@ const fs=require('node:fs');const args=process.argv.slice(2),schema=JSON.parse(f
       req.end(body === undefined ? undefined : JSON.stringify(body));
     });
   let ready = false;
-  for (let i = 0; i < 80; i++) {
+  for (const deadline=Date.now()+20000; Date.now()<deadline;) {
     try {
       await request("/login");
       ready = true;
@@ -141,7 +141,12 @@ const fs=require('node:fs');const args=process.argv.slice(2),schema=JSON.parse(f
       await new Promise((r) => setTimeout(r, 50));
     }
   }
-  if (!ready) throw Error("隔离服务启动失败 " + log);
+  if (!ready) {
+    child.kill('SIGTERM');
+    if (child.exitCode === null) await new Promise(r=>child.once('close',r));
+    rmSync(dir,{recursive:true,force:true});
+    throw Error("隔离服务启动失败 " + log);
+  }
   const password = readFileSync(join(data, "initial-password"), "utf8").trim(),
     login = await request("/api/login", { password }),
     cookie = login.headers["set-cookie"][0].split(";")[0];

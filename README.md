@@ -90,3 +90,9 @@ Codex 的本应用团队工具使用按工具配置的 `approval_mode = "approve
 新会话在工作台「执行策略」选择 adaptive_v1，未选择仍运行 legacy。支持 checks_only、final_review、checkpoint_plus_final：首次规划同时分流，任务连续实现，程序记录正式检查和固定提交审查；普通成功不调用负责人，建议不触发返修。完整 direct 预设才可零规划。旧会话不切换引擎。
 
 `npm run test:workflow` 运行无模型调度测试；`npm run trace:workflow` 保存受控调用轨迹。`npm run evaluate:workflow` 默认标注真实评估未运行，真实模型必须显式 --live 和预算。规范、启用参数、证据与回滚见 [ADAPTIVE-WORKFLOW.md](docs/ADAPTIVE-WORKFLOW.md)。本轮代码尚未部署，生产默认配置保持原样。
+
+## 活动与作品预览
+
+任务页的“预览”可生成、操作和下载受隔离的静态作品；“运行记录”显示真实工具、命令及产物事件，文件与日志可点击。新版本默认提示，勾选“跟随最新”后才切换；构建失败保留上次成功画面。运行版本、实际会话流程、草稿与验收状态分开显示。
+
+支持现有 legacy 和显式启用的 adaptive_v1。视觉任务可规划为 inline_preview，其他任务继续 downloadable_source。静态适配目前面向 HTML/TS/JS/CSS 本地资源，不提供后台服务或 HMR 代理。实现、限制、验证和回滚见 [活动可见与作品预览](docs/FEEDBACK-PREVIEW.md)。隔离交互回归：`npm run test:preview`。

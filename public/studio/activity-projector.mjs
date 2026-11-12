@@ -166,7 +166,7 @@ export function projectActivities(s, { limit = 20 } = {}) {
     }
     if (e.type === "command_start")
       add(d.commandId, e, {
-        memberId: "machine",
+        memberId: d.member || "machine",
         kind: "command_running",
         status: "running",
         command: d.command,
@@ -176,7 +176,7 @@ export function projectActivities(s, { limit = 20 } = {}) {
       });
     if (e.type === "command_result")
       add(d.commandId, e, {
-        memberId: "machine",
+        memberId: d.member || "machine",
         kind: "command_finished",
         status: d.interrupted
           ? "stopped"

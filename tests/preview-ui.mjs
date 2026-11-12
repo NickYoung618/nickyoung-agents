@@ -14,6 +14,7 @@ try {
       ignoreHTTPSErrors: true,
       timezoneId: "Asia/Shanghai",
       viewport: { width: 1440, height: 900 },
+      recordVideo: { dir: f.dir + "/video", size: {width:1440,height:900} },
     }),
     page = await context.newPage();
   page.on("pageerror", (e) => { errors.push(e.message); console.error(e.stack); });
@@ -23,10 +24,61 @@ try {
   });
   await page.goto(f.origin);
   await page.waitForSelector("#homeRecent button");
+  const runtime = await (await context.request.get(f.origin+'/api/runtime')).json();
+  await page.waitForFunction(commit=>document.querySelector('#runtimeInfo').textContent.includes(commit),runtime.buildCommit);
+  assert.match(await page.locator('#workflowChoice').textContent(), /legacy/);
+  await page.locator('details').filter({has:page.locator('#workflowVersion')}).locator('summary').click();
+  await page.selectOption('#workflowVersion','adaptive_v1');
+  assert.match(await page.locator('#workflowChoice').textContent(), /adaptive_v1/);
+  await page.selectOption('#workflowVersion','legacy');
+  checks.push('A01 登录 UI 与运行接口显示相同构建；选择流程明确可见');
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.click('[data-view-nav="home"]');
+  const create = await context.request.post(f.origin + "/api/conversations", {
+    data: { text: "隔离持续活动观察", path: f.path, workflowVersion: "legacy" },
+  });
+  assert.equal(create.status(), 200);
+  const created = await create.json();
+  assert.equal(created.workflowVersion, "legacy");
+  await page
+    .locator("#homeRecent button")
+    .filter({ hasText: "隔离持续活动观察" })
+    .waitFor();
+  await page
+    .locator("#homeRecent button")
+    .filter({ hasText: "隔离持续活动观察" })
+    .click();
+  await page.click('[data-tab="team"]');
+  await page.fill("#input", "持续输出时保留输入");
+  await page.locator("#activityFeed").filter({ hasText: "visible-" }).waitFor();
+  const streamingState = await context.request.get(f.origin + "/api/state");
+  const active = (await streamingState.json()).find((s) => s.id === created.id);
+  assert.ok(
+    !active.events.some((e) => e.type === "model_result"),
+    "活动必须在模型回合结束前出现",
+  );
+  assert.equal(await page.inputValue("#input"), "持续输出时保留输入");
+  await page.screenshot({
+    path: new URL("live-activity-before-turn-end.png", out).pathname,
+    animations: "disabled",
+  });
+  checks.push("A06/A07 连续工具事件在回合结束前显示并可追溯，未清空输入");
+  await page.click('[data-activity-file="README.md"]');
+  await page.waitForFunction(() =>
+    document.querySelector("#filePreview")?.textContent.includes("具身智能"),
+  );
+  checks.push("A09 点击工具提及的文件打开实际源码");
+  await page.click('[data-tab="preview"]');
+  assert.equal(await page.locator(".ny-preview-frame").count(), 0);
+  assert.match(await page.locator("[data-frame]").textContent(), /尚无/);
+  checks.push("A08/A14 切换会话不带入上一作品；无产物有明确提示");
+  await page.click('[data-view-nav="home"]');
   await page
     .locator("#homeRecent button")
     .filter({ hasText: "具身智能动画" })
     .click();
+  assert.match(await page.locator("#workflowBadge").textContent(), /legacy/);
+  assert.match(await page.locator("#workflowBadge").textContent(), new RegExp(runtime.buildCommit.slice(0,8)));
   await page.click('[data-tab="preview"]');
   await page.click("[data-generate]");
   await page.waitForSelector(".ny-preview-frame");
@@ -61,7 +113,7 @@ try {
     .evaluate(async () => {
       let dom = false,
         storage = false,
-        api = false;
+        api = false, cookie = false, popup = false, topNavigation = false;
       try {
         void parent.document.body;
         dom = true;
@@ -74,9 +126,12 @@ try {
         await fetch("/api/state");
         api = true;
       } catch {}
-      return { dom, storage, api };
+      try { void document.cookie; cookie=true; } catch {}
+      try { const w=window.open('about:blank'); popup=!!w; w?.close(); } catch {}
+      try { top.location.href=location.href+'#escape'; topNavigation=true; } catch {}
+      return { dom, storage, api, cookie, popup, topNavigation };
     });
-  assert.deepEqual(access, { dom: false, storage: false, api: false });
+  assert.deepEqual(access, { dom: false, storage: false, api: false, cookie:false, popup:false, topNavigation:false });
   checks.push("A11 iframe 不能访问主站 DOM/存储/接口");
 
   await page.click("[data-reload]");
@@ -122,11 +177,16 @@ try {
     () => document.querySelector("[data-version]").options.length === 2,
   );
   const visibleMs = performance.now() - start;
+  const versionState = (await (await context.request.get(f.origin+'/api/state')).json()).find(s=>s.id==='animation');
+  const registered = versionState.events.filter(e=>e.type==='artifact_ready').at(-1);
+  const registeredToObservedMs=Date.now()-Date.parse(registered.time);
+  assert.ok(registeredToObservedMs<=2000,`产物登记至可见 ${registeredToObservedMs}ms`);
   assert.equal(
     await page.locator(".ny-preview-frame").getAttribute("src"),
     beforeSrc,
   );
   assert.equal(await page.inputValue("#input"), "看着作品继续修改的草稿");
+  assert.equal(await page.evaluate(()=>document.activeElement.id),"input");
   assert.match(
     await page.locator("[data-preview-state]").textContent(),
     /新版本/,
@@ -177,6 +237,7 @@ try {
   checks.push({
     name: "A03/A04/A05 草稿版本更新、跟随最新、历史画面与输入焦点、构建失败保留",
     observedRequestThroughVisibleMs: Math.round(visibleMs),
+    registeredToObservedUpperBoundMs: registeredToObservedMs,
     targetMs: 2000,
     includesBundlingAndRoundTrip: true,
   });
@@ -184,8 +245,16 @@ try {
     path: new URL("failed-keeps-preview.png", out).pathname,
     animations: "disabled",
   });
+  await context.request.post(f.origin+'/api/conversations/animation/preview',{data:{}});
+  await page.waitForFunction(()=>!document.querySelector('[data-preview-state]').textContent.includes('构建失败'));
   for (const width of [1440, 1280, 390, 360]) {
     await page.setViewportSize({ width, height: width < 600 ? 844 : 900 });
+    const live=page.frameLocator('.ny-preview-frame');
+    await live.locator('#play-toggle').click();
+    await live.locator('#play-toggle').click();
+    await live.locator('#arm-links').scrollIntoViewIfNeeded();
+    const visible=await page.locator('.ny-preview-frame').boundingBox();
+    assert.ok(visible.y < (await page.locator('#input').boundingBox()).y);
     await page.screenshot({
       path: new URL(`preview-${width}.png`, out).pathname,
       animations: "disabled",
@@ -201,47 +270,10 @@ try {
     );
   }
   checks.push("A13 四种视口无横向溢出，输入仍可见");
-  await page.setViewportSize({ width: 1440, height: 900 });
-  await page.click('[data-view-nav="home"]');
-  const create = await context.request.post(f.origin + "/api/conversations", {
-    data: { text: "隔离持续活动观察", path: f.path, workflowVersion: "legacy" },
-  });
-  assert.equal(create.status(), 200);
-  const created = await create.json();
-  assert.equal(created.workflowVersion, "legacy");
-  await page
-    .locator("#homeRecent button")
-    .filter({ hasText: "隔离持续活动观察" })
-    .waitFor();
-  await page
-    .locator("#homeRecent button")
-    .filter({ hasText: "隔离持续活动观察" })
-    .click();
-  await page.click('[data-tab="team"]');
-  await page.fill("#input", "持续输出时保留输入");
-  await page.locator("#activityFeed").filter({ hasText: "visible-" }).waitFor();
-  const streamingState = await context.request.get(f.origin + "/api/state");
-  const active = (await streamingState.json()).find((s) => s.id === created.id);
-  assert.ok(
-    !active.events.some((e) => e.type === "model_result"),
-    "活动必须在模型回合结束前出现",
-  );
-  assert.equal(await page.inputValue("#input"), "持续输出时保留输入");
-  await page.screenshot({
-    path: new URL("live-activity-before-turn-end.png", out).pathname,
-    animations: "disabled",
-  });
-  checks.push("A06/A07 连续工具事件在回合结束前显示并可追溯，未清空输入");
-  await page.click('[data-activity-file="README.md"]');
-  await page.waitForFunction(() =>
-    document.querySelector("#filePreview")?.textContent.includes("具身智能"),
-  );
-  checks.push("A09 点击工具提及的文件打开实际源码");
-  await page.click('[data-tab="preview"]');
-  assert.equal(await page.locator(".ny-preview-frame").count(), 0);
-  assert.match(await page.locator("[data-frame]").textContent(), /尚无/);
-  checks.push("A08/A14 切换会话不带入上一作品；无产物有明确提示");
   assert.deepEqual(errors, []);
+  const recording=page.video();
+  await context.close();
+  await recording.saveAs(new URL('operation.webm',out).pathname);
   writeFileSync(
     new URL("browser.json", out),
     JSON.stringify(

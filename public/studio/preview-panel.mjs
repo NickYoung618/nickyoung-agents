@@ -129,7 +129,7 @@ export class PreviewPanel {
       if (mode === "source")
         n.textContent = a?.sourceCommit
           ? "下载源码"
-          : "下载已提交源码（预览来源未确认）";
+          : "下载已提交源码";
     }
     this.q("[data-build-evidence]").hidden = !a?.buildEvidenceIds?.length;
     const key = s.id + ":" + (a?.artifactId || "none");

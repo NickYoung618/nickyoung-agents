@@ -153,6 +153,7 @@ export async function executeCheck(engine, c, cwd, gate, trace) {
           gateId: trace.unitId,
           runId: trace.runId,
           buildEvidenceIds: [resultEvent.id],
+          allowedOutputs: gate.outputs,
         });
     }
     if (exitCode)
