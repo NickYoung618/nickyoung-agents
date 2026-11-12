@@ -1,0 +1,17 @@
+{
+  "errors": [],
+  "screenshots": [
+    "login-light",
+    "completed-light",
+    "completed-dark",
+    "graph-light",
+    "settings-light",
+    "settings-dark",
+    "new-light",
+    "new-dark"
+  ],
+  "viewport": {
+    "width": 1440,
+    "height": 960
+  }
+}

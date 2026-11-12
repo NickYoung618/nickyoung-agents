@@ -1,19 +1,18 @@
 # NickYoung
 
-尼克杨助手：通过真实 Claude / Codex CLI 组织开发和审查。Node 24 内置 HTTPS、SQLite 和静态界面，无 npm 运行依赖。
+尼克杨助手，通过真实 Claude / Codex CLI 组织开发、验收和审查。服务端使用 Node 24 内置 HTTPS 和 SQLite，前端资源随源码提供。
 
-## 启动与访问
+当前模型：负责人 Sonnet / low，执行成员 GPT-6.1-Sol / medium，辅助成员 GPT-6-Astra / high。可以在设置中调整模型和成员档位。
 
-```bash
-cd /home/ubuntu/disk/dzk/nickyoung
-npm start
-```
+## 访问
 
-打开 https://43.156.51.71:8787 或 https://localhost:8787 。首次启动口令位于 `data/initial-password`（文件权限 600），登录后在设置中更改。不要把该文件或 `data/` 分享出去。
+打开 https://43.156.51.71:8787 ，也可在服务器上访问 https://localhost:8787 。服务为 `nickyoung.service`，已启用用户级开机自启。
 
-首次启动生成的证书是 `data/cert.pem`。macOS：打开“钥匙串访问”，将证书导入“系统”钥匙串，双击证书，在“信任”里将 SSL 设置为“始终信任”。Windows：双击证书，选择“安装证书”，导入“受信任的根证书颁发机构”。仅导入你从本机项目目录取出的证书，不要导入私钥 `data/key.pem`。
+初始口令在 `data/initial-password`，文件权限为 600。登录后可在设置中更改。口令、证书私钥、数据库和日志不入库。
 
-备用隧道：
+首次启动生成 `data/cert.pem` 和 `data/key.pem`。macOS：将证书导入“钥匙串访问”的“系统”钥匙串，双击证书，在“信任”中将 SSL 设为“始终信任”。Windows：双击证书，选择“安装证书”，导入“受信任的根证书颁发机构”。只导入从服务器项目目录取出的 `cert.pem`。
+
+备用 SSH 隧道：
 
 ```bash
 ssh -N -L 8787:127.0.0.1:8787 ubuntu@43.156.51.71
@@ -21,33 +20,59 @@ ssh -N -L 8787:127.0.0.1:8787 ubuntu@43.156.51.71
 
 然后访问 https://localhost:8787 。
 
-## 服务管理
+## 启动和维护
 
-在服务器上运行 `bash deploy/install.sh` 安装用户级服务。服务文件使用 PLAN.md 中的固定项目目录与 Node 路径。
+```bash
+cd /home/ubuntu/disk/dzk/nickyoung
+npm start
+```
+
+安装用户级服务：`bash deploy/install.sh`。服务单元使用本项目固定目录及服务器 Node 路径。
 
 ```bash
 systemctl --user start nickyoung
 systemctl --user stop nickyoung
 systemctl --user restart nickyoung
+systemctl --user status nickyoung --no-pager
 tail -f logs/service.log
 ```
 
-## 配置
+修改前端依赖后重新打包：
 
-`data/config.json` 是服务端配置，页面设置写入同一文件。直接修改文件后重启服务。负责人和成员档位的模型在保存前须完成真实连通测试；在岗成员卡片支持单独切换。新成员使用当前档位，旧成员保留招募时的配置。跨通道时以事件上下文接手。
+```bash
+npm ci
+npm run build
+```
 
-- `leader`：通道 `claude` / `codex`、`model`、`effort`。
-- `tiers`：有序档位清单；`id`、名称、说明及模型设置。
-- `names`、`concurrency`、`timeout`：成员名字、全局成员并发数、回合时限（毫秒）。
-- `workspace`：默认项目根目录；当前配置使用项目内的 `nickyoung-workspace/`，可改为方案指定的同级目录。
-- `cert`、`key`：HTTPS 证书和私钥路径。
-- `experience`：跨对话经验文字。
-- 环境变量 `NY_DATA`、`NY_PORT`、`NY_HOST` 可指定数据目录、监听端口、监听地址；`NY_CLAUDE`、`NY_CODEX` 可指定 CLI 路径。
+服务端不要求 npm 运行依赖；`public/vendor.mjs` 包含 Markdown、清理 HTML 和代码高亮模块。运行还需要已登录的 `claude`、`codex` 以及 `git`、`openssl`。
 
-提示词在 `prompts/leader.md`、`prompts/member.md`。负责人通过结构化团队指令招募、派活、讨论、请示、记录决定、会诊、交付。机器验收通过后自动审查；审查使用交付提交的独立 worktree。单项目成员工作串行，全局并发可配置。
+## 使用
 
-SQLite 的 `data/events.sqlite` 保存全部事件和登录会话。备份时停止服务后复制整个 `data/`。事件包含模型过程和项目内容，应按项目资料保管。
+新对话输入需求，可指定已有项目目录。默认新项目位于 `/home/ubuntu/disk/dzk/nickyoung-workspace/`。已有项目在 `nickyoung/` 分支工作；非 Git 目录先出现初始化仓库的确认卡片；有未提交改动的 Git 项目需先提交。
+
+负责人使用 MCP 团队工具招募、派活、讨论、写须知、记录决定和请示。程序先运行验收命令，再将交付提交交给独立 worktree 中的另一位成员审查。第一次失败直接返修，第二次会诊，第三次停止。未审查通过的任务必须明确列为遗留才能交付。
+
+成员命令在项目沙箱中运行。Codex 使用 workspace-write；Claude 使用受限文件工具及 MCP `project_command`，命令通过同一 Codex 沙箱执行。负责人只有只读文件工具和团队工具。程序保留每轮提交、命令输出、退出状态和模型用量。
+
+可暂停、继续和插话，也可在成员卡片上单独换模型。输入框支持文件选择、拖入附件及粘贴截图，单个文件最多 8 MB。对话支持 Markdown 和代码高亮，协作图可展开并跳转到事件，改动页可查看文件。
+
+## 配置与数据
+
+`data/config.json` 为服务端配置；网页设置写入同一文件，手工修改后重启服务。
+
+- `leader`：`channel` 为 `claude` / `codex`，以及 `model`、`effort`。
+- `tiers`：有序成员档位，含 `id`、名称、说明及模型设置。
+- `names`、`concurrency`、`timeout`：名字、并发成员数、单回合时限（毫秒）。
+- `workspace`：默认项目根目录；`cert`、`key`：HTTPS 证书和私钥。
+- `experience`：经验内容，另保存于 `data/experience.md`，新对话交给负责人。
+- 环境变量 `NY_DATA`、`NY_PORT`、`NY_HOST` 指定数据目录、端口、监听地址；`NY_CLAUDE`、`NY_CODEX` 指定 CLI 路径。
+
+提示词在 `prompts/`。模型改变需真实测试成功后保存；负责人与在岗成员从下一回合生效，新档位对以后招募的成员生效。同一通道续用会话，跨通道通过事件与项目须知接手。
+
+`data/events.sqlite` 保存事件与登录会话。备份时停止服务并复制整个 `data/`。统计按实际交付回合归属模型，Claude 输入包含缓存创建、缓存读取和普通输入；失败与返修按事件计数。
 
 ## 验证
 
-`npm test` 验证事件重放、收工门槛、独立审查人、验收命令要求、暂停与逐级升级。真实场景验收和当前限制见 [RESULT.md](RESULT.md)。
+`npm test` 执行本地自动化验证。`node scripts/verify-sandbox.mjs` 验证项目命令的写入边界及退出码，不调用模型。
+
+`node scripts/acceptance-repair.mjs` 会消耗模型额度，运行受控缺陷的真实返修场景。日常开发使用本地测试即可。实际场景结果及尚未覆盖的验收见 [RESULT.md](RESULT.md)。

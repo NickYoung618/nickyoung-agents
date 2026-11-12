@@ -1,0 +1,86 @@
+[
+  {
+    "model": "claude-opus-5-5",
+    "tier": "成员",
+    "turns": 3,
+    "failed": 0,
+    "duration": 93466,
+    "input": 229871,
+    "output": 7899,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6.1-sol",
+    "tier": "成员",
+    "turns": 2,
+    "failed": 0,
+    "duration": 192493,
+    "input": 540234,
+    "output": 14541,
+    "tasks": 1,
+    "firstPassed": 0,
+    "repairs": 1
+  },
+  {
+    "model": "gpt-6-astra",
+    "tier": "成员",
+    "turns": 2,
+    "failed": 0,
+    "duration": 132717,
+    "input": 621335,
+    "output": 5641,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "claude-opus-5-5",
+    "tier": "负责人",
+    "turns": 4,
+    "failed": 0,
+    "duration": 138958,
+    "input": 702279,
+    "output": 11328,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6.1-sol",
+    "tier": "实现",
+    "turns": 1,
+    "failed": 0,
+    "duration": 34067,
+    "input": 540272,
+    "output": 8805,
+    "tasks": 1,
+    "firstPassed": 1,
+    "repairs": 0
+  },
+  {
+    "model": "gpt-6-astra",
+    "tier": "审查",
+    "turns": 2,
+    "failed": 0,
+    "duration": 166043,
+    "input": 2028236,
+    "output": 13463,
+    "tasks": 0,
+    "firstPassed": 0,
+    "repairs": 0
+  },
+  {
+    "model": "claude-opus-5-5",
+    "tier": "实现",
+    "turns": 1,
+    "failed": 0,
+    "duration": 46229,
+    "input": 124032,
+    "output": 1476,
+    "tasks": 1,
+    "firstPassed": 1,
+    "repairs": 0
+  }
+]

@@ -1,4 +1,44 @@
 {
-  "passed": false,
-  "error": "回合超时"
+  "passed": true,
+  "duration": 8941,
+  "result": {
+    "message": "连接正常",
+    "actions": []
+  },
+  "session": "10a04107-49c3-49e6-8ded-74010ea51d79",
+  "usage": {
+    "input_tokens": 2,
+    "cache_creation_input_tokens": 5809,
+    "cache_read_input_tokens": 0,
+    "output_tokens": 197,
+    "output_tokens_details": {
+      "thinking_tokens": 119
+    },
+    "server_tool_use": {
+      "web_search_requests": 0,
+      "web_fetch_requests": 0
+    },
+    "service_tier": "standard",
+    "cache_creation": {
+      "ephemeral_1h_input_tokens": 5809,
+      "ephemeral_5m_input_tokens": 0
+    },
+    "inference_geo": "global",
+    "iterations": [
+      {
+        "input_tokens": 2,
+        "output_tokens": 197,
+        "cache_read_input_tokens": 0,
+        "cache_creation_input_tokens": 5809,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 5809
+        },
+        "type": "message"
+      }
+    ],
+    "speed": "standard",
+    "fallback_credit": null
+  },
+  "model": "claude-opus-5-5"
 }

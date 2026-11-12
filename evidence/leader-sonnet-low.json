@@ -1,0 +1,12 @@
+{
+  "selection": {
+    "channel": "claude",
+    "model": "sonnet",
+    "effort": "low"
+  },
+  "test": {
+    "ok": true,
+    "model": "claude-sonnet-5-5",
+    "duration": 4942
+  }
+}

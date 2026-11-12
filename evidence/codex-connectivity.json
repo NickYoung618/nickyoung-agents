@@ -1,4 +1,17 @@
 {
-  "passed": false,
-  "error": "WARNING: proceeding, even though we could not create PATH aliases: Read-only file system (os error 30)\nReading additional input from stdin...\nNot inside a trusted directory and --skip-git-repo-check was not specified.\n"
+  "passed": true,
+  "duration": 10185,
+  "result": {
+    "message": "连接正常",
+    "actions": []
+  },
+  "session": "01a1cf1c-baa9-7cd1-b0ad-1d5a85517e20",
+  "usage": {
+    "input_tokens": 19213,
+    "cached_input_tokens": 0,
+    "cache_write_input_tokens": 0,
+    "output_tokens": 42,
+    "reasoning_output_tokens": 21
+  },
+  "model": "gpt-6.1-sol"
 }

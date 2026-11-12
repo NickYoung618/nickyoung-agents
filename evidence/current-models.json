@@ -1,0 +1,48 @@
+{
+  "leader": {
+    "channel": "claude",
+    "model": "sonnet",
+    "effort": "low"
+  },
+  "tiers": [
+    {
+      "id": "main",
+      "name": "主力",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium",
+      "description": "实现、重构和返修"
+    },
+    {
+      "id": "helper",
+      "name": "辅助",
+      "channel": "codex",
+      "model": "gpt-6-astra",
+      "effort": "high",
+      "description": "审查、验证和调研"
+    }
+  ],
+  "members": [
+    {
+      "name": "知行",
+      "role": "负责人",
+      "channel": "claude",
+      "model": "sonnet",
+      "effort": "low"
+    },
+    {
+      "name": "砚舟",
+      "role": "实现",
+      "channel": "codex",
+      "model": "gpt-6.1-sol",
+      "effort": "medium"
+    },
+    {
+      "name": "青禾",
+      "role": "审查",
+      "channel": "codex",
+      "model": "gpt-6-astra",
+      "effort": "high"
+    }
+  ]
+}
