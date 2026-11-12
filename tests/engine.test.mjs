@@ -196,3 +196,31 @@ test("讨论最多两轮，超过上限不再调用成员", async () => {
     /最多两轮/,
   );
 });
+
+test("请示未回答不能收工，等待期间无关任务仍能调度", async () => {
+  const e = setup();
+  e.event("a", "status", { status: "working" });
+  e.event("a", "question", { id: "q", question: "使用 JSON 吗" });
+  await assert.rejects(
+    e.action("a", { type: "finish", text: "完成" }),
+    /请示等待/,
+  );
+  e.event("a", "task", {
+    id: "t",
+    status: "queued",
+    member: "m",
+    reviewer: "r",
+  });
+  let started = false;
+  e.task = async (c, t) => {
+    started = true;
+    e.event(c, "task_update", { id: t.id, status: "passed" });
+  };
+  e.pump();
+  await new Promise((r) => setImmediate(r));
+  assert.equal(started, true);
+  assert.equal(e.state("a").questions[0].answered, false);
+  e.event("a", "answer", { id: "q", answer: true });
+  await e.action("a", { type: "finish", text: "交付" });
+  assert.equal(e.state("a").status, "done");
+});

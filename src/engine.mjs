@@ -485,6 +485,8 @@ export class Engine {
         break;
       }
       case "finish":
+        if (s.questions.some((q) => !q.answered))
+          throw new Error("仍有请示等待用户回答");
         if (
           s.tasks.some(
             (t) =>

@@ -111,6 +111,32 @@ schema.properties.questions = {
   },
 };
 schema.required.push("questions");
+export function processFailure(events, stderr = "", fallback = "回合失败") {
+  const error = events.findLast(
+    (e) =>
+      e.is_api_error_message ||
+      e.type === "turn.failed" ||
+      e.type === "error" ||
+      (e.type === "result" && e.is_error),
+  );
+  if (!error) return stderr.trim() || fallback;
+  const message =
+    error.result ||
+    error.error?.message ||
+    error.message?.content
+      ?.filter((b) => b.type === "text")
+      .map((b) => b.text)
+      .join("\n") ||
+    error.message ||
+    JSON.stringify(error);
+  return [
+    error.api_error_status ? `API ${error.api_error_status}` : "",
+    error.api_error_code || error.error?.code || "",
+    typeof message === "string" ? message : JSON.stringify(message),
+  ]
+    .filter(Boolean)
+    .join(" · ");
+}
 export function runProcess(
   bin,
   args,
@@ -173,19 +199,16 @@ export function runProcess(
       clearTimeout(timer);
       consume(buffer);
       if (code !== 0 || timedOut) {
-        const failures = events.filter((e) =>
-          ["error", "turn.failed", "result"].includes(e.type),
-        );
         reject(
           Object.assign(
             new Error(
               timedOut
                 ? "回合超时"
-                : stderr +
-                    "\n" +
-                    (failures.length
-                      ? JSON.stringify(failures)
-                      : `进程退出 ${code} ${signal || ""}`),
+                : processFailure(
+                    events,
+                    stderr,
+                    `进程退出 ${code} ${signal || ""}`,
+                  ),
             ),
             { events, exitCode: code, signal },
           ),
@@ -330,7 +353,7 @@ export function runModel({
         result = e.structured_output || e.result;
         usage = e.usage;
         if (e.is_error)
-          throw Object.assign(new Error(JSON.stringify(e)), { events });
+          throw Object.assign(new Error(processFailure(events)), { events });
       }
       if (e.type === "item.completed" && e.item?.type === "agent_message")
         result = e.item.text;

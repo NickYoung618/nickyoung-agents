@@ -5,7 +5,10 @@ import { Store } from "../src/store.mjs";
 import { Engine } from "../src/engine.mjs";
 const root = resolve(import.meta.dirname, "..");
 const base = JSON.parse(readFileSync(join(root, "data/config.json")));
-const data = join(root, "data", "repair-" + Date.now());
+const resumeDir = process.argv[2];
+const data = resumeDir
+  ? resolve(resumeDir)
+  : join(root, "data", "repair-" + Date.now());
 mkdirSync(data, { recursive: true });
 const config = {
   data,
@@ -83,44 +86,60 @@ const server = https.createServer(
   },
 );
 await new Promise((r) => server.listen(config.port, "127.0.0.1", r));
-c = await engine.create("返修闭环验收");
-store.append(c, "message", {
-  member: "user",
-  text: "开发 add.mjs，导出 add(a,b)，b 不传时按 0 处理。不修改已有 test.mjs。程序和审查必须验证结果，修复后交付。",
+if (resumeDir) {
+  c = store.conversations()[0].id;
+  writer = engine.state(c).members.find((m) => m.name === "砚舟").id;
+  deliveries = 2;
+  engine.event(c, "status", { status: "working" });
+  engine.wake(c);
+} else {
+  c = await engine.create("返修闭环验收");
+  store.append(c, "message", {
+    member: "user",
+    text: "开发 add.mjs，导出 add(a,b)，b 不传时按 0 处理。不修改已有 test.mjs。程序和审查必须验证结果，修复后交付。",
+  });
+  const path = engine.state(c).path;
+  writeFileSync(
+    join(path, "test.mjs"),
+    "import test from 'node:test';import assert from 'node:assert/strict';import {add} from './add.mjs';test('两数相加',()=>assert.equal(add(2,3),5));\n",
+  );
+  await engine.action(c, {
+    type: "notice",
+    text: "# 项目须知\n实现 add(a,b)，b 的默认值为 0。保留 test.mjs，验收命令 node --test test.mjs。审查需检查默认参数并亲自运行。",
+  });
+  await engine.action(c, {
+    type: "recruit",
+    name: "砚舟",
+    role: "实现",
+    tier: "main",
+  });
+  await engine.action(c, {
+    type: "recruit",
+    name: "青禾",
+    role: "审查",
+    tier: "helper",
+  });
+  writer = engine.state(c).members.find((m) => m.name === "砚舟").id;
+  await engine.action(c, {
+    type: "assign",
+    member: "砚舟",
+    reviewer: "青禾",
+    title: "实现加法及默认参数",
+    description:
+      "创建 add.mjs，导出 add(a,b)，返回两数之和；省略 b 时按 0 计算。保留现有 test.mjs 不修改。验收 node --test test.mjs。审查者必须另行执行 add(2) 检查默认参数。",
+    commands: ["node --test test.mjs"],
+  });
+  engine.event(c, "status", { status: "working" });
+  engine.pump();
+}
+process.on("SIGTERM", () => {
+  engine.shutdown();
+  writeFileSync(
+    join(root, "evidence/repair-events.json"),
+    JSON.stringify(engine.state(c), null, 2),
+  );
+  server.close(() => process.exit(1));
 });
-const path = engine.state(c).path;
-writeFileSync(
-  join(path, "test.mjs"),
-  "import test from 'node:test';import assert from 'node:assert/strict';import {add} from './add.mjs';test('两数相加',()=>assert.equal(add(2,3),5));\n",
-);
-await engine.action(c, {
-  type: "notice",
-  text: "# 项目须知\n实现 add(a,b)，b 的默认值为 0。保留 test.mjs，验收命令 node --test test.mjs。审查需检查默认参数并亲自运行。",
-});
-await engine.action(c, {
-  type: "recruit",
-  name: "砚舟",
-  role: "实现",
-  tier: "main",
-});
-await engine.action(c, {
-  type: "recruit",
-  name: "青禾",
-  role: "审查",
-  tier: "helper",
-});
-writer = engine.state(c).members.find((m) => m.name === "砚舟").id;
-await engine.action(c, {
-  type: "assign",
-  member: "砚舟",
-  reviewer: "青禾",
-  title: "实现加法及默认参数",
-  description:
-    "创建 add.mjs，导出 add(a,b)，返回两数之和；省略 b 时按 0 计算。保留现有 test.mjs 不修改。验收 node --test test.mjs。审查者必须另行执行 add(2) 检查默认参数。",
-  commands: ["node --test test.mjs"],
-});
-engine.event(c, "status", { status: "working" });
-engine.pump();
 const deadline = Date.now() + 600000;
 while (!finished && Date.now() < deadline)
   await new Promise((r) => setTimeout(r, 1000));
