@@ -1,3 +1,4 @@
+import { Workflow } from "./workflow.mjs";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join, basename } from "node:path";
@@ -8,6 +9,8 @@ const id = () => randomUUID();
 export class Engine {
   constructor(store, config, saveConfig, emit) {
     Object.assign(this, { store, config, saveConfig, emit });
+    this.workflow = new Workflow(this);
+    this.workflowPaths = new Set();
     this.running = new Map();
     this.waking = new Set();
     this.pending = new Set();
@@ -122,7 +125,7 @@ export class Engine {
       base: this.git(path, ["rev-parse", "HEAD"]),
     });
   }
-  async message(c, text, files = []) {
+  async message(c, text, files = [], { intent = "goal" } = {}) {
     const s = this.state(c);
     const attachments = [];
     for (const f of files) {
@@ -134,6 +137,20 @@ export class Engine {
     }
     this.event(c, "message", { member: "user", text, attachments });
     if (!s.branch) return;
+    if (s.workflowVersion === "adaptive_v1") {
+      if (intent === "status") return;
+      if (!s.cycle || s.cycle.phase === "delivered") this.workflow.start(c, text);
+      else {
+        this.workflow.update(c, { goal: text, phase: "planning", generation: s.cycle.generation + 1 });
+        for (const [key, proc] of this.running) if (key.startsWith(c + ":")) proc.stop();
+      }
+      this.event(c, "status", { status: "working" });
+      if (s.directPlan && !s.cycle) {
+        for (const member of s.directPlan.members || []) await this.action(c, { type: "recruit", ...member });
+        this.workflow.submit(c, s.directPlan.plan, { direct: true }); this.pump();
+      } else this.wake(c, { reason: s.cycle ? "goal_changed" : "new_goal" });
+      return;
+    }
     this.event(c, "status", { status: "working" });
     this.wake(c);
   }
@@ -348,7 +365,7 @@ export class Engine {
     }
     return false;
   }
-  async wake(c) {
+  async wake(c, { reason = "new_goal", evidenceIds = [] } = {}) {
     if (this.state(c).status === "paused") return;
     if (this.waking.has(c)) {
       this.pending.add(c);
@@ -357,16 +374,23 @@ export class Engine {
     this.waking.add(c);
     try {
       let s = this.state(c);
-      let r = await this.model(c, s.members[0], this.context(c), {
-        leader: true,
+      const adaptive = s.workflowVersion === "adaptive_v1";
+      const generation = s.cycle?.generation;
+      let r = await this.model(c, s.members[0], adaptive ? JSON.stringify({ project: s.path, goal: s.cycle?.goal, cycle: s.cycle, members: s.members.map(({session,...m})=>m), tiers: this.config.tiers, reason, evidenceIds }) : this.context(c), {
+        leader: true, ...(adaptive ? { role: "planner", purpose: s.cycle?.planRevision ? "coordinate" : "plan", trigger: reason, cycleId: s.cycleId, fresh: true } : {}),
       });
+      if (adaptive && generation !== this.state(c).cycle?.generation && this.state(c).cycle?.planRevision === s.cycle?.planRevision) return;
+      if (adaptive) {
+        for (const member of r.recruits || []) await this.action(c, { type: "recruit", ...member });
+        if (r.plan) this.workflow.submit(c, r.plan);
+      }
       if (this.state(c).status === "paused") return;
       for (const a of r.actions || []) {
         try {
           await this.action(c, a);
         } catch (e) {
           this.event(c, "error", { text: e.message, action: a.type });
-          this.pending.add(c);
+          if (this.state(c).workflowVersion !== "adaptive_v1") this.pending.add(c);
         }
       }
     } catch (e) {
@@ -436,8 +460,30 @@ export class Engine {
   }
   async action(c, a) {
     const s = this.state(c);
+    if (s.workflowVersion === "adaptive_v1") {
+      if (a.type === "submit_plan") return this.workflow.submit(c, a.plan);
+      if (a.type === "finish") return this.workflow.deliver(c);
+      if (a.type === "assign") throw Error("adaptive 任务随 submit_plan 原子提交，只需 executorId");
+      if (["retry","defer","resolve","discuss","experience","notice"].includes(a.type)) throw Error("adaptive 请通过计划修订处理此操作");
+      if (["cancel","reassign"].includes(a.type)) {
+        const task = s.tasks.find(t => t.id === a.task && t.cycleId === s.cycleId);
+        if (!task) throw Error("未知批次任务");
+        const member = a.type === "reassign" && s.members.find(m => m.id === a.member || m.name === a.member);
+        if (a.type === "reassign" && (!member || member.id === "leader")) throw Error("改派需要执行者");
+        this.workflow.update(c, { generation: s.cycle.generation + 1, phase: a.type === "cancel" ? "blocked" : "executing" });
+        this.event(c, "task_update", { id: task.id, status: a.type === "cancel" ? "cancelled" : "queued", ...(member ? { member: member.id, executorId: member.id } : {}) });
+        for (const [key, proc] of this.running) if (key.startsWith(c + ":") && proc.taskId === task.id) proc.stop();
+        this.drainMembers(); return;
+      }
+      if (a.type === "ask") {
+        this.event(c, "question", { id: id(), cycleId: s.cycleId, question: a.question, yes: a.yes, no: a.no, taskIds: a.taskIds || [], gateIds: a.gateIds || [] });
+        for (const t of s.cycle.tasks.filter(t => a.taskIds?.includes(t.id) || a.taskIds?.includes(t.localId))) this.event(c, "task_update", { id: t.id, waitsForQuestions: [...t.waitsForQuestions, this.state(c).questions.at(-1).id] });
+        return;
+      }
+    }
     switch (a.type) {
       case "recruit": {
+        if (s.workflowVersion === "adaptive_v1" && s.members.some(m => m.name === a.name)) return;
         if (s.members.length >= 5) throw new Error("团队最多五人");
         if (s.members.some((m) => m.name === a.name))
           throw new Error("成员名字重复");
@@ -629,7 +675,15 @@ export class Engine {
         )
       )
         continue;
-      if (active >= this.config.concurrency) break;
+      if (active >= (this.config.concurrency || 2)) break;
+      if (s.workflowVersion === "adaptive_v1") {
+        if (this.workflowPaths.has(s.path) || !this.workflow.next(s)) continue;
+        active++; this.busyProjects.add(s.id); this.workflowPaths.add(s.path);
+        this.workflow.step(s.id).catch(e => { this.event(s.id, "error", { text: e.message }); this.workflow.block(s.id, e.message); }).finally(() => {
+          this.busyProjects.delete(s.id); this.workflowPaths.delete(s.path); this.pump();
+        });
+        continue;
+      }
       let t = s.tasks.find((t) =>
         ["queued", "repair", "review"].includes(t.status),
       );
@@ -926,6 +980,7 @@ export class Engine {
     this.drainMembers();
   }
   pause(c) {
+    if (this.state(c).workflowVersion === "adaptive_v1") this.workflow.pause(c);
     for (const [key, timer] of this.retryTimers)
       if (key.startsWith(c + ":")) {
         clearTimeout(timer);
@@ -937,6 +992,7 @@ export class Engine {
   }
   resume(c) {
     if (!this.state(c).branch) return;
+    if (this.state(c).workflowVersion === "adaptive_v1") return this.workflow.resume(c);
     for (const t of this.state(c).tasks)
       if (
         ["running", "reviewing", "rate_wait", "interrupted"].includes(
