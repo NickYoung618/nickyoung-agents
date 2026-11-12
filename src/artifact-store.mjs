@@ -32,6 +32,7 @@ export class ArtifactStore {
           metadata.logicalKey,
           metadata.sourceCommit,
           metadata.sourceReferenceCommit,
+          metadata.cycleId,
         ]),
       )
       .digest("hex");

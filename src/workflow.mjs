@@ -140,6 +140,7 @@ export class Workflow {
       scope: plan.scope,
       conventions: plan.conventions,
       contractPaths: plan.contractPaths,
+      deliveryTarget: plan.deliveryTarget,
       criteria: plan.criteria,
       policy: plan.policy,
       reason: plan.reason,
@@ -215,7 +216,20 @@ export class Workflow {
     if (gate?.phase === "checkpoint") return { kind: "gate", unit: gate };
     if (task) return { kind: "task", unit: task };
     if (gate) return { kind: "gate", unit: gate };
-    if (canDeliver(cycle, s.questions)) return { kind: "deliver" };
+    if (canDeliver(cycle, s.questions, s.artifacts)) return { kind: "deliver" };
+    if (
+      cycle.deliveryTarget === "inline_preview" &&
+      canDeliver(
+        { ...cycle, deliveryTarget: "downloadable_source" },
+        s.questions,
+      )
+    )
+      return {
+        kind:
+          cycle.previewAttemptedCommit === cycle.finalCommit
+            ? "preview_blocked"
+            : "prepare_preview",
+      };
   }
   valid(c, token) {
     const s = this.state(c),
@@ -281,6 +295,24 @@ export class Workflow {
     const work = this.next(s);
     if (!work) return;
     if (work.kind === "deliver") return this.deliver(c);
+    if (work.kind === "preview_blocked") {
+      this.block(
+        c,
+        "交付需要可打开的静态作品：" +
+          (s.preview?.reason || "预览管理器不可用"),
+        s.cycle.evidence.map((e) => e.evidenceId),
+      );
+      return;
+    }
+    if (work.kind === "prepare_preview") {
+      this.update(c, { previewAttemptedCommit: s.cycle.finalCommit });
+      await this.e.previews?.request(c, {
+        sourceCommit: s.cycle.finalCommit,
+        cycleId: s.cycleId,
+        preferSource: true,
+      });
+      return;
+    }
     const cycle = s.cycle,
       unit = work.unit;
     const attempt =
@@ -623,7 +655,10 @@ export class Workflow {
     if (old) result = { exitCode: 0, output: "复用正式证据 " + old.evidenceId };
     else
       result = await this.worktree(c, commit, async (path) => {
-        const r = await executeCheck(this.e, c, path, gate, {...token,commit});
+        const r = await executeCheck(this.e, c, path, gate, {
+          ...token,
+          commit,
+        });
         const changes = unexpectedChanges(
           this.e.git.bind(this.e),
           path,
@@ -1064,7 +1099,8 @@ export class Workflow {
     const s = this.state(c),
       x = s.cycle;
     if (x?.phase === "delivered") return x.delivery;
-    if (!canDeliver(x, s.questions)) throw Error("批次尚未满足交付条件");
+    if (!canDeliver(x, s.questions, s.artifacts))
+      throw Error("批次尚未满足交付条件");
     const environment = verificationEnvironment(this.e.config);
     const stale = x.gates.filter(
       (g) =>

@@ -1,11 +1,45 @@
+import { createHash } from "node:crypto";
 import { existsSync, readFileSync, readdirSync, lstatSync } from "node:fs";
 import { join, extname } from "node:path";
 import { execFileSync } from "node:child_process";
+import { unexpectedChanges } from "./verification.mjs";
 import { ArtifactStore } from "./artifact-store.mjs";
 import { bundleStatic, safeFile } from "./static-preview.mjs";
 const buildCommand = (c) =>
   /^\s*(?:npm|pnpm|yarn)\s+(?:run\s+)?build(?:\s|$)/.test(c) ||
   /^\s*(?:npx\s+)?vite\s+build(?:\s|$)/.test(c);
+function outputDigest(root) {
+  const hash = createHash("sha256");
+  let count = 0,
+    total = 0;
+  const walk = (dir) => {
+    for (const name of readdirSync(dir)) {
+      if (name.startsWith(".")) continue;
+      const path = join(dir, name);
+      if (lstatSync(path).isSymbolicLink()) throw Error("产物不允许符号链接");
+      if (lstatSync(path).isDirectory()) {
+        if ([".git", "node_modules", ".cache", "test-results"].includes(name))
+          continue;
+        walk(path);
+      } else {
+        if (++count > 256) throw Error("静态预览输入文件过多");
+        const rel = path.slice(root.length + 1);
+        if (
+          !/\.(?:html|[cm]?js|[jt]sx?|css|json|svg|png|jpe?g|webp|gif|woff2?)$/.test(
+            name,
+          )
+        )
+          continue;
+        const data = readFileSync(safeFile(root, rel));
+        total += data.length;
+        if (total > 32 * 1024 * 1024) throw Error("静态输入超过 32 MiB");
+        hash.update(rel).update(data);
+      }
+    }
+  };
+  walk(root);
+  return hash.digest("hex");
+}
 export class PreviewManager {
   constructor(engine) {
     this.engine = engine;
@@ -70,6 +104,15 @@ export class PreviewManager {
     const s = this.engine.state(c),
       cwd = input.cwd || s.path,
       commit = input.sourceCommit || null;
+    const currentBuild = () => {
+      const current = this.engine.state(c);
+      return current.cycleId === s.cycleId &&
+        current.cycle?.generation === s.cycle?.generation &&
+        (!input.cycleId || input.cycleId === current.cycleId) &&
+        !(input.taskId && current.tasks.some(t => t.id === input.taskId && t.status === 'cancelled')) &&
+        !((input.runId || input.taskId || input.cycleId) && ['paused','interrupted','cancelled'].includes(current.status));
+    };
+    if (!currentBuild()) return null;
     this.status(c, {
       status: "building",
       reason: "正在整理静态产物，继续保留上次成功版本",
@@ -77,7 +120,10 @@ export class PreviewManager {
     });
     try {
       const dist = join(cwd, "dist"),
-        root = existsSync(join(dist, "index.html")) ? dist : cwd;
+        root =
+          !input.preferSource && existsSync(join(dist, "index.html"))
+            ? dist
+            : cwd;
       if (!existsSync(join(root, "index.html")))
         throw Error(
           "尚无静态页面产物；需要后台服务的项目暂不支持内嵌预览，可查看文件与改动",
@@ -85,8 +131,28 @@ export class PreviewManager {
       const observed = this.engine.git(cwd, ["rev-parse", "HEAD"]);
       if (commit && observed !== commit)
         throw Error("构建提交已变化，本次产物未登记");
+      const before = outputDigest(root);
       const html = await bundleStatic(root);
-      if (commit && this.engine.git(cwd, ["diff", "HEAD"]))
+      if (before !== outputDigest(root))
+        throw Error("构建产物正在变化，保留上次成功版本并等待下一次构建");
+      if (!currentBuild()) {
+        this.status(c, {status:'stopped',reason:'构建所属任务已暂停、取消或切换，保留上次成功版本'});
+        return null;
+      }
+      if (
+        commit &&
+        unexpectedChanges(
+          this.engine.git.bind(this.engine),
+          cwd,
+          input.allowedOutputs || [
+            "dist/",
+            "test-results/",
+            "node_modules/",
+            ".cache/",
+            "playwright-report/",
+          ],
+        ).length
+      )
         throw Error("源码在预览整理期间发生变化");
       const a = this.store.register(
         c,
@@ -96,6 +162,7 @@ export class PreviewManager {
           logicalKey: "page",
           sourceCommit: commit,
           sourceReferenceCommit: observed,
+          sourceDownloadCommit: observed,
           sourceTreeHash: commit
             ? this.engine.git(cwd, ["rev-parse", commit + "^{tree}"])
             : null,
@@ -121,6 +188,7 @@ export class PreviewManager {
       this.validate(c);
       return a;
     } catch (error) {
+      if (!currentBuild()) return null;
       this.status(c, {
         status: "failed",
         reason: error.message.slice(0, 1200),
@@ -132,6 +200,49 @@ export class PreviewManager {
         buildEvidenceIds: input.buildEvidenceIds || [],
       });
       return null;
+    }
+  }
+  observeModelBuild(c, event, metadata) {
+    const item = event.item;
+    if (
+      !['item.started','item.completed'].includes(event.type) ||
+      item?.type !== "command_execution"
+    )
+      return;
+    let command = String(item.command || '').replace(/^\/bin\/(?:ba)?sh\s+-lc\s+/, '');
+    if ((command[0] === "'" || command[0] === '"') && command.at(-1) === command[0]) command = command.slice(1,-1);
+    if (!buildCommand(command)) return;
+    const s = this.engine.state(c);
+    if (["paused", "interrupted", "cancelled"].includes(s.status)) return;
+    if (
+      metadata.taskId &&
+      s.tasks.some((t) => t.id === metadata.taskId && t.status === "cancelled")
+    )
+      return;
+    if (event.type === 'item.started') return this.started(c,{command});
+    if (item.exit_code !== 0) return this.failed(c,{command,output:item.aggregated_output});
+    if (!existsSync(join(metadata.cwd, "dist/index.html"))) return;
+    void this.request(c, {
+      ...metadata,
+      buildEvidenceIds: [metadata.eventId],
+    }).catch((error) => this.failed(c, { command, output: error.message }));
+  }
+  started(c, { command }) {
+    if (buildCommand(command))
+      this.status(c, {
+        status: "building",
+        reason: "新版本构建中，当前保留上次成功版本",
+        startedAt: new Date().toISOString(),
+      });
+  }
+  failed(c, { command, output, interrupted = false }) {
+    if (buildCommand(command)) {
+      this.status(c, {
+        status: interrupted ? "stopped" : "failed",
+        reason: interrupted
+          ? "构建已中断，保留上次成功版本"
+          : String(output || "构建命令失败").slice(-1200),
+      });
     }
   }
   async completed(c, { cwd, command, commit, ...metadata }) {

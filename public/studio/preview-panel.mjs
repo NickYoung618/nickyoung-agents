@@ -15,14 +15,14 @@ export function previewMessage(event, iframe, artifact) {
   );
 }
 export class PreviewPanel {
-  constructor(element, { api, escape }) {
-    Object.assign(this, { element, api, escape });
+  constructor(element, { api, escape, onEvidence }) {
+    Object.assign(this, { element, api, escape, onEvidence });
     this.selected = new Map();
     this.follow = new Map();
     this.current = null;
     this.loadedKey = null;
     element.innerHTML =
-      '<div class="ny-preview-toolbar"><button data-generate>生成 / 检查预览</button><label>版本 <select data-version aria-label="预览版本"></select></label><label><input data-follow type="checkbox">跟随最新</label><button data-reload>刷新画面</button><a data-open target="_blank" rel="noopener">打开大图</a><a data-download>下载作品</a><a data-source>下载源码</a></div><p data-preview-state role="status"></p><p data-provenance class="ny-small"></p><div data-frame></div><details><summary>截图与检查附件</summary><div data-artifact-evidence></div></details>';
+      '<div class="ny-preview-toolbar"><button data-generate>生成 / 检查预览</button><label>版本 <select data-version aria-label="预览版本"></select></label><label><input data-follow type="checkbox">跟随最新</label><button data-reload>刷新画面</button><a data-open target="_blank" rel="noopener">打开大图</a><a data-download>下载作品</a><a data-source>下载源码</a><button data-build-evidence>构建证据</button></div><p data-preview-state role="status"></p><p data-provenance class="ny-small"></p><div data-frame></div><details><summary>截图与检查附件</summary><div data-artifact-evidence></div></details>';
     this.q = (s) => element.querySelector(s);
     this.q("[data-generate]").onclick = async () => {
       const c = this.current?.id;
@@ -45,6 +45,8 @@ export class PreviewPanel {
         b.disabled = false;
       }
     };
+    this.q("[data-build-evidence]").onclick = () =>
+      this.onEvidence?.(this.artifact?.buildEvidenceIds?.[0]);
     this.q("[data-version]").onchange = (e) => {
       this.selected.set(this.current.id, e.target.value);
       this.follow.set(this.current.id, false);
@@ -124,7 +126,12 @@ export class PreviewPanel {
       const n = this.q(selector);
       n.hidden = !a || (mode === "source" && !a.hasSource);
       if (a) n.href = url(a, mode);
+      if (mode === "source")
+        n.textContent = a?.sourceCommit
+          ? "下载源码"
+          : "下载已提交源码（预览来源未确认）";
     }
+    this.q("[data-build-evidence]").hidden = !a?.buildEvidenceIds?.length;
     const key = s.id + ":" + (a?.artifactId || "none");
     if (key !== this.loadedKey) {
       this.loadedKey = key;
@@ -150,6 +157,9 @@ export class PreviewPanel {
         box.append(p);
       }
     }
+    if (this.runtimeError)
+      this.q("[data-preview-state]").textContent +=
+        " · 画面运行问题：" + this.runtimeError;
     this.q("[data-artifact-evidence]").innerHTML =
       (s.artifacts || [])
         .filter((a) => a.kind !== "static_page")

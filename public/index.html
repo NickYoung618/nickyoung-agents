@@ -112,7 +112,7 @@
                   ><button data-tab="graph">任务清单</button
                   ><button data-tab="changes">文件与改动</button>
                 </div>
-                <section id="previewPanel" hidden></section><button id="newProgress" hidden></button><section id="messages"></section>
+                <div id="activityFeed" hidden></div><section id="previewPanel" hidden></section><button id="newProgress" hidden></button><section id="messages"></section>
                 <select id="taskFilter" aria-label="筛选任务" hidden><option value="all">全部任务</option><option value="blocked">只看等待与阻塞</option></select><section id="taskList" hidden></section>
                 <section id="changesPanel" hidden></section>
                 <div id="questions"></div>
@@ -228,7 +228,7 @@
               </div>
               <div class="ny-live-events">
                 <div class="ny-small">最近发生</div>
-                <div id="liveEvents"></div>
+                <div id="liveEvents"></div><div id="liveActivity"></div>
               </div>
               <div id="panel"></div>
             </aside>

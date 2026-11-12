@@ -57,9 +57,7 @@ export async function previewService() {
     model: "fixture",
   });
   db.append("animation", "report", {
-    text:
-      "动画交付，原目标源码快照 78b0950eb8273ecd4ce16f69562eee895ba35020，fixture commit " +
-      commit,
+    text: "动画交付，fixture 交付提交 " + commit,
   });
   db.append("other", "created", {
     title: "另一会话",
@@ -75,7 +73,7 @@ export async function previewService() {
       leader: { channel: "codex", model: "fixture" },
       tiers: [{ id: "main", name: "主力", channel: "codex", model: "fixture" }],
       concurrency: 1,
-      timeout: 5000,
+      timeout: 10000,
       names: [],
     }),
   );
@@ -83,10 +81,18 @@ export async function previewService() {
   await new Promise((r) => free.listen(0, "127.0.0.1", r));
   const port = free.address().port;
   await new Promise((r) => free.close(r));
+  const fake = join(dir, "model-fixture");
+  writeFileSync(
+    fake,
+    `#!/usr/bin/env node
+const fs=require('node:fs');const args=process.argv.slice(2),schema=JSON.parse(fs.readFileSync(args[args.indexOf('--output-schema')+1],'utf8'));console.log(JSON.stringify({type:'thread.started',thread_id:'fixture-stream'}));let i=0;const timer=setInterval(()=>{i++;try{fs.readFileSync('README.md','utf8');}catch{}console.log(JSON.stringify({type:'item.completed',item:{id:'read-'+i,type:'command_execution',command:'cat README.md # visible-'+i,aggregated_output:'fixture read observation',exit_code:0,status:'completed'}}));if(i===(schema.properties.completion&&!schema.properties.verdict?1:125)){clearInterval(timer);const r=schema.properties.completion&&!schema.properties.verdict?{message:'隔离标识用例完成',completion:'complete',summary:'保留初始化文件',files:[],selfTests:[],blockers:'',handoff:''}:{message:'隔离活动流完成',actions:[]};console.log(JSON.stringify({type:'item.completed',item:{type:'agent_message',text:JSON.stringify(r)}}));console.log(JSON.stringify({type:'turn.completed',usage:{input_tokens:0,output_tokens:0}}));}},40);`,
+    { mode: 0o700 },
+  );
   const child = spawn(process.execPath, ["src/server.mjs"], {
     env: {
       ...process.env,
       NY_DATA: data,
+      NY_CODEX: fake,
       NY_PORT: String(port),
       NY_HOST: "127.0.0.1",
     },

@@ -1,3 +1,5 @@
+import { projectActivities } from "./studio/activity-projector.mjs";
+import { applyStateEvent } from "./studio/live-state.mjs";
 import { PreviewPanel } from "./studio/preview-panel.mjs";
 const modelTests = new Map();
 let modelCatalog = null,
@@ -27,7 +29,7 @@ const $ = (s) => document.querySelector(s),
           "'": "&#39;",
         })[c],
     );
-const previewPanel=new PreviewPanel($("#previewPanel"),{api,escape});
+const previewPanel=new PreviewPanel($("#previewPanel"),{api,escape,onEvidence:id=>{if(id)jumpToEvent(id);}});
 let runtimeInfo=null;
 function showRuntime(){const selected=$("#workflowVersion").value||"legacy";$("#workflowChoice").textContent=`新会话流程：${selected}`;$("#runtimeInfo").textContent=runtimeInfo?.buildCommit?`${runtimeInfo.buildCommit} · ${runtimeInfo.dirty?"有开发改动 "+runtimeInfo.contentVersion?.slice(0,12):"干净版本"} · 启动 ${new Date(runtimeInfo.startedAt).toLocaleString()}`:"服务未提供已加载版本信息";}
 fetch("/api/runtime").then(r=>r.ok?r.json():null).then(info=>{runtimeInfo=info;showRuntime();}).catch(()=>showRuntime());
@@ -78,11 +80,14 @@ function name(s, id) {
     ? "尼克杨先生"
     : s.members.find((m) => m.id === id)?.name || id;
 }
+const liveBuffer=new Map();
 let refreshing, refreshAgain = false;
 async function refresh() {
   if (refreshing) { refreshAgain = true; return refreshing; }
   refreshing = (async () => {
-    do { refreshAgain = false; conversations = await api("state"); render(); } while (refreshAgain);
+    do { refreshAgain = false; conversations = await api("state");
+      for(const c of conversations){c.artifacts ||= [];c.preview ||= {status:'unavailable'};c.cycles ||= [];for(const e of liveBuffer.get(c.id)||[])applyStateEvent(c,e);liveBuffer.delete(c.id);}
+      render(); } while (refreshAgain);
   })();
   try { await refreshing; } finally { refreshing = null; }
 }
@@ -341,22 +346,25 @@ $(".tabs").onclick = async (e) => {
   updateTaskTab();
   if (tab === "changes") await loadStudioFiles();
 };
-$("#panel").onclick = async (e) => {
-  const file = e.target.closest("[data-file]");
-  if (file) {
+async function openSourceFile(file) {
     try {
+      const fileConversation=current;
       const r = await api(
-        `conversations/${current}/files?path=${encodeURIComponent(file.dataset.file)}`,
+        `conversations/${current}/source-file?path=${encodeURIComponent(file)}`,
       );
+      if(current!==fileConversation||!$("#filePreview"))return;
       $("#filePreview").innerHTML =
         `<details open><summary>${r.deleted ? "已删除 · " : ""}差异</summary><pre>${escape(r.diff)}</pre></details>` +
         (r.image
           ? `<img class="preview-image" alt="${escape(r.file)}" src="data:image/${r.file.split(".").at(-1).replace("jpg", "jpeg")};base64,${r.content}">`
-          : `<details><summary>文件预览</summary><pre>${escape(r.content)}</pre></details>`);
+          : `<details${r.diff ? '' : ' open'}><summary>文件预览</summary><pre>${escape(r.content)}</pre></details>`);
     } catch (e) {
       $("#notice").textContent = e.message;
     }
-  }
+}
+$("#panel").onclick = async (e) => {
+  const file = e.target.closest("[data-file]");
+  if (file) await openSourceFile(file.dataset.file);
   const jump = e.target.closest("[data-jump]");
   if (jump) jumpToEvent(jump.dataset.jump.slice(1));
   if (e.target.id === "expandGraph") {
@@ -767,11 +775,9 @@ events.onmessage = (event) => {
     );
     notification.onclick = () => window.focus();
   }
-  clearTimeout(timer);
-  timer = setTimeout(
-    () => refresh().catch((e) => ($("#notice").textContent = e.message)),
-    200,
-  );
+  let applied=false;
+  if(e.id&&e.conversation){const s=conversations.find(s=>s.id===e.conversation);if(s){s.artifacts ||= [];s.preview ||= {status:'unavailable'};s.cycles ||= [];applied=applyStateEvent(s,e);if(refreshing){const pending=liveBuffer.get(s.id)||[];pending.push(e);if(pending.length>1024){pending.shift();refreshAgain=true;}liveBuffer.set(s.id,pending);}}}
+  if(!timer)timer=setTimeout(()=>{timer=null;if(applied)render();else refresh().catch(e=>$('#notice').textContent=e.message);},200);
 };
 events.onopen = () => {
   fetch("/api/ui-version", { cache: "no-store" })
@@ -963,6 +969,7 @@ function updateTaskTab() {
   $("#taskFilter").hidden = tab !== "graph";
   $("#messages").hidden = tab !== "team";
   $("#previewPanel").hidden = tab !== "preview";
+  $("#activityFeed").hidden = tab !== "team" || !$("#activityFeed").children.length;
   $("#taskList").hidden = tab !== "graph";
   $("#changesPanel").hidden = tab !== "changes";
   for (const b of document.querySelectorAll(".tabs [data-tab]"))
@@ -982,7 +989,7 @@ async function loadStudioFiles() {
               `<button class="file" data-file="${escape(f)}">${escape(f)}</button>`,
           )
           .join("") + '<div id="filePreview"></div>'
-      : "还没有改动";
+      : '还没有改动<div id="filePreview"></div>';
   } catch (e) {
     $("#notice").textContent = e.message;
   }
@@ -1027,12 +1034,18 @@ function drawStudio(s) {
     .reverse();
   updateRegion('#resultContent', reports.length ? reports.map(({c,e}) => {
     const evidence = deliveryEvidence(c, e);
-    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.cycleId ? `<p class="ny-small">批次 ${escape(evidence.cycleId)} · 最终提交 ${escape(evidence.finalCommit)}${evidence.reviewedCommit ? ` · 原审查提交 ${escape(evidence.reviewedCommit)}` : ""}</p>` : ""}${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>${escape(evidence.reviewLabel || `独立审查 ${evidence.reviews.length} 次`)}</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence">${(c.artifacts||[]).filter(a=>a.kind==="static_page"&&(!e.data.cycleId||a.cycleId===e.data.cycleId)).slice(-1).map(a=>`<button data-open="${c.id}" data-preview="${a.artifactId}">打开作品预览</button><a href="/api/conversations/${c.id}/artifacts/${a.artifactId}/download">下载作品</a>`).join("")}<button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
+    const reportCommit=evidence.finalCommit||String(e.data.text||"").match(/\b[0-9a-f]{40}\b/)?.[0];
+    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.cycleId ? `<p class="ny-small">批次 ${escape(evidence.cycleId)} · 最终提交 ${escape(evidence.finalCommit)}${evidence.reviewedCommit ? ` · 原审查提交 ${escape(evidence.reviewedCommit)}` : ""}</p>` : ""}${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>${escape(evidence.reviewLabel || `独立审查 ${evidence.reviews.length} 次`)}</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence">${(c.artifacts||[]).filter(a=>a.kind==="static_page"&&(!e.data.cycleId||a.cycleId===e.data.cycleId)&&reportCommit&&[a.sourceCommit,a.sourceReferenceCommit].includes(reportCommit)).slice(-1).map(a=>`<button data-open="${c.id}" data-preview="${a.artifactId}">打开作品预览</button><a href="/api/conversations/${c.id}/artifacts/${a.artifactId}/download">下载作品</a>`).join("")}<button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
   }).join('') : '<div class="card ny-small">还没有交付成果。</div>');
   if (s) {
     $("#statusQuery").hidden = s.workflowVersion !== "adaptive_v1";
     $("#workflowBadge").textContent=`实际流程：${s.workflowVersion||"legacy"}${s.cycle?.policy?" · "+s.cycle.policy:""} · ${runtimeInfo?.buildCommit?"服务 "+runtimeInfo.buildCommit.slice(0,8)+(runtimeInfo.dirty?"（开发改动）":""):"服务版本未确认"}`;
     previewPanel.update(s);
+    const activity=projectActivities(s);s.activity=activity;
+    const renderActivity=rows=>rows.map(a=>`<div class="ny-activity"><button data-activity-event="${a.sourceEventId}">${escape(a.memberId==='machine'?'程序':name(s,a.memberId))} · ${escape(({reading:'读取/定位',editing:'文件变更',command_running:'运行命令',command_finished:'命令结束',blocked:'阻塞',artifact_ready:'产物就绪',reviewing:'审查快照',waiting:'等待输出'})[a.kind]||a.kind)} · ${escape(a.text)}${a.exitCode!==null&&a.exitCode!==undefined?' · 退出 '+a.exitCode:''}</button>${(a.files||[]).map(file=>`<button data-activity-file="${escape(file.startsWith(s.path+'/')?file.slice(s.path.length+1):file)}">${escape(file.startsWith(s.path+'/')?file.slice(s.path.length+1):file)}</button>`).join('')}${a.artifactId?`<button data-activity-artifact="${escape(a.artifactId)}">打开产物</button>`:''}<small><span data-activity-age="${escape(a.observedAt)}"></span> · ${escape(new Date(a.observedAt).toLocaleTimeString())}${a.startedAt?'':' · 开始时间未记录'}</small></div>`).join('');
+    updateRegion('#activityFeed',renderActivity(activity.recent.slice(-3)));
+    updateRegion('#liveActivity',renderActivity(activity.recent.slice(-3)));
+
     $("#taskTitle").textContent = s.title;
     $("#taskTitle").title = s.title;
     $("#fullGoal").textContent = s.title;
@@ -1084,7 +1097,7 @@ function drawStudioGraph(s) {
     cache.id === s?.id &&
     cache.width === width &&
     cache.height === height &&
-    cache.edge === edge?.id && cache.status === s?.status && cache.connected === connectionReady &&
+    cache.activity === s?.activity?.recent.at(-1)?.sourceEventId && cache.edge === edge?.id && cache.status === s?.status && cache.connected === connectionReady &&
     cache.members.length === members.length &&
     cache.members.every(
       (m, i) => m.id === members[i].id && m.status === members[i].status && m.model === members[i].model,
@@ -1095,7 +1108,7 @@ function drawStudioGraph(s) {
     id: s?.id,
     width,
     height,
-    edge: edge?.id, status: s?.status, connected: connectionReady,
+    activity:s?.activity?.recent.at(-1)?.sourceEventId, edge: edge?.id, status: s?.status, connected: connectionReady,
     members: members.map((m) => ({ id: m.id, status: m.status, model: m.model })),
   };
   if (!members.length) {
@@ -1153,7 +1166,7 @@ function drawStudioGraph(s) {
     members
       .map(
         (m) =>
-          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running" && s.status === "working" && connectionReady}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(s.status === "done" ? "本次已交付" : m.status === "idle" ? (m.id === "leader" ? "待命" : "空闲") : labels[m.status] || m.status)}</span></button>`,
+          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running" && s.status === "working" && connectionReady}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(s.status === "done" ? "本次已交付" : s.activity?.byMember[m.id]?.text || (m.status === "idle" ? (m.id === "leader" ? "待命" : "空闲") : labels[m.status] || m.status))}</span></button>`,
       )
       .join("");
   for (const node of box.querySelectorAll("[data-studio-member]")) {
@@ -1312,3 +1325,8 @@ $("#homeView").ondrop = (e) => {
   e.preventDefault();
   addFiles(e.dataTransfer.files);
 };
+
+async function activityClick(e){const s=conversations.find(s=>s.id===current);if(!s)return;const log=e.target.closest('[data-activity-event]');if(log)return jumpToEvent(log.dataset.activityEvent);const artifact=e.target.closest('[data-activity-artifact]');if(artifact){const a=s.artifacts?.find(a=>a.artifactId===artifact.dataset.activityArtifact);if(a&&a.kind!=='static_page'){window.open(`/api/conversations/${encodeURIComponent(current)}/artifacts/${encodeURIComponent(a.artifactId)}/content`,'_blank','noopener');return;}previewPanel.selected.set(current,artifact.dataset.activityArtifact);tab='preview';previewPanel.update(s);updateTaskTab();return;}const file=e.target.closest('[data-activity-file]');if(file){tab='changes';updateTaskTab();await loadStudioFiles();await openSourceFile(file.dataset.activityFile);}}
+$('#activityFeed').onclick=activityClick;$('#liveActivity').onclick=activityClick;
+
+setInterval(()=>{for(const n of document.querySelectorAll('[data-activity-age]')){const seconds=Math.max(0,Math.floor((Date.now()-Date.parse(n.dataset.activityAge))/1000));n.textContent=`最近可见活动 ${seconds} 秒前`;}},1000);

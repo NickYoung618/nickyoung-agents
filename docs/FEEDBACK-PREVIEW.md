@@ -13,3 +13,9 @@ P0 已打通已登录工作台 → 预览 → 生成静态产物 → 播放/暂�
 P0 验证：preview.test 4 项、preview-http.test 1 项通过；test:preview 在隔离 HTTPS 服务中操作原动画，验证 iframe 和新标签隔离、跨会话拒绝、作品/源码下载和四尺寸布局。截图与实际断言在 evidence/feedback-preview。没有真实模型消耗。
 
 官方依据：[CSP sandbox](https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Headers/Content-Security-Policy/sandbox)、[iframe sandbox](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/iframe)、[Vite 静态构建/base](https://vite.dev/guide/build.html)、[esbuild](https://esbuild.github.io/api/)、[parse5](https://parse5.js.org/)。
+
+P1 已接入实际 process/run/check 事件。活动以原 eventId 追溯，工具起止时间只取真实记录，未报告开始时明确显示未记录。SSE 对当前会话增量投影、去重，连续输出的刷新等待上限为 200ms；重连拉取完整快照并补齐刷新期间的事件。文件可打开实际源码与差异，检查可展开原日志。
+
+执行者的成功构建事件和正式构建检查自动登记草稿，不增加模型调用。版本与批次、提交、构建证据关联；取消、暂停或批次变更后的迟到结果不登记。单项目合并待处理请求，重复成功不新增相同版本。用户默认停留原版本；勾选“跟随最新”后才自动切换；构建失败保留原画面和输入。inline_preview 交付必须有当前批次、最终提交对应的静态作品；程序负责补齐预览，downloadable_source 不强制网页化。
+
+P1 验证：preview/activity/HTTPS 共 12 项通过。隔离浏览器完成版本切换、跟随、失败保留、回合结束前活动可见、点击未改动文件、跨会话预览隔离；页面脚本异常 0。本机一次请求至新版本可见为 262ms，包含打包与往返，仅为夹具观测，不代表生产或真实模型效率。

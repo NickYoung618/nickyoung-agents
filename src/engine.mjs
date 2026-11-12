@@ -332,12 +332,26 @@ export class Engine {
             ? member.session
             : undefined,
         timeout: this.config.timeout,
-        onEvent: (e) =>
-          this.event(c, "process", {
+        onEvent: (e) => {
+          const persisted = this.event(c, "process", {
             member: member.id,
             runId: trace.runId,
             event: e,
-          }),
+          });
+          if (
+            !leader &&
+            !readOnly &&
+            taskRole !== "reviewer" &&
+            role !== "reviewer"
+          )
+            this.previews?.observeModelBuild(c, e, {
+              cwd: cwd || s.path,
+              taskId,
+              cycleId,
+              runId: trace.runId,
+              eventId: persisted.id,
+            });
+        },
       });
       proc.taskId = taskId;
       this.running.set(key, proc);
@@ -1075,6 +1089,7 @@ export class Engine {
         this.event(c, "task_update", { id: t.id, commit });
         let ok = true;
         for (const cmd of t.commands) {
+          this.previews?.started(c, { command: cmd });
           const output = [];
           const proc = runProcess(
             "codex",
@@ -1106,10 +1121,23 @@ export class Engine {
           this.running.set(c + ":machine", proc);
           try {
             await proc.promise;
-            const evidence=this.event(c, "check", {task:t.id,command:cmd,passed:true,output:output.join("\n"),commit});
-            await this.previews?.completed(c,{cwd,command:cmd,commit,taskId:t.id,buildEvidenceIds:[evidence.id]});
+            const evidence = this.event(c, "check", {
+              task: t.id,
+              command: cmd,
+              passed: true,
+              output: output.join("\n"),
+              commit,
+            });
+            await this.previews?.completed(c, {
+              cwd,
+              command: cmd,
+              commit,
+              taskId: t.id,
+              buildEvidenceIds: [evidence.id],
+            });
           } catch (e) {
             if (e.signal && !e.timedOut) {
+              this.previews?.failed(c, {command: cmd, interrupted: true});
               this.event(c, "check_interrupted", {
                 task: t.id,
                 command: cmd,
@@ -1119,6 +1147,10 @@ export class Engine {
               return;
             }
             ok = false;
+            this.previews?.failed(c, {
+              command: cmd,
+              output: output.join("\n") + "\n" + e.message,
+            });
             this.event(c, "check", {
               task: t.id,
               command: cmd,

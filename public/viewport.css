@@ -425,3 +425,9 @@ body {
 #ny-live-studio [data-artifact-evidence] a { display:block; overflow-wrap:anywhere; color:var(--ny-blue-ink); padding:4px; }
 #ny-live-studio .ny-tabs { overflow-x:auto; max-width:100%; flex-shrink:0; }
 #workflowBadge { overflow-wrap:anywhere; }
+#ny-live-studio .ny-activity { border-left:2px solid var(--ny-blue); padding:5px 8px; margin:4px 0; font-size:12px; overflow-wrap:anywhere; }
+#ny-live-studio .ny-activity button { display:inline; text-align:left; margin-right:6px; color:var(--ny-blue-ink); }
+#ny-live-studio .ny-activity small { display:block; color:var(--ny-sub); }
+#activityFeed { max-height:126px; overflow:auto; flex-shrink:0; }
+#liveActivity { max-height:172px; overflow:auto; }
+#ny-live-studio .ny-node-status { display:block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }

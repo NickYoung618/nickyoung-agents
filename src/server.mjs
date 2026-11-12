@@ -1,6 +1,7 @@
+import { projectActivities } from "./activity-projector.mjs";
 import { captureRuntime } from "./runtime-info.mjs";
 import { PreviewManager } from "./preview-manager.mjs";
-import { instrumentPreview, previewCsp } from "./static-preview.mjs";
+import { instrumentPreview, previewCsp, safeFile } from "./static-preview.mjs";
 import { ModelCatalog } from "./model-catalog.mjs";
 import { statistics, cycleStatistics } from "./statistics.mjs";
 import https from "node:https";
@@ -20,7 +21,7 @@ import { Engine } from "./engine.mjs";
 import { runModel } from "./runner.mjs";
 const root = resolve(import.meta.dirname, ".."),
   data = resolve(process.env.NY_DATA || join(root, "data"));
-const runtimeInfo=captureRuntime(root);
+const runtimeInfo = captureRuntime(root);
 mkdirSync(data, { recursive: true, mode: 0o700 });
 const configPath = join(data, "config.json");
 let config = existsSync(configPath)
@@ -121,12 +122,17 @@ const selectionKey = (s) =>
   JSON.stringify([s.channel, s.model, s.effort ?? ""]);
 let previews;
 const engine = new Engine(store, config, save, (e) => {
-  for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`);
-  if(e.type === "task_update" && e.data.status === "passed" || e.type === "cycle_update" && e.data.phase === "delivered")queueMicrotask(()=>previews?.validate(e.conversation));
+  for (const r of clients)
+    r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`);
+  if (
+    (e.type === "task_update" && e.data.status === "passed") ||
+    (e.type === "cycle_update" && e.data.phase === "delivered")
+  )
+    queueMicrotask(() => previews?.validate(e.conversation));
 });
-previews=new PreviewManager(engine);
-engine.previews=previews;
-store.append("system","runtime_started",runtimeInfo);
+previews = new PreviewManager(engine);
+engine.previews = previews;
+store.append("system", "runtime_started", runtimeInfo);
 function json(res, status, value) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -252,31 +258,110 @@ const server = https.createServer(
         });
         return;
       }
-      if(p === "/api/runtime")return json(res,200,runtimeInfo);
-      const previewRoute=p.match(/^\/api\/conversations\/([^/]+)\/(artifacts|preview)(?:\/([^/]+)\/(content|download|source))?$/);
-      if(previewRoute){
-        const [,c,action,id,mode]=previewRoute,s=engine.state(c);
-        if(!s.id)return json(res,404,{error:"对话不存在"});
-        if(!id&&action==='artifacts'&&req.method==='GET')return json(res,200,{artifacts:previews.store.list(c),preview:s.preview});
-        if(!id&&action==='preview'&&req.method==='POST'){
-          const b=await body(req);if(Object.keys(b).length)throw Error("预览入口不接收服务器路径或代理地址");
-          return json(res,200,{artifacts:await previews.request(c),preview:engine.state(c).preview});
+      if (p === "/api/runtime") return json(res, 200, runtimeInfo);
+      const sourceRoute = p.match(
+        /^\/api\/conversations\/([^/]+)\/source-file$/,
+      );
+      if (sourceRoute) {
+        const s = engine.state(sourceRoute[1]),
+          file = url.searchParams.get("path");
+        if (!s.id) return json(res, 404, { error: "对话不存在" });
+        if (
+          !file ||
+          file.startsWith("/") ||
+          file.split("/").some((p) => p === ".." || p.startsWith(".")) ||
+          !/\.(?:[cm]?js|[jt]sx?|md|txt|html|css|json|py|svg|png|jpe?g|webp)$/i.test(
+            file,
+          )
+        )
+          throw Error("文件路径不支持");
+        const content = readFileSync(safeFile(s.path, file)),
+          image = /\.(?:png|jpe?g|webp)$/i.test(file);
+        return json(res, 200, {
+          file,
+          image,
+          content: content.toString(image ? "base64" : "utf8"),
+          diff: engine.git(s.path, ["diff", "HEAD", "--", file]),
+        });
+      }
+      const previewRoute = p.match(
+        /^\/api\/conversations\/([^/]+)\/(artifacts|preview)(?:\/([^/]+)\/(content|download|source))?$/,
+      );
+      if (previewRoute) {
+        const [, c, action, id, mode] = previewRoute,
+          s = engine.state(c);
+        if (!s.id) return json(res, 404, { error: "对话不存在" });
+        if (!id && action === "artifacts" && req.method === "GET")
+          return json(res, 200, {
+            artifacts: previews.store.list(c),
+            preview: s.preview,
+          });
+        if (!id && action === "preview" && req.method === "POST") {
+          const b = await body(req);
+          if (Object.keys(b).length)
+            throw Error("预览入口不接收服务器路径或代理地址");
+          return json(res, 200, {
+            artifacts: await previews.request(c),
+            preview: engine.state(c).preview,
+          });
         }
-        if(action!=='artifacts'||!id||req.method!=='GET')return json(res,405,{error:"不支持的产物请求"});
-        let a;try{a=previews.store.get(c,id);}catch{return json(res,404,{error:"该会话没有此产物"});}
-        if(mode==='source'&&!a.hasSource)return json(res,404,{error:"此产物没有源码包"});
-        let payload;try{payload=previews.store.read(c,id,mode==='source').data;}catch{return json(res,404,{error:"产物文件不可用"});}
-        if(mode==='content'){
-          res.setHeader('Content-Security-Policy',previewCsp);
-          res.setHeader('Referrer-Policy','no-referrer');
-          res.writeHead(200,{'Content-Type':a.kind==='static_page'?'text/html; charset=utf-8':({'.png':'image/png','.jpg':'image/jpeg','.jpeg':'image/jpeg','.webp':'image/webp','.json':'application/json; charset=utf-8'}[extname(a.entry)]||'text/plain; charset=utf-8'),'Cache-Control':'no-store'});
-          return res.end(a.kind==='static_page'?instrumentPreview(payload.toString('utf8'),a):payload);
+        if (action !== "artifacts" || !id || req.method !== "GET")
+          return json(res, 405, { error: "不支持的产物请求" });
+        let a;
+        try {
+          a = previews.store.get(c, id);
+        } catch {
+          return json(res, 404, { error: "该会话没有此产物" });
         }
-        res.writeHead(200,{'Content-Type':mode==='source'?'application/zip':'application/octet-stream','Content-Disposition':`attachment; filename*=UTF-8''${encodeURIComponent(mode==='source'?'source.zip':a.safeDownloadName)}`,'Cache-Control':'no-store'});return res.end(payload);
+        if (mode === "source" && !a.hasSource)
+          return json(res, 404, { error: "此产物没有源码包" });
+        let payload;
+        try {
+          payload = previews.store.read(c, id, mode === "source").data;
+        } catch {
+          return json(res, 404, { error: "产物文件不可用" });
+        }
+        if (mode === "content") {
+          res.setHeader("Content-Security-Policy", previewCsp);
+          res.setHeader("Referrer-Policy", "no-referrer");
+          res.writeHead(200, {
+            "Content-Type":
+              a.kind === "static_page"
+                ? "text/html; charset=utf-8"
+                : {
+                    ".png": "image/png",
+                    ".jpg": "image/jpeg",
+                    ".jpeg": "image/jpeg",
+                    ".webp": "image/webp",
+                    ".json": "application/json; charset=utf-8",
+                  }[extname(a.entry)] || "text/plain; charset=utf-8",
+            "Cache-Control": "no-store",
+          });
+          return res.end(
+            a.kind === "static_page"
+              ? instrumentPreview(payload.toString("utf8"), a)
+              : payload,
+          );
+        }
+        res.writeHead(200, {
+          "Content-Type":
+            mode === "source" ? "application/zip" : "application/octet-stream",
+          "Content-Disposition": `attachment; filename*=UTF-8''${encodeURIComponent(mode === "source" ? "source.zip" : a.safeDownloadName)}`,
+          "Cache-Control": "no-store",
+        });
+        return res.end(payload);
       }
       if (p === "/api/ui-version")
         return json(res, 200, { version: "20261113-preview-1" });
       if (p === "/api/state") return json(res, 200, store.conversations());
+      const activityRoute = p.match(
+        /^\/api\/conversations\/([^/]+)\/activity$/,
+      );
+      if (activityRoute) {
+        const s = engine.state(activityRoute[1]);
+        if (!s.id) return json(res, 404, { error: "对话不存在" });
+        return json(res, 200, projectActivities(s));
+      }
       if (p === "/api/models")
         return json(
           res,
@@ -385,7 +470,11 @@ const server = https.createServer(
           directPlan: b.directPlan,
         });
         await engine.message(c, b.text, b.files, { intent: b.intent });
-        return json(res, 200, { id: c, workflowVersion:engine.state(c).workflowVersion, runtimeInfo });
+        return json(res, 200, {
+          id: c,
+          workflowVersion: engine.state(c).workflowVersion,
+          runtimeInfo,
+        });
       }
       const match = p.match(
         /^\/api\/conversations\/([^/]+)\/(message|pause|resume|answer|member|diff|files|resolve)$/,
@@ -528,6 +617,8 @@ function asset(p, res) {
     "/app.js": "app.js",
     "/vendor.mjs": "vendor.mjs",
     "/event-projection.mjs": "event-projection.mjs",
+    "/studio/activity-projector.mjs": "studio/activity-projector.mjs",
+    "/studio/live-state.mjs": "studio/live-state.mjs",
     "/studio/preview-panel.mjs": "studio/preview-panel.mjs",
     "/studio/event-projection.mjs": "studio/event-projection.mjs",
     "/studio/draft-manager.mjs": "studio/draft-manager.mjs",

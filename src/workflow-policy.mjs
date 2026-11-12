@@ -45,7 +45,7 @@ export function canRunTask(task, cycle, questions = []) {
     )
   );
 }
-export function canDeliver(cycle, questions = []) {
+export function canDeliver(cycle, questions = [], artifacts = []) {
   if (
     !cycle ||
     !cycle.tasks.length ||
@@ -55,6 +55,14 @@ export function canDeliver(cycle, questions = []) {
   )
     return false;
   return (
+    (cycle.deliveryTarget !== "inline_preview" ||
+      artifacts.some(
+        (a) =>
+          a.kind === "static_page" &&
+          a.status === "ready" &&
+          a.cycleId === cycle.cycleId &&
+          a.sourceCommit === cycle.finalCommit,
+      )) &&
     cycle.tasks.every((t) => t.status === "implemented") &&
     cycle.gates.every((g) =>
       ["passed", "reused", "not_required"].includes(g.status),
@@ -93,6 +101,9 @@ export function canDeliver(cycle, questions = []) {
 }
 export function validatePlan(input, members, { direct = false } = {}) {
   const plan = structuredClone(input);
+  plan.deliveryTarget ||= "downloadable_source";
+  if (!["inline_preview", "downloadable_source"].includes(plan.deliveryTarget))
+    throw Error("不支持的交付目标");
   if (
     !plan ||
     !Array.isArray(plan.contractPaths) ||
