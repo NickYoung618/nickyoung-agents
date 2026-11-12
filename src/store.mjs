@@ -33,6 +33,8 @@ export class Store {
 export function project(events) {
   let s = {
     id: events[0]?.conversation,
+    workflowVersion: "legacy",
+    cycles: [],
     members: [],
     tasks: [],
     questions: [],
@@ -43,6 +45,11 @@ export function project(events) {
     const d = e.data;
     if (e.type === "created" || e.type === "project_update")
       Object.assign(s, d);
+    if (e.type === "cycle") {
+      if (!s.cycles.some(x => x.cycleId === d.cycleId)) s.cycles.push(structuredClone(d));
+      s.cycleId = d.cycleId;
+    }
+    if (e.type === "cycle_update") Object.assign(s.cycles.find(x => x.cycleId === d.cycleId) || {}, structuredClone(d));
     if (e.type === "status") s.status = d.status;
     if (e.type === "leader_selection") s.leaderSelection = d;
     if (e.type === "recruit") s.members.push(d);
@@ -64,13 +71,15 @@ export function project(events) {
         answer: d.answer,
       });
   }
+  for (const cycle of s.cycles) cycle.tasks = s.tasks.filter(t => t.cycleId === cycle.cycleId);
+  s.cycle = s.cycles.find(x => x.cycleId === s.cycleId);
   return s;
 }
 export function failureState(failures, design = false) {
-  return design
-    ? "consultation"
-    : failures >= 3
-      ? "stopped"
+  return failures >= 3
+    ? "stopped"
+    : design
+      ? "consultation"
       : failures === 2
         ? "consultation"
         : "repair";

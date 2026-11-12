@@ -45,7 +45,10 @@ export class Engine {
       },
     }).trim();
   }
-  async create(title, path) {
+  async create(title, path, options = {}) {
+    const workflowVersion = options.workflowVersion || "legacy";
+    if (!["legacy", "adaptive_v1"].includes(workflowVersion)) throw Error("未知工作流版本");
+    if (options.directPlan && workflowVersion !== "adaptive_v1") throw Error("direct 需要 adaptive_v1");
     const c = id();
     path = path ? resolve(path) : join(this.config.workspace, c);
     if (
@@ -60,6 +63,7 @@ export class Engine {
     mkdirSync(path, { recursive: true });
     if (existed && !existsSync(join(path, ".git"))) {
       this.event(c, "created", {
+        workflowVersion, directPlan: options.directPlan,
         title: title.slice(0, 40),
         path,
         status: "waiting_setup",
@@ -86,6 +90,7 @@ export class Engine {
     if (this.git(path, ["status", "--porcelain"]))
       throw new Error("项目有未提交改动，请先提交后再开始。");
     this.event(c, "created", {
+      workflowVersion, directPlan: options.directPlan,
       title: title.slice(0, 40),
       path,
       status: "idle",
@@ -229,6 +234,7 @@ export class Engine {
       prompt,
       leader,
       readOnly,
+      role,
       team:
         leader || selection.channel === "claude"
           ? {

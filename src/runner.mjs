@@ -1,3 +1,4 @@
+import { plannerSchema, executorSchema, reviewerSchema, actionProperties, validateRoleResult } from "./contracts.mjs";
 import { spawn } from "node:child_process";
 import { readFileSync, writeFileSync, mkdirSync } from "node:fs";
 import { join } from "node:path";
@@ -36,71 +37,9 @@ export const schema = {
   ],
   additionalProperties: false,
 };
-export const leaderSchema = {
-  type: "object",
-  properties: {
-    message: { type: "string" },
-    actions: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: Object.fromEntries(
-          [
-            "type",
-            "name",
-            "role",
-            "tier",
-            "member",
-            "reviewer",
-            "title",
-            "description",
-            "text",
-            "question",
-            "yes",
-            "no",
-            "task",
-            "advice",
-            "reason",
-          ]
-            .map((x) => [x, { type: "string" }])
-            .concat([
-              ["commands", { type: "array", items: { type: "string" } }],
-            ]),
-        ),
-        required: [
-          "type",
-          "name",
-          "role",
-          "tier",
-          "member",
-          "reviewer",
-          "title",
-          "description",
-          "text",
-          "question",
-          "yes",
-          "no",
-          "task",
-          "advice",
-          "reason",
-          "commands",
-        ],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ["message", "actions"],
-  additionalProperties: false,
-};
-leaderSchema.properties.actions.items.properties.participants = {
-  type: "array",
-  items: { type: "string" },
-};
-leaderSchema.properties.actions.items.required.push("participants");
-leaderSchema.properties.actions.items.properties.replacement = {
-  type: "string",
-};
-leaderSchema.properties.actions.items.required.push("replacement");
+export const leaderSchema = { type: "object", properties: {
+ message: {type:"string"}, actions: {type:"array", items: {type:"object", properties:actionProperties, required:Object.keys(actionProperties), additionalProperties:false}}
+}, required:["message","actions"], additionalProperties:false };
 schema.properties.questions = {
   type: "array",
   items: {
@@ -233,11 +172,12 @@ export function runModel({
   timeout,
   team,
   readOnly = false,
+  role,
 }) {
-  const outputSchema = leader ? leaderSchema : schema;
+  const outputSchema = {planner:plannerSchema,executor:executorSchema,reviewer:reviewerSchema}[role] || (leader ? leaderSchema : schema);
   let bin, args;
   const system = readFileSync(
-    new URL(`../prompts/${leader ? "leader" : "member"}.md`, import.meta.url),
+    new URL(`../prompts/${role || (leader ? "leader" : "member")}.md`, import.meta.url),
     "utf8",
   );
   if (selection.channel === "claude") {
@@ -293,7 +233,7 @@ export function runModel({
     mkdirSync(dir, { recursive: true });
     const file = join(
       dir,
-      leader ? "leader-schema.json" : "member-schema.json",
+      `${role || (leader ? "leader" : "member")}-schema.json`,
     );
     writeFileSync(file, JSON.stringify(outputSchema));
     args = [
@@ -379,6 +319,7 @@ export function runModel({
     }
     if (!result || typeof result.message !== "string")
       throw new Error("模型未返回有效结果");
+    if (role) validateRoleResult(role, result);
     return { result, session: sid, usage, model: actual };
   });
   return proc;

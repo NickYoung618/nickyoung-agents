@@ -349,7 +349,7 @@ const server = https.createServer(
       if (p === "/api/conversations" && req.method === "POST") {
         let b = await body(req);
         if (!b.text?.trim()) throw new Error("请输入需求");
-        let c = await engine.create(b.text, b.path);
+        let c = await engine.create(b.text, b.path, { workflowVersion: b.workflowVersion, directPlan: b.directPlan });
         await engine.message(c, b.text, b.files);
         return json(res, 200, { id: c });
       }
