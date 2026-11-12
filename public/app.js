@@ -274,7 +274,8 @@ async function sendRequest(home = false) {
   try {
     if (target) await api(`conversations/${target}/message`, { text, files });
     else {
-      const r = await api('conversations', { text, path: selectedPath(), files });
+      const r = await api('conversations', { text, path: selectedPath(),
+        workflowVersion: $("#workflowVersion").value, files });
       current = r.id;
       studioView = 'task';
     }
@@ -614,7 +615,7 @@ let messageSession, messageSignature, timelineLimit = 8;
 const readingPositions = new Map();
 function selectedPath() { return $("#projectSelect").value === '__custom' ? $("#path").value.trim() : $("#projectSelect").value; }
 function saveDrafts() {
-  drafts.write(undefined, { text: $("#homeInput").value, project: $("#projectSelect").value, path: $("#path").value, attachmentNames: (attachmentSelections.get("new") || []).map(f => f.name) });
+  drafts.write(undefined, { text: $("#homeInput").value, project: $("#projectSelect").value, path: $("#path").value, workflowVersion: $("#workflowVersion").value, attachmentNames: (attachmentSelections.get("new") || []).map(f => f.name) });
   if (draftContext) drafts.write(draftContext, { text: $("#input").value, attachmentNames: (attachmentSelections.get(draftContext) || []).map(f => f.name) });
 }
 function restoreHomeDraft() {
@@ -622,6 +623,7 @@ function restoreHomeDraft() {
   $("#homeInput").value = d.text || '';
   $("#path").value = d.path || '';
   drawProjects();
+  $("#workflowVersion").value = d.workflowVersion || "legacy";
   $("#projectSelect").value = d.project || '';
   if ($("#projectSelect").selectedIndex < 0) $("#projectSelect").value = '__custom';
   $("#projectAdvanced").hidden = $("#projectSelect").value !== '__custom';
@@ -735,8 +737,10 @@ $('#messages').onclick = e => {
   if (e.target.closest('[data-more]')) { timelineLimit += 30; render(); }
 };
 $('#newProgress').onclick = () => { $('#messages').scrollTop = $('#messages').scrollHeight; $('#newProgress').hidden = true; };
+$('#statusQuery').onclick = async () => { try { await api(`conversations/${current}/message`, {text:'查看当前进度',intent:'status'}); await refresh(); } catch(error) { $('#notice').textContent=error.message; } };
 $('#homeInput').addEventListener('input', saveDrafts); $('#input').addEventListener('input', saveDrafts);
 $('#path').addEventListener('input', saveDrafts);
+$('#workflowVersion').onchange = saveDrafts;
 $('#projectSelect').onchange = () => { $('#projectAdvanced').hidden = $('#projectSelect').value !== '__custom'; saveDrafts(); };
 window.addEventListener('pagehide', saveDrafts);
 $('#applyUpdate').onclick = () => { saveDrafts(); location.reload(); };
@@ -977,10 +981,10 @@ async function loadStudioFiles() {
   }
 }
 function taskGroup(t) {
-  return ['running','reviewing','repair','consultation'].includes(t.status) ? '1进行中' : ['queued','review','rate_wait'].includes(t.status) ? '2等待' : t.status === 'passed' ? '3已通过' : '4遗留与已停止';
+  return ['running','reviewing','repair','consultation'].includes(t.status) ? '1进行中' : ['queued','review','rate_wait'].includes(t.status) ? '2等待' : ['passed','implemented'].includes(t.status) ? '3已完成' : '4遗留与已停止';
 }
 function taskNext(t) {
-  const next = {queued:'等待成员执行',running:'等待实现结果与机器验收',review:'等待独立审查',reviewing:'审查者正在核验',repair:'等待实现者修复后重新验收',consultation:'等待负责人给出处理方案',passed:'验收与独立审查已通过',rate_wait:'等待额度恢复',deferred:'遗留项，可补充处理要求',stopped:'已停止，需负责人处理',cancelled:'任务已取消'};
+  const next = {implemented:'已实现；批次检查和审查状态见当前进展',blocked:'等待具体阻塞解除',queued:'等待成员执行',running:'等待实现结果与机器验收',review:'等待独立审查',reviewing:'审查者正在核验',repair:'等待实现者修复后重新验收',consultation:'等待负责人给出处理方案',passed:'验收与独立审查已通过',rate_wait:'等待额度恢复',deferred:'遗留项，可补充处理要求',stopped:'已停止，需负责人处理',cancelled:'任务已取消'};
   return (next[t.status] || '下一步尚未确定') + (t.reason ? ` · ${t.reason}` : '');
 }
 function decisionCard(c, q, local = false) {
@@ -1000,7 +1004,7 @@ function drawStudio(s) {
         .reverse()
         .map(
           (c) =>
-            `<button data-id="${c.id}"><strong>${escape(c.title)}</strong><small>${escape(labels[c.status] || c.status)} · ${c.tasks.filter((t) => t.status === "passed").length} 项已通过审查</small></button>`,
+            `<button data-id="${c.id}"><strong>${escape(c.title)}</strong><small>${escape(labels[c.status] || c.status)} · ${c.tasks.filter((t) => t.status === (c.workflowVersion === "adaptive_v1" ? "implemented" : "passed")).length} 项${c.workflowVersion === "adaptive_v1" ? "已实现" : "已通过审查"}</small></button>`,
         )
         .join("")
     : '<p class="ny-small">还没有任务，描述目标即可开始。</p>';
@@ -1016,9 +1020,10 @@ function drawStudio(s) {
     .reverse();
   updateRegion('#resultContent', reports.length ? reports.map(({c,e}) => {
     const evidence = deliveryEvidence(c, e);
-    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
+    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.cycleId ? `<p class="ny-small">批次 ${escape(evidence.cycleId)} · 最终提交 ${escape(evidence.finalCommit)}${evidence.reviewedCommit ? ` · 原审查提交 ${escape(evidence.reviewedCommit)}` : ""}</p>` : ""}${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>${escape(evidence.reviewLabel || `独立审查 ${evidence.reviews.length} 次`)}</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
   }).join('') : '<div class="card ny-small">还没有交付成果。</div>');
   if (s) {
+    $("#statusQuery").hidden = s.workflowVersion !== "adaptive_v1";
     $("#taskTitle").textContent = s.title;
     $("#taskTitle").title = s.title;
     $("#fullGoal").textContent = s.title;
@@ -1029,15 +1034,15 @@ function drawStudio(s) {
     $("#focusTitle").title = summary.action;
     $("#nextAction").textContent = summary.next;
     const handoff = studioEdges(s).at(-1);
-    $("#taskCounts").textContent = `${summary.passed} / ${s.tasks.length} 项已通过 · 需要你 ${summary.waiting} 项` +
+    $("#taskCounts").textContent = (s.workflowVersion === "adaptive_v1" ? `${summary.implemented || 0} / ${summary.total || 0} 项已实现 · 必需检查 ${summary.checked || 0} / ${summary.checkTotal || 0} · 需要你 ${summary.waiting} 项` : `${summary.passed} / ${s.tasks.length} 项已通过 · 需要你 ${summary.waiting} 项`) +
       (handoff ? ` · 最近交接：${name(s, handoff.from)} → ${name(s, handoff.to)}` : '') +
       (summary.last ? ` · 最后事件 ${new Date(summary.last.time).toLocaleTimeString()}` : '');
-    updateRegion("#taskList", s.tasks.length
-      ? [...s.tasks].filter(t => $("#taskFilter").value !== "blocked" || ["queued","review","consultation","rate_wait","stopped","deferred"].includes(t.status)).sort((a,b) => taskGroup(a).localeCompare(taskGroup(b)))
+    updateRegion("#taskList", (s.cycle?.tasks || s.tasks).length
+      ? [...(s.cycle?.tasks || s.tasks)].filter(t => $("#taskFilter").value !== "blocked" || ["queued","review","consultation","rate_wait","stopped","deferred"].includes(t.status)).sort((a,b) => taskGroup(a).localeCompare(taskGroup(b)))
           .map(
             (
               t,
-            ) => `<div class="task"><span class="ny-small">${escape(taskGroup(t).slice(1))}</span><br><strong>${escape(t.title)}</strong><div class="ny-small">${escape(name(s, t.member))} → ${escape(name(s, t.reviewer))} · ${escape(labels[t.status])} · 返修 ${t.failures} 次</div><p class="ny-small">${escape(taskNext(t))}</p><details><summary>验收标准</summary><pre>${escape(t.description)}
+            ) => `<div class="task"><span class="ny-small">${escape(taskGroup(t).slice(1))}</span><br><strong>${escape(t.title)}</strong><div class="ny-small">${escape(name(s, t.member))}${s.workflowVersion === "adaptive_v1" ? " · 批次验证" : " → " + escape(name(s, t.reviewer))} · ${escape(labels[t.status])} · 返修 ${t.failures} 次</div><p class="ny-small">${escape(taskNext(t))}</p><details><summary>验收标准</summary><pre>${escape(t.description)}
 ${escape(t.commands?.join("\n"))}</pre></details><div class="task-evidence">${s.events.filter(e => ["check","review"].includes(e.type) && e.data.task === t.id).slice(-2).map(e => `<button data-evidence="${e.id}">${e.type === "check" ? "机器验收" : "独立审查"} · 查看证据</button>`).join("")}</div></div>`,
           )
           .join("")
@@ -1139,7 +1144,7 @@ function drawStudioGraph(s) {
     members
       .map(
         (m) =>
-          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running" && s.status === "working" && connectionReady}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(s.status === "done" ? "本次已交付" : m.status === "idle" ? "空闲" : labels[m.status] || m.status)}</span></button>`,
+          `<button class="ny-node" data-studio-member="${m.id}" data-busy="${m.status === "running" && s.status === "working" && connectionReady}"><span class="ny-node-top"><span class="ny-node-avatar">${escape(m.name[0])}</span>${escape(m.name)}</span><span class="ny-node-role">${escape(m.role)}</span><span class="ny-node-status">${escape(s.status === "done" ? "本次已交付" : m.status === "idle" ? (m.id === "leader" ? "待命" : "空闲") : labels[m.status] || m.status)}</span></button>`,
       )
       .join("");
   for (const node of box.querySelectorAll("[data-studio-member]")) {

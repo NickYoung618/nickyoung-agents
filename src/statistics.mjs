@@ -91,36 +91,61 @@ export function statistics(conversations) {
 // Run starts define calls; terminal events supply consumption, including partial failures.
 export function cycleStatistics(conversations) {
   const groups = new Map();
-  for (const { events } of conversations) for (const e of events) {
-    const d = e.data;
-    if (!d.runId || !d.cycleId) continue;
-    if (!groups.has(d.cycleId)) groups.set(d.cycleId, { runs: new Map(), events: [] });
-    const g = groups.get(d.cycleId);
-    if (e.type === 'run_start') g.runs.set(d.runId, { ...g.runs.get(d.runId), start: e });
-    if (['model_result','run_failed','run_interrupted'].includes(e.type))
-      g.runs.set(d.runId, { ...g.runs.get(d.runId), end: e });
-  }
+  for (const { events } of conversations)
+    for (const e of events) {
+      const d = e.data;
+      if (!d.runId || !d.cycleId) continue;
+      if (!groups.has(d.cycleId))
+        groups.set(d.cycleId, { runs: new Map(), events: [] });
+      const g = groups.get(d.cycleId);
+      if (e.type === "run_start")
+        g.runs.set(d.runId, { ...g.runs.get(d.runId), start: e });
+      if (["model_result", "run_failed", "run_interrupted"].includes(e.type))
+        g.runs.set(d.runId, { ...g.runs.get(d.runId), end: e });
+    }
   return [...groups].map(([cycleId, g]) => {
-    const s = { cycleId, calls: {}, failed: 0, interrupted: 0, usageKnown: 0, usageUnknown: 0,
-      input: 0, output: 0, cached: 0, cacheCreation: 0, modelDuration: 0, waitDuration: 0, wallDuration: 0,
-      humanDecisions: conversations.flatMap(c => c.events).filter(e => e.type === 'answer' && e.data.cycleId === cycleId).length };
+    const s = {
+      cycleId,
+      calls: {},
+      failed: 0,
+      interrupted: 0,
+      usageKnown: 0,
+      usageUnknown: 0,
+      input: 0,
+      output: 0,
+      cached: 0,
+      cacheCreation: 0,
+      modelDuration: 0,
+      waitDuration: 0,
+      wallDuration: 0,
+      humanDecisions: conversations
+        .flatMap((c) => c.events)
+        .filter((e) => e.type === "answer" && e.data.cycleId === cycleId)
+        .length,
+    };
     const times = [];
-    for (const {start, end} of g.runs.values()) {
-      const d = {...start?.data, ...end?.data}, u = d.usage;
+    for (const { start, end } of g.runs.values()) {
+      const d = { ...start?.data, ...end?.data },
+        u = d.usage;
       s.calls[d.purpose] = (s.calls[d.purpose] || 0) + 1;
-      s.failed += end?.type === 'run_failed' ? 1 : 0;
-      s.interrupted += end?.type === 'run_interrupted' ? 1 : 0;
-      const known = Number.isFinite(u?.input_tokens) && Number.isFinite(u?.output_tokens);
-      s[known ? 'usageKnown' : 'usageUnknown']++;
-      s.input += u?.input_tokens || 0; s.output += u?.output_tokens || 0;
+      s.failed += end?.type === "run_failed" ? 1 : 0;
+      s.interrupted += end?.type === "run_interrupted" ? 1 : 0;
+      const known =
+        Number.isFinite(u?.input_tokens) && Number.isFinite(u?.output_tokens);
+      s[known ? "usageKnown" : "usageUnknown"]++;
+      s.input += u?.input_tokens || 0;
+      s.output += u?.output_tokens || 0;
       s.cached += u?.cached_input_tokens || u?.cache_read_input_tokens || 0;
       s.cacheCreation += u?.cache_creation_input_tokens || 0;
-      s.modelDuration += d.duration || 0; s.waitDuration += d.waitDuration || 0;
+      s.modelDuration += d.duration || 0;
+      s.waitDuration += d.waitDuration || 0;
       if (start) times.push(Date.parse(start.time));
       if (end) times.push(Date.parse(end.time));
     }
     s.usageCoverage = s.usageKnown / (s.usageKnown + s.usageUnknown);
-    s.wallDuration = times.length ? Math.max(...times) - Math.min(...times) : null;
+    s.wallDuration = times.length
+      ? Math.max(...times) - Math.min(...times)
+      : null;
     return s;
   });
 }

@@ -50,8 +50,10 @@ export class Engine {
   }
   async create(title, path, options = {}) {
     const workflowVersion = options.workflowVersion || "legacy";
-    if (!["legacy", "adaptive_v1"].includes(workflowVersion)) throw Error("未知工作流版本");
-    if (options.directPlan && workflowVersion !== "adaptive_v1") throw Error("direct 需要 adaptive_v1");
+    if (!["legacy", "adaptive_v1"].includes(workflowVersion))
+      throw Error("未知工作流版本");
+    if (options.directPlan && workflowVersion !== "adaptive_v1")
+      throw Error("direct 需要 adaptive_v1");
     const c = id();
     path = path ? resolve(path) : join(this.config.workspace, c);
     if (
@@ -66,7 +68,8 @@ export class Engine {
     mkdirSync(path, { recursive: true });
     if (existed && !existsSync(join(path, ".git"))) {
       this.event(c, "created", {
-        workflowVersion, directPlan: options.directPlan,
+        workflowVersion,
+        directPlan: options.directPlan,
         title: title.slice(0, 40),
         path,
         status: "waiting_setup",
@@ -93,7 +96,8 @@ export class Engine {
     if (this.git(path, ["status", "--porcelain"]))
       throw new Error("项目有未提交改动，请先提交后再开始。");
     this.event(c, "created", {
-      workflowVersion, directPlan: options.directPlan,
+      workflowVersion,
+      directPlan: options.directPlan,
       title: title.slice(0, 40),
       path,
       status: "idle",
@@ -120,7 +124,10 @@ export class Engine {
     mkdirSync(join(path, ".nickyoung"), { recursive: true });
     const notes = join(path, ".nickyoung", "项目须知.md");
     if (!existsSync(notes)) writeFileSync(notes, "# 项目须知\n");
-    if (s.workflowVersion === "adaptive_v1" && this.git(path, ["status", "--porcelain", "--", ".nickyoung/项目须知.md"])) {
+    if (
+      s.workflowVersion === "adaptive_v1" &&
+      this.git(path, ["status", "--porcelain", "--", ".nickyoung/项目须知.md"])
+    ) {
       this.git(path, ["add", ".nickyoung/项目须知.md"]);
       this.git(path, ["commit", "-m", "记录项目须知"]);
     }
@@ -142,16 +149,30 @@ export class Engine {
     this.event(c, "message", { member: "user", text, attachments });
     if (!s.branch) return;
     if (s.workflowVersion === "adaptive_v1") {
-      if (intent === "status") return;
-      if (!s.cycle || s.cycle.phase === "delivered") this.workflow.start(c, text);
+      if (intent === "status") {
+        this.event(c, "workflow_status", {
+          cycleId: s.cycleId,
+          text: `当前阶段：${s.cycle?.phase || "planning"}；已实现 ${s.cycle?.tasks.filter((t) => t.status === "implemented").length || 0} 项。`,
+        });
+        return;
+      }
+      if (!s.cycle || s.cycle.phase === "delivered")
+        this.workflow.start(c, text);
       else {
-        this.workflow.update(c, { goal: text, phase: "planning", generation: s.cycle.generation + 1 });
-        for (const [key, proc] of this.running) if (key.startsWith(c + ":")) proc.stop();
+        this.workflow.update(c, {
+          goal: text,
+          phase: "planning",
+          generation: s.cycle.generation + 1,
+        });
+        for (const [key, proc] of this.running)
+          if (key.startsWith(c + ":")) proc.stop();
       }
       this.event(c, "status", { status: "working" });
       if (s.directPlan && !s.cycle) {
-        for (const member of s.directPlan.members || []) await this.action(c, { type: "recruit", ...member });
-        this.workflow.submit(c, s.directPlan.plan, { direct: true }); this.pump();
+        for (const member of s.directPlan.members || [])
+          await this.action(c, { type: "recruit", ...member });
+        this.workflow.submit(c, s.directPlan.plan, { direct: true });
+        this.pump();
       } else this.wake(c, { reason: s.cycle ? "goal_changed" : "new_goal" });
       return;
     }
@@ -219,8 +240,27 @@ export class Engine {
     c,
     member,
     prompt,
-    { leader = false, cwd, readOnly = false, taskId, taskRole, cycleId = null, role, purpose, trigger, gateId, fresh = false } = {},
+    {
+      leader = false,
+      cwd,
+      readOnly = false,
+      taskId,
+      taskRole,
+      cycleId = null,
+      role,
+      purpose,
+      trigger,
+      gateId,
+      scheduleId,
+      fresh = false,
+    } = {},
   ) {
+    if (role === "planner") {
+      leader = true;
+      readOnly = true;
+    }
+    if (role === "reviewer") readOnly = true;
+    if (role === "executor") leader = false;
     const queuedAt = Date.now();
     if (!leader && !this.memberTurns.has(c + ":" + member.id))
       this.event(c, "member", { id: member.id, status: "queued" });
@@ -233,11 +273,29 @@ export class Engine {
     const key = c + ":" + member.id;
     const started = Date.now();
     this.event(c, "member", { ...selection, id: member.id, status: "running" });
-    const trace = { runId: id(), cycleId, taskId, gateId,
-      role: role || (leader ? "planner" : taskRole === "reviewer" ? "reviewer" : "executor"),
-      purpose: purpose || (leader ? "coordinate" : taskRole === "reviewer" ? "review" : "execute"),
+    const trace = {
+      runId: id(),
+      cycleId,
+      taskId,
+      gateId,
+      scheduleId,
+      role:
+        role ||
+        (leader
+          ? "planner"
+          : taskRole === "reviewer"
+            ? "reviewer"
+            : "executor"),
+      purpose:
+        purpose ||
+        (leader
+          ? "coordinate"
+          : taskRole === "reviewer"
+            ? "review"
+            : "execute"),
       trigger: trigger || (leader ? "legacy_wake" : "legacy_task"),
-      waitDuration: started - queuedAt };
+      waitDuration: started - queuedAt,
+    };
     this.event(c, "run_start", { member: member.id, ...selection, ...trace });
     const token = id();
     if (leader || selection.channel === "claude")
@@ -248,33 +306,39 @@ export class Engine {
         readOnly: leader || readOnly,
         taskId,
         leader,
-        cycleId: s.cycleId, generation: s.cycle?.generation,
+        cycleId: s.cycleId,
+        generation: s.cycle?.generation,
       });
-    const proc = runModel({
-      selection,
-      cwd: cwd || s.path,
-      prompt,
-      leader,
-      readOnly,
-      role,
-      team:
-        leader || selection.channel === "claude"
-          ? {
-              role: leader ? "leader" : "member",
-              token,
-              url: `https://127.0.0.1:${this.config.port}/internal/team`,
-            }
-          : undefined,
-      session:
-        !fresh && member.sessionChannel === selection.channel
-          ? member.session
-          : undefined,
-      timeout: this.config.timeout,
-      onEvent: (e) => this.event(c, "process", { member: member.id, runId: trace.runId, event: e }),
-    });
-    proc.taskId = taskId;
-    this.running.set(key, proc);
     try {
+      const proc = runModel({
+        selection,
+        cwd: cwd || s.path,
+        prompt,
+        leader,
+        readOnly,
+        role,
+        team:
+          leader || selection.channel === "claude"
+            ? {
+                role: leader ? "leader" : "member",
+                token,
+                url: `https://127.0.0.1:${this.config.port}/internal/team`,
+              }
+            : undefined,
+        session:
+          !fresh && member.sessionChannel === selection.channel
+            ? member.session
+            : undefined,
+        timeout: this.config.timeout,
+        onEvent: (e) =>
+          this.event(c, "process", {
+            member: member.id,
+            runId: trace.runId,
+            event: e,
+          }),
+      });
+      proc.taskId = taskId;
+      this.running.set(key, proc);
       let r = await proc.promise;
       this.event(c, "member", {
         id: member.id,
@@ -305,6 +369,8 @@ export class Engine {
       if (e.signal && !e.timedOut) {
         this.event(c, "run_interrupted", {
           ...trace,
+          usage: e.events?.findLast((x) => x.usage)?.usage,
+          channel: selection.channel,
           member: member.id,
           model: selection.model,
           duration: Date.now() - started,
@@ -315,7 +381,7 @@ export class Engine {
       }
       this.event(c, "run_failed", {
         ...trace,
-        usage: e.events?.findLast(x => x.usage)?.usage,
+        usage: e.events?.findLast((x) => x.usage)?.usage,
         member: member.id,
         model: selection.model,
         tier: member.tierId || member.role || "负责人",
@@ -381,13 +447,44 @@ export class Engine {
       let s = this.state(c);
       const adaptive = s.workflowVersion === "adaptive_v1";
       const generation = s.cycle?.generation;
-      let r = await this.model(c, s.members[0], adaptive ? JSON.stringify({ project: s.path, goal: s.cycle?.goal, cycle: s.cycle, members: s.members.map(({session,...m})=>m), tiers: this.config.tiers, reason, evidenceIds }) : this.context(c), {
-        leader: true, ...(adaptive ? { role: "planner", purpose: s.cycle?.planRevision ? "coordinate" : "plan", trigger: reason, cycleId: s.cycleId, fresh: true } : {}),
-      });
-      if (adaptive && generation !== this.state(c).cycle?.generation && this.state(c).cycle?.planRevision === s.cycle?.planRevision) return;
+      let r = await this.model(
+        c,
+        s.members[0],
+        adaptive
+          ? JSON.stringify({
+              project: s.path,
+              goal: s.cycle?.goal,
+              cycle: s.cycle,
+              members: s.members.map(({ session, ...m }) => m),
+              tiers: this.config.tiers,
+              reason,
+              evidenceIds,
+            })
+          : this.context(c),
+        {
+          leader: true,
+          ...(adaptive
+            ? {
+                role: "planner",
+                purpose: s.cycle?.planRevision ? "coordinate" : "plan",
+                trigger: reason,
+                cycleId: s.cycleId,
+                fresh: true,
+              }
+            : {}),
+        },
+      );
+      if (adaptive && s.cycleId !== this.state(c).cycleId) return;
+      if (
+        adaptive &&
+        generation !== this.state(c).cycle?.generation &&
+        this.state(c).cycle?.planRevision === s.cycle?.planRevision
+      )
+        return;
       if (this.state(c).status === "paused") return;
       if (adaptive) {
-        for (const member of r.recruits || []) await this.action(c, { type: "recruit", ...member });
+        for (const member of r.recruits || [])
+          await this.action(c, { type: "recruit", ...member });
         if (r.plan) this.workflow.submit(c, r.plan);
       }
       if (this.state(c).status === "paused") return;
@@ -396,7 +493,8 @@ export class Engine {
           await this.action(c, a);
         } catch (e) {
           this.event(c, "error", { text: e.message, action: a.type });
-          if (this.state(c).workflowVersion !== "adaptive_v1") this.pending.add(c);
+          if (this.state(c).workflowVersion !== "adaptive_v1")
+            this.pending.add(c);
         }
       }
     } catch (e) {
@@ -421,13 +519,19 @@ export class Engine {
     const scope = this.teamTokens.get(token);
     if (!scope) throw new Error("团队回合已结束");
     const current = this.state(scope.conversation);
-    if (current.workflowVersion === "adaptive_v1" && (current.status !== "working" || scope.cycleId !== current.cycleId || scope.generation !== current.cycle?.generation)) {
+    if (
+      current.workflowVersion === "adaptive_v1" &&
+      (current.status !== "working" ||
+        scope.cycleId !== current.cycleId ||
+        scope.generation !== current.cycle?.generation)
+    ) {
       throw Error("过时团队回合");
     }
     if (action.type !== "project_command") {
       if (!scope.leader) throw new Error("成员不能调度团队");
       const result = await this.action(scope.conversation, action);
-      if (action.type === "submit_plan") scope.generation = this.state(scope.conversation).cycle.generation;
+      if (action.type === "submit_plan")
+        scope.generation = this.state(scope.conversation).cycle.generation;
       return result;
     }
     if (scope.leader) throw new Error("负责人仅使用只读文件工具");
@@ -475,27 +579,73 @@ export class Engine {
     if (s.workflowVersion === "adaptive_v1") {
       if (a.type === "submit_plan") return this.workflow.submit(c, a.plan);
       if (a.type === "finish") return this.workflow.deliver(c);
-      if (a.type === "assign") throw Error("adaptive 任务随 submit_plan 原子提交，只需 executorId");
-      if (["retry","defer","resolve","discuss","experience","notice"].includes(a.type)) throw Error("adaptive 请通过计划修订处理此操作");
-      if (["cancel","reassign"].includes(a.type)) {
-        const task = s.tasks.find(t => t.id === a.task && t.cycleId === s.cycleId);
+      if (a.type === "assign")
+        throw Error("adaptive 任务随 submit_plan 原子提交，只需 executorId");
+      if (
+        [
+          "retry",
+          "defer",
+          "resolve",
+          "discuss",
+          "experience",
+          "notice",
+        ].includes(a.type)
+      )
+        throw Error("adaptive 请通过计划修订处理此操作");
+      if (["cancel", "reassign"].includes(a.type)) {
+        const task = s.tasks.find(
+          (t) => t.id === a.task && t.cycleId === s.cycleId,
+        );
         if (!task) throw Error("未知批次任务");
-        const member = a.type === "reassign" && s.members.find(m => m.id === a.member || m.name === a.member);
-        if (a.type === "reassign" && (!member || member.id === "leader")) throw Error("改派需要执行者");
-        this.workflow.update(c, { generation: s.cycle.generation + 1, phase: a.type === "cancel" ? "blocked" : "executing" });
-        this.event(c, "task_update", { id: task.id, status: a.type === "cancel" ? "cancelled" : "queued", ...(member ? { member: member.id, executorId: member.id } : {}) });
-        for (const [key, proc] of this.running) if (key.startsWith(c + ":") && proc.taskId === task.id) proc.stop();
-        this.drainMembers(); return;
+        const member =
+          a.type === "reassign" &&
+          s.members.find((m) => m.id === a.member || m.name === a.member);
+        if (a.type === "reassign" && (!member || member.id === "leader"))
+          throw Error("改派需要执行者");
+        this.workflow.update(c, {
+          generation: s.cycle.generation + 1,
+          phase: a.type === "cancel" ? "blocked" : "executing",
+        });
+        this.event(c, "task_update", {
+          id: task.id,
+          status: a.type === "cancel" ? "cancelled" : "queued",
+          ...(member ? { member: member.id, executorId: member.id } : {}),
+        });
+        for (const [key, proc] of this.running)
+          if (key.startsWith(c + ":") && proc.taskId === task.id) proc.stop();
+        this.drainMembers();
+        return;
       }
       if (a.type === "ask") {
-        this.event(c, "question", { id: id(), cycleId: s.cycleId, question: a.question, yes: a.yes, no: a.no, taskIds: a.taskIds || [], gateIds: a.gateIds || [] });
-        for (const t of s.cycle.tasks.filter(t => a.taskIds?.includes(t.id) || a.taskIds?.includes(t.localId))) this.event(c, "task_update", { id: t.id, waitsForQuestions: [...t.waitsForQuestions, this.state(c).questions.at(-1).id] });
+        this.event(c, "question", {
+          id: id(),
+          cycleId: s.cycleId,
+          question: a.question,
+          yes: a.yes,
+          no: a.no,
+          taskIds: a.taskIds || [],
+          gateIds: a.gateIds || [],
+        });
+        for (const t of s.cycle.tasks.filter(
+          (t) => a.taskIds?.includes(t.id) || a.taskIds?.includes(t.localId),
+        ))
+          this.event(c, "task_update", {
+            id: t.id,
+            waitsForQuestions: [
+              ...t.waitsForQuestions,
+              this.state(c).questions.at(-1).id,
+            ],
+          });
         return;
       }
     }
     switch (a.type) {
       case "recruit": {
-        if (s.workflowVersion === "adaptive_v1" && s.members.some(m => m.name === a.name)) return;
+        if (
+          s.workflowVersion === "adaptive_v1" &&
+          s.members.some((m) => m.name === a.name)
+        )
+          return;
         if (s.members.length >= 5) throw new Error("团队最多五人");
         if (s.members.some((m) => m.name === a.name))
           throw new Error("成员名字重复");
@@ -681,6 +831,11 @@ export class Engine {
       if (
         s.status !== "working" ||
         this.busyProjects.has(s.id) ||
+        this.store
+          .conversations()
+          .some(
+            (other) => other.path === s.path && this.busyProjects.has(other.id),
+          ) ||
         this.waking.has(s.id) ||
         [...this.running.keys()].some(
           (k) => k.startsWith(s.id + ":") && !k.endsWith(":leader"),
@@ -690,10 +845,20 @@ export class Engine {
       if (active >= (this.config.concurrency || 2)) break;
       if (s.workflowVersion === "adaptive_v1") {
         if (this.workflowPaths.has(s.path) || !this.workflow.next(s)) continue;
-        active++; this.busyProjects.add(s.id); this.workflowPaths.add(s.path);
-        this.workflow.step(s.id).catch(e => { this.event(s.id, "error", { text: e.message }); this.workflow.block(s.id, e.message); }).finally(() => {
-          this.busyProjects.delete(s.id); this.workflowPaths.delete(s.path); this.pump();
-        });
+        active++;
+        this.busyProjects.add(s.id);
+        this.workflowPaths.add(s.path);
+        this.workflow
+          .step(s.id)
+          .catch((e) => {
+            this.event(s.id, "error", { text: e.message });
+            this.workflow.block(s.id, e.message);
+          })
+          .finally(() => {
+            this.busyProjects.delete(s.id);
+            this.workflowPaths.delete(s.path);
+            this.pump();
+          });
         continue;
       }
       let t = s.tasks.find((t) =>
@@ -1004,7 +1169,8 @@ export class Engine {
   }
   resume(c) {
     if (!this.state(c).branch) return;
-    if (this.state(c).workflowVersion === "adaptive_v1") return this.workflow.resume(c);
+    if (this.state(c).workflowVersion === "adaptive_v1")
+      return this.workflow.resume(c);
     for (const t of this.state(c).tasks)
       if (
         ["running", "reviewing", "rate_wait", "interrupted"].includes(

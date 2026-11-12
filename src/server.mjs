@@ -1,5 +1,5 @@
 import { ModelCatalog } from "./model-catalog.mjs";
-import { statistics } from "./statistics.mjs";
+import { statistics, cycleStatistics } from "./statistics.mjs";
 import https from "node:https";
 import {
   readFileSync,
@@ -244,7 +244,7 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-ux-1" });
+        return json(res, 200, { version: "20261113-adaptive-1" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === "/api/models")
         return json(
@@ -468,6 +468,7 @@ const server = https.createServer(
           });
         return json(res, 200, { ok: true });
       }
+      if (p === "/api/stats/cycles") return json(res, 200, cycleStatistics(store.conversations()));
       if (p === "/api/stats")
         return json(res, 200, statistics(store.conversations()));
       if (p.startsWith("/api/")) return json(res, 404, { error: "接口不存在" });
