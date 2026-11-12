@@ -1,0 +1,99 @@
+{
+  "checks": [
+    {
+      "text": "单屏无页面滚动：home-light",
+      "passed": true
+    },
+    {
+      "text": "负责人强度保持 high",
+      "passed": true
+    },
+    {
+      "text": "执行强度保持 medium",
+      "passed": true
+    },
+    {
+      "text": "Sol 动态列出 ultra",
+      "passed": true
+    },
+    {
+      "text": "Sonnet 4.6 不虚构 xhigh",
+      "passed": true
+    },
+    {
+      "text": "未声明强度使用模型默认",
+      "passed": true
+    },
+    {
+      "text": "隐藏模型可展开",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：settings-light",
+      "passed": true
+    },
+    {
+      "text": "所选 Sol / medium 真实连接通过",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：settings-dark",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：task-dark",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：task-light",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：tasks-light",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：changes-light",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：decisions-light",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：results-light",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：laptop-1280",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：narrow-800",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：compact-390",
+      "passed": true
+    },
+    {
+      "text": "窄屏协作抽屉可打开",
+      "passed": true
+    },
+    {
+      "text": "单屏无页面滚动：compact-team",
+      "passed": true
+    },
+    {
+      "text": "中文输入法选字不提交",
+      "passed": true
+    },
+    {
+      "text": "开始按钮确实发送创建请求（隔离客户端测试，不启动模型）",
+      "passed": true
+    }
+  ],
+  "errors": [
+    "Failed to load resource: the server responded with a status of 400 (Bad Request)"
+  ]
+}

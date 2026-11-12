@@ -1,0 +1,186 @@
+{
+  "url": "https://43.156.51.71:8787/?v=20261112-screen-4",
+  "checks": [
+    {
+      "width": 1536,
+      "height": 864,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 1536,
+      "height": 864,
+      "view": "settings",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 1440,
+      "height": 900,
+      "view": "settings",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 1366,
+      "height": 768,
+      "view": "settings",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 1280,
+      "height": 720,
+      "view": "settings",
+      "passed": true
+    },
+    {
+      "width": 800,
+      "height": 800,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 800,
+      "height": 800,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 800,
+      "height": 800,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 800,
+      "height": 800,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 800,
+      "height": 800,
+      "view": "settings",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "home",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "task",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "decision",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "result",
+      "passed": true
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "view": "settings",
+      "passed": true
+    }
+  ],
+  "errors": []
+}

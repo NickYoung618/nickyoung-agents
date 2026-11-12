@@ -4,6 +4,8 @@
 
 当前模型：负责人 GPT-6.1-Sol / high，执行成员 GPT-6.1-Sol / medium，辅助档位默认 GPT-6-Astra / high。目前不调用 Claude。可以在设置中调整模型和成员档位。
 
+新版工作台采用提供的 UI 包，页面固定为单屏，长内容在面板内滚动。模型设置支持扫描本机 Codex / Claude 的模型目录及各模型声明的推理强度，支持显示隐藏模型。详情见 [界面接入与验证](docs/UI-INTEGRATION.md)。
+
 ## 访问
 
 打开 https://43.156.51.71:8787 ，也可在服务器上访问 https://localhost:8787 。服务为 `nickyoung.service`，已启用用户级开机自启。

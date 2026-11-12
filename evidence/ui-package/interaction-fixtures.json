@@ -1,0 +1,19 @@
+{
+  "isolatedClientFixtures": true,
+  "changesProductionData": false,
+  "fourMemberNodes": 4,
+  "overlap": false,
+  "pauseResumeRequests": [
+    "pause",
+    "resume"
+  ],
+  "disconnectDoesNotMarkFailure": true,
+  "errors": [],
+  "expectedNetworkErrors": [
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED",
+    "Failed to load resource: net::ERR_CONNECTION_REFUSED"
+  ]
+}

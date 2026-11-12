@@ -1,3 +1,4 @@
+import { ModelCatalog } from "./model-catalog.mjs";
 import { statistics } from "./statistics.mjs";
 import https from "node:https";
 import {
@@ -113,7 +114,7 @@ const store = new Store(join(data, "events.sqlite")),
   attempts = new Map(),
   tested = new Set();
 const selectionKey = (s) =>
-  JSON.stringify([s.channel, s.model, s.effort || "high"]);
+  JSON.stringify([s.channel, s.model, s.effort ?? ""]);
 const engine = new Engine(store, config, save, (e) => {
   for (const r of clients) r.write(`data: ${JSON.stringify(e)}\n\n`);
 });
@@ -132,35 +133,7 @@ async function body(req) {
   }
   return JSON.parse(s || "{}");
 }
-function models() {
-  let gpt = [];
-  try {
-    const d = JSON.parse(
-      readFileSync(join(homedir(), ".codex/models_cache.json")),
-    );
-    gpt = (d.models || [])
-      .filter((m) => !m.hidden && m.visibility !== "hide")
-      .map((m) => ({
-        channel: "codex",
-        model: m.slug,
-        name: m.display_name || m.slug,
-        efforts: m.supported_reasoning_levels?.map((e) => e.effort) || [
-          "low",
-          "medium",
-          "high",
-        ],
-      }));
-  } catch {}
-  return [
-    ...["opus", "fable", "sonnet"].map((model) => ({
-      channel: "claude",
-      model,
-      name: model,
-      efforts: ["low", "medium", "high", "xhigh", "max"],
-    })),
-    ...gpt,
-  ];
-}
+const catalog = new ModelCatalog(data);
 const server = https.createServer(
   { key: readFileSync(config.key), cert: readFileSync(config.cert) },
   async (req, res) => {
@@ -270,20 +243,48 @@ const server = https.createServer(
         });
         return;
       }
+      if (p === "/api/ui-version")
+        return json(res, 200, { version: "20261112-screen-4" });
       if (p === "/api/state") return json(res, 200, store.conversations());
-      if (p === "/api/models") return json(res, 200, models());
+      if (p === "/api/models")
+        return json(
+          res,
+          200,
+          (await catalog.get()).models.filter((m) => !m.hidden),
+        );
+      if (p === "/api/model-catalog" && req.method === "GET")
+        return json(res, 200, await catalog.get());
+      if (p === "/api/model-catalog/scan" && req.method === "POST")
+        return json(res, 200, await catalog.get(true));
       if (p === "/api/config" && req.method === "GET") {
         let { password, ...safe } = config;
         return json(res, 200, safe);
       }
       if (p === "/api/test" && req.method === "POST") {
         let selection = await body(req);
+        if (
+          !["codex", "claude"].includes(selection.channel) ||
+          typeof selection.model !== "string" ||
+          !selection.model.trim()
+        )
+          throw new Error("请选择接入类型并填写模型");
+        const entry = (await catalog.get()).models.find(
+          (m) => m.channel === selection.channel && m.model === selection.model,
+        );
+        if (
+          entry?.efforts.length &&
+          selection.effort &&
+          !entry.efforts.includes(selection.effort)
+        )
+          throw new Error("该模型未声明支持此推理强度：" + selection.effort);
+        if (entry?.effortCapability === "none" && selection.effort)
+          throw new Error("该模型不支持推理强度，请选择模型默认");
         const started = Date.now();
         const proc = runModel({
           selection,
           cwd: root,
           prompt:
-            "最小连通测试。请只返回规定结构，message 写“连接正常”，其余填空值，verdict=pass。不要调用工具。",
+            "最小连通测试。请只返回规定结构，message 写“连接正常”，completion=complete、verdict=pass，其余填空值或空数组。不要调用工具。",
           timeout: 120000,
         });
         const result = await proc.promise;
@@ -484,6 +485,10 @@ function asset(p, res) {
     "/vendor.mjs": "vendor.mjs",
     "/event-projection.mjs": "event-projection.mjs",
     "/style.css": "style.css",
+    "/viewport.css": "viewport.css",
+    "/ui-package.css": "ui-package.css",
+    "/lucide.min.js": "lucide.min.js",
+    "/favicon.svg": "favicon.svg",
   };
   if (!files[p]) return json(res, 404, { error: "页面不存在" });
   let f = join(root, "public", files[p]);
@@ -492,6 +497,7 @@ function asset(p, res) {
       ".html": "text/html; charset=utf-8",
       ".js": "application/javascript; charset=utf-8",
       ".mjs": "application/javascript; charset=utf-8",
+      ".svg": "image/svg+xml",
       ".css": "text/css; charset=utf-8",
     }[extname(f)],
     "Cache-Control": "no-store",

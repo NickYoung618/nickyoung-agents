@@ -1,0 +1,353 @@
+/* Application shell fills the viewport; content scrolls inside each pane. */
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+}
+#ny-live-studio {
+  height: 100dvh;
+  min-height: 0;
+  overflow: hidden;
+}
+#ny-live-studio .ny-app {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+#ny-live-studio .ny-sidebar {
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+}
+#ny-live-studio .ny-sidebar > .ny-nav {
+  flex: none;
+}
+#ny-live-studio .ny-side-projects {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+}
+#ny-live-studio .ny-sidebar-bottom {
+  flex: none;
+  padding-top: 8px;
+}
+#ny-live-studio .ny-workspace {
+  height: 100%;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#ny-live-studio .ny-topbar {
+  height: 68px;
+  min-height: 68px;
+  flex: none;
+}
+#ny-live-studio .ny-columns {
+  flex: 1;
+  min-height: 0;
+  height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+#ny-live-studio .ny-center {
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
+  padding: 24px;
+}
+#ny-live-studio .ny-view {
+  height: 100%;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+#ny-live-studio #taskView {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+#ny-live-studio #taskView > .ny-heading,
+#ny-live-studio #taskView > .ny-focus,
+#ny-live-studio #taskView > .ny-tabs {
+  flex: none;
+}
+#ny-live-studio #taskTitle {
+  font-size: 22px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#ny-live-studio #projectPath {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#ny-live-studio .ny-focus {
+  margin: 14px 0 18px;
+  padding: 12px 14px;
+}
+#ny-live-studio #focusTitle {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+#ny-live-studio .ny-tabs {
+  margin-bottom: 12px;
+}
+#ny-live-studio #messages,
+#ny-live-studio #taskList,
+#ny-live-studio #changesPanel {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding-right: 8px;
+}
+#ny-live-studio #questions {
+  flex: none;
+  max-height: 26vh;
+  overflow: auto;
+}
+#ny-live-studio #questions .card {
+  margin: 8px 0;
+}
+#ny-live-studio #composer {
+  flex: none;
+  margin-top: 12px;
+  padding: 10px 12px;
+}
+#ny-live-studio #composer textarea {
+  min-height: 42px;
+  max-height: 110px;
+  resize: vertical;
+}
+#ny-live-studio .ny-composer-note {
+  flex: none;
+  margin-top: 6px;
+}
+#ny-live-studio .ny-home {
+  margin: 0 auto;
+  max-height: 100%;
+  padding-top: 24px;
+}
+#ny-live-studio .ny-live {
+  position: relative;
+  top: auto;
+  height: 100%;
+  max-height: none;
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  border-left: 1px solid var(--ny-line);
+  border-top: 0;
+  display: block;
+}
+#ny-live-studio #notice:empty {
+  display: none;
+}
+#ny-live-studio #notice {
+  flex: none;
+  max-height: 60px;
+  overflow: auto;
+}
+@media (max-height: 800px) {
+  #ny-live-studio .ny-center {
+    padding: 16px 20px;
+  }
+  #ny-live-studio .ny-heading .ny-eyebrow {
+    margin-bottom: 5px;
+  }
+  #ny-live-studio .ny-focus {
+    margin: 10px 0 12px;
+    padding: 10px 12px;
+  }
+  #ny-live-studio .ny-focus-top {
+    margin-bottom: 5px;
+  }
+  #ny-live-studio .ny-live {
+    padding-top: 16px;
+  }
+  #ny-live-studio .ny-graph {
+    height: 340px;
+  }
+  #ny-live-studio .ny-graph-svg {
+    height: 382px;
+    transform: scale(0.87);
+    transform-origin: top center;
+  }
+  #ny-live-studio .ny-node {
+    transform: scale(0.87);
+  }
+  #ny-live-studio #panel {
+    margin-top: 10px;
+  }
+}
+@media (min-width: 601px) and (max-width: 1100px) {
+  #ny-live-studio .ny-app {
+    grid-template-columns: 64px minmax(0, 1fr);
+  }
+  #ny-live-studio .ny-columns {
+    grid-template-columns: minmax(0, 1fr) 284px;
+  }
+  #ny-live-studio .ny-sidebar {
+    padding: 18px 8px;
+    align-items: center;
+  }
+  #ny-live-studio .ny-brand > span:not(.ny-mark),
+  #ny-live-studio .ny-sidebar > .ny-nav button > span,
+  #ny-live-studio .ny-side-projects,
+  #ny-live-studio .ny-user,
+  #ny-live-studio #settings > span {
+    display: none;
+  }
+  #ny-live-studio .ny-sidebar > .ny-nav {
+    width: 100%;
+    align-items: center;
+  }
+  #ny-live-studio .ny-nav button {
+    width: 44px;
+    min-height: 40px;
+    justify-content: center;
+    padding: 10px;
+  }
+  #ny-live-studio .ny-sidebar-bottom {
+    width: 100%;
+  }
+  #ny-live-studio .ny-live {
+    padding: 18px 12px;
+  }
+  #ny-live-studio .ny-center {
+    padding: 20px 16px;
+  }
+  #ny-live-studio .ny-home {
+    padding-top: 12px;
+  }
+}
+@media (max-width: 600px) {
+  #ny-live-studio .ny-app {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr);
+  }
+  #ny-live-studio .ny-sidebar {
+    display: flex;
+    flex-direction: column;
+    padding: 14px 4px;
+    gap: 16px;
+    align-items: center;
+    height: 100%;
+    border-right: 1px solid var(--ny-line);
+    border-bottom: 0;
+  }
+  #ny-live-studio .ny-sidebar > .ny-nav {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    width: 100%;
+    align-items: center;
+    margin: 0;
+  }
+  #ny-live-studio .ny-brand > span:not(.ny-mark),
+  #ny-live-studio .ny-sidebar > .ny-nav button > span,
+  #ny-live-studio .ny-side-projects,
+  #ny-live-studio .ny-user,
+  #ny-live-studio #settings > span {
+    display: none;
+  }
+  #ny-live-studio .ny-nav button {
+    width: 40px;
+    min-height: 40px;
+    padding: 10px;
+    justify-content: center;
+  }
+  #ny-live-studio .ny-sidebar-bottom {
+    margin-top: auto;
+    width: 100%;
+  }
+  #ny-live-studio .ny-columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  #ny-live-studio .ny-center {
+    padding: 16px 12px;
+  }
+  #ny-live-studio .ny-live {
+    position: absolute;
+    right: 0;
+    top: 68px;
+    height: calc(100% - 68px);
+    width: min(350px, calc(100vw - 52px));
+    z-index: 10;
+    transform: translateX(105%);
+    transition: transform 0.2s;
+  }
+  #ny-live-studio .show-live .ny-live {
+    transform: translateX(0);
+  }
+  #ny-live-studio #toggleRight {
+    display: inline-flex !important;
+  }
+  #ny-live-studio .ny-topbar {
+    padding: 12px;
+    gap: 8px;
+  }
+  #ny-live-studio .ny-home {
+    padding: 8px 0;
+  }
+  #ny-live-studio #taskTitle {
+    font-size: 19px;
+  }
+  #ny-live-studio .ny-focus-title {
+    font-size: 12px;
+  }
+  #ny-live-studio #overall {
+    font-size: 10px;
+  }
+}
+#ny-live-studio .ny-live {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 18px 16px;
+}
+#ny-live-studio .ny-live > .ny-between,
+#ny-live-studio .ny-live > .ny-live-meta,
+#ny-live-studio .ny-controls,
+#ny-live-studio .ny-detail {
+  flex: none;
+}
+#ny-live-studio .ny-graph {
+  flex: none;
+  height: clamp(282px, 36vh, 382px);
+  min-height: 282px;
+}
+#ny-live-studio .ny-graph-svg {
+  height: 100%;
+  transform: none;
+}
+#ny-live-studio .ny-node {
+  transform: none;
+}
+#ny-live-studio .ny-controls {
+  padding: 10px 0;
+}
+#ny-live-studio .ny-detail {
+  min-height: 74px;
+  padding: 11px;
+}
+#ny-live-studio .ny-detail p {
+  max-height: 52px;
+  overflow: auto;
+}
+#ny-live-studio .ny-live-events {
+  flex: 1;
+  min-height: 60px;
+  overflow: auto;
+  margin-top: 14px;
+}
+#ny-live-studio #panel {
+  flex: 1;
+  min-height: 60px;
+  overflow: auto;
+  margin-top: 12px;
+}

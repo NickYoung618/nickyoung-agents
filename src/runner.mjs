@@ -247,8 +247,6 @@ export function runModel({
       prompt,
       "--model",
       selection.model,
-      "--effort",
-      selection.effort || "high",
       "--output-format",
       "stream-json",
       "--verbose",
@@ -271,6 +269,7 @@ export function runModel({
       "--json-schema",
       JSON.stringify(outputSchema),
     ];
+    if (selection.effort) args.push("--effort", selection.effort);
     if (team)
       args.push(
         "--allowedTools",
@@ -305,8 +304,6 @@ export function runModel({
       "-m",
       selection.model,
       "-c",
-      `model_reasoning_effort="${selection.effort || "high"}"`,
-      "-c",
       `sandbox_mode="${leader || readOnly ? "read-only" : "workspace-write"}"`,
       "-c",
       "sandbox_workspace_write.network_access=true",
@@ -315,6 +312,11 @@ export function runModel({
       "-c",
       "skills.include_instructions=false",
     ];
+    if (selection.effort)
+      args.push(
+        "-c",
+        `model_reasoning_effort=${JSON.stringify(selection.effort)}`,
+      );
     if (team)
       args.push(
         "-c",
