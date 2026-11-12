@@ -3,7 +3,7 @@ const strings = { type: 'array', items: string };
 export const object = properties => ({ type: 'object', properties, required: Object.keys(properties), additionalProperties: false });
 const array = items => ({ type: 'array', items });
 export const planSchema = object({
-  goal: string, scope: strings, conventions: strings,
+  goal: string, scope: strings, conventions: strings, contractPaths: strings,
   criteria: array(object({ id: string, text: string })),
   tasks: array(object({ id: string, title: string, description: string, executorId: string, dependsOn: strings, gateIds: strings, waitsForQuestions: strings, scope: strings })),
   gates: array(object({ id: string, kind: {type:'string',enum:['check','model']}, phase: {type:'string',enum:['checkpoint','final','recheck']}, scope: strings, afterTasks: strings, criteriaIds: strings, commands: strings, reviewerId: string, assumption: string, deterministic: {type:'boolean'}, outputs: strings })),

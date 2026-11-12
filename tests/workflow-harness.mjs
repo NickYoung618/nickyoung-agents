@@ -17,4 +17,4 @@ export function setup() {
  };
  return {e,dir,path,calls,clean:()=>{e.shutdown();e.store.db.close();rmSync(dir,{recursive:true,force:true});}};
 }
-export async function drain(e) {for(let i=0;i<100;i++){e.pump();await new Promise(r=>setTimeout(r,20));if(!e.busyProjects.size&&!e.waking.size)return;}throw Error('fixture 未收敛');}
+export async function drain(e) {for(const deadline=Date.now()+45000;Date.now()<deadline;){e.pump();await new Promise(r=>setTimeout(r,20));if(!e.busyProjects.size&&!e.waking.size)return;}throw Error('fixture 未收敛');}

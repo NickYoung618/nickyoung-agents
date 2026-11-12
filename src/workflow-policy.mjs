@@ -16,12 +16,14 @@ export function canRunTask(task, cycle, questions=[]) {
 export function canDeliver(cycle, questions=[]) {
   if(!cycle || !cycle.tasks.length || !cycle.finalCommit || cycle.phase==='planning' || cycle.phase==='blocked') return false;
   return cycle.tasks.every(t=>t.status==='implemented') && cycle.gates.every(g=>['passed','reused','not_required'].includes(g.status)) &&
+    cycle.gates.filter(g=>g.kind==='check').every(g=>cycle.evidence?.some(e=>g.evidenceIds?.includes(e.evidenceId)&&['executed','reused'].includes(e.source)&&e.result==='passed'&&e.checkId===g.id&&e.commit===g.commit&&e.planRevision===cycle.planRevision)) &&
+    cycle.gates.filter(g=>g.kind==='model').every(g=>g.reviewEvidence) &&
     cycle.gates.filter(g=>g.phase==='final').every(g=>g.commit===cycle.finalCommit && g.planRevision===cycle.planRevision) &&
     !(cycle.issues||[]).some(i=>!i.closed) && !questions.some(q=>!q.answered && (!q.cycleId || q.cycleId===cycle.cycleId));
 }
 export function validatePlan(input, members, {direct=false}={}) {
   const plan=structuredClone(input);
-  if(!plan || !plan.goal?.trim() || !plan.tasks?.length || !plan.criteria?.length || !plan.scope?.length) throw Error('计划缺少目标、范围、任务或验收标准');
+  if(!plan || !Array.isArray(plan.contractPaths) || !plan.goal?.trim() || !plan.tasks?.length || !plan.criteria?.length || !plan.scope?.length) throw Error('计划缺少目标、范围、任务或验收标准');
   plan.policy=selectPolicy(plan);
   const findMember=ref=>members.find(m=>m.id===ref||m.name===ref);
   for(const t of plan.tasks) {

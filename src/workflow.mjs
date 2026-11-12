@@ -33,12 +33,13 @@ export class Workflow {
    const data={...t,id:ids.get(t.id),localId:t.id,cycleId:cycle.cycleId,member:t.executorId,definition:t,dependsOn:t.dependsOn.map(x=>ids.get(x)),planRevision:revision,generation:(old?.generation||0)+1,status:same&&old.status==='implemented'?'implemented':'queued',failures:old?.failures||0};
    this.event(c,old?'task_update':'task',data);
   }
-  this.update(c,{goal:plan.goal,scope:plan.scope,conventions:plan.conventions,criteria:plan.criteria,policy:plan.policy,reason:plan.reason,facts:plan.facts,planSignature:signature,planRevision:revision,generation:cycle.generation+1,replans:cycle.replans+(cycle.planRevision?1:0),phase:'executing',gates:plan.gates.map(g=>({...g,afterTasks:g.afterTasks.map(x=>ids.get(x)),status:'pending',evidenceIds:[]})),issues:[],finalCommit:null,reviewedCommit:null});
+  this.update(c,{goal:plan.goal,scope:plan.scope,conventions:plan.conventions,contractPaths:plan.contractPaths,criteria:plan.criteria,policy:plan.policy,reason:plan.reason,facts:plan.facts,planSignature:signature,planRevision:revision,generation:cycle.generation+1,replans:cycle.replans+(cycle.planRevision?1:0),phase:'executing',gates:plan.gates.map(g=>({...g,afterTasks:g.afterTasks.map(x=>ids.get(x)),status:'pending',evidenceIds:[]})),issues:[],finalCommit:null,reviewedCommit:null});
   return {cycleId:cycle.cycleId,planRevision:revision};
  }
  next(s) {
   const cycle=s.cycle;
   if(!cycle || ['planning','blocked','delivered','paused'].includes(cycle.phase))return;
+  if(cycle.issues?.some(i=>!i.closed && i.kind==='needs_verification' && !i.verificationAttempted))return {kind:'investigate',unit:cycle.issues.find(i=>!i.closed&&i.kind==='needs_verification'&&!i.verificationAttempted)};
   const task=cycle.tasks.find(t=>canRunTask(t,cycle,s.questions));
   // Ready checkpoints take priority over dependents; unrelated tasks can still run while a question blocks a gate.
   const gate=cycle.gates.find(g=>g.status==='pending' && !s.questions.some(q=>!q.answered&&q.gateIds?.includes(g.id)) &&
@@ -65,9 +66,10 @@ export class Workflow {
    scheduleId:fingerprint([cycle.cycleId,cycle.planRevision,unit.id,work.kind,unit.status,cycle.finalCommit,attempt])};
   this.event(c,'workflow_start',token);
   if(work.kind==='task')this.event(c,'task_update',{id:unit.id,status:'running',activeToken:token.scheduleId});
-  else this.gate(c,unit.id,{status:'running',activeToken:token.scheduleId});
+  else if(work.kind==='gate')this.gate(c,unit.id,{status:'running',activeToken:token.scheduleId});
   try {
    if(work.kind==='task') await this.execute(c,unit,token);
+   else if(work.kind==='investigate')await this.investigate(c,unit,token);
    else await this.verify(c,unit,token);
   }catch(error){
    this.event(c,'workflow_failure',{...token,error:error.message,category:error.retryAt?'rate_limit':error.signal?'interrupted':'environment_or_protocol'});
@@ -105,7 +107,16 @@ export class Workflow {
   const commit=this.e.git(s.path,['rev-parse','HEAD']),files=this.e.git(s.path,['diff','--name-only',before,commit]).split('\n').filter(Boolean);
   this.event(c,'task_update',{id:task.id,status:'implemented',commit,summary:result.summary,files,selfTests:result.selfTests,handoff:result.handoff});
   if(files.some(f=>!inScope(f,task.scope)||!inScope(f,s.cycle.scope))) {await this.escalate(c,'scope_expanded',[token.scheduleId]);return;}
-  this.update(c,{finalCommit:commit,phase:'executing'});
+  const repairing=task.status==='repair';
+  this.update(c,{finalCommit:commit,phase:repairing?'repairing':'executing'});
+  if(repairing) {
+   const x=this.state(c).cycle;
+   if(files.some(f=>inScope(f,x.contractPaths||[]))) {await this.escalate(c,'contract_invalid',[token.scheduleId]);return;}
+   const impacted=x.issues.filter(i=>i.taskId===task.id&&!i.closed);
+   this.update(c,{gates:x.gates.map(g=>g.kind==='check'&&g.phase!=='checkpoint'?{...g,status:'pending',commit:null}:g),
+    issues:x.issues.map(i=>impacted.includes(i)?{...i,patchCommit:commit}:i)});
+   if(impacted.some(i=>i.semantic))this.requestRecheck(c,impacted,commit);
+  }
   this.event(c,'workflow_complete',{...token,commit});
  }
  async worktree(c,commit,fn) {
@@ -137,7 +148,24 @@ export class Workflow {
   this.event(c,'check',{...evidence,...token,passed:result.exitCode===0,command:gate.commands.join('\n')});
   this.update(c,{evidence:[...this.state(c).cycle.evidence,evidence]});
   this.gate(c,gate.id,{status:result.exitCode===0?(old?'reused':'passed'):'failed',commit,planRevision:cycle.planRevision,evidenceIds:[evidence.evidenceId]});
-  if(result.exitCode!==0) {this.block(c,'正式检查失败',[evidence.evidenceId]);return;}
+  if(result.exitCode!==0) {
+   if(/cannot find|not found|ENOENT|module_not_found|permission denied|ECONN|ENOTFOUND|429/i.test(result.output)) {
+    this.event(c,'environment_diagnostic',{cycleId:cycle.cycleId,checkId:gate.id,evidenceId:evidence.evidenceId,environment,reason:result.output.slice(-2000)});
+    this.block(c,'检查环境缺失或外部服务失败，请查看正式输出',[evidence.evidenceId]);return;
+   }
+   const task=cycle.tasks.filter(t=>t.status==='implemented').at(-1);
+   if(task) {
+    const issue={issueId:`check:${gate.id}`,taskId:task.id,criterionId:gate.criteriaIds[0],location:task.files?.[0]||task.scope[0],evidence:result.output,expected:'正式检查成功',checkIds:[gate.id],semantic:false,kind:'blocking',closed:false};
+    const x=this.state(c).cycle;
+    const prior=x.failureProgress?.findLast(f=>f.checkId===gate.id);
+    const progress={checkId:gate.id,tree,commands:fingerprint(gate.commands),error:result.output.replace(/\/tmp\/[^\s:]+/g,'<tmp>').slice(-3000)};
+    this.update(c,{failureProgress:[...(x.failureProgress||[]),progress],issues:[...x.issues.filter(i=>i.issueId!==issue.issueId),issue]});
+    if(prior && fingerprint(prior)===fingerprint(progress)){await this.escalate(c,'no_progress',[evidence.evidenceId]);return;}
+    this.queueRepair(c,[issue],[evidence.evidenceId]);
+   } else this.block(c,'正式检查失败',[evidence.evidenceId]);
+   return;
+  }
+  this.closeCheckedIssues(c);
   this.event(c,'workflow_complete',{...token,commit,evidenceId:evidence.evidenceId});
  }
  async review(c,gate,token,commit) {
@@ -151,18 +179,78 @@ export class Workflow {
   validateRoleResult('reviewer',result);
   if(result.reviewedCommit!==commit||gate.criteriaIds.some(id=>!result.criteriaIds.includes(id)))throw Error('审查未覆盖固定提交或验收标准');
   this.event(c,'cycle_review',{...token,gateId:gate.id,reviewer:member.id,commit,...result});
-  this.update(c,{reviewedCommit:commit,advisories:result.advisories});
-  if(result.blockingIssues.length || result.needsVerification.length){
-   this.gate(c,gate.id,{status:'changes_requested',commit,planRevision:token.planRevision});
-   this.update(c,{issues:[...result.blockingIssues.map(i=>({...i,kind:'blocking',closed:false})),...result.needsVerification.map(i=>({...i,kind:'needs_verification',closed:false}))]});
-   this.block(c,'审查存在需处理问题',[token.scheduleId]);return;
+  this.update(c,{...(gate.phase==='final'&&!s.cycle.reviewedCommit?{reviewedCommit:commit}:{}),advisories:result.advisories});
+  for(const issue of [...result.blockingIssues,...result.needsVerification]) {
+   if(!s.cycle.tasks.some(t=>t.id===issue.taskId) || !s.cycle.criteria.some(x=>x.id===issue.criterionId) || !issue.issueId || !issue.location || !issue.evidence || !issue.expected || issue.checkIds.some(id=>!s.cycle.gates.some(g=>g.id===id&&g.kind==='check'))) throw Error('审查问题缺少有效位置、标准、证据或检查定义');
   }
-  this.gate(c,gate.id,{status:'passed',commit,planRevision:token.planRevision,reviewedCommit:commit});
+  if(result.blockingIssues.length || result.needsVerification.length){
+   const issues=[...result.blockingIssues.map(i=>({...i,kind:'blocking',closed:false})),...result.needsVerification.map(i=>({...i,kind:'needs_verification',closed:false}))];
+   const seen=new Set();if(issues.some(i=>seen.has(i.issueId)||!seen.add(i.issueId)))throw Error('审查 issueId 重复');
+   this.gate(c,gate.id,{status:'changes_requested',commit,reviewedCommit:commit,reviewEvidence:result,planRevision:token.planRevision});
+   this.update(c,{phase:'repairing',issues:[...s.cycle.issues.filter(i=>i.closed),...issues]});
+   if(result.blockingIssues.length)this.queueRepair(c,issues.filter(i=>i.kind==='blocking'),[token.scheduleId]);
+   return;
+  }
+  this.gate(c,gate.id,{status:'passed',commit,planRevision:token.planRevision,reviewedCommit:commit,reviewEvidence:result,coverage:gate.phase==='recheck'?'scoped_recheck':'full'});
+  if(gate.phase==='recheck') {
+   this.update(c,{issues:this.state(c).cycle.issues.map(i=>gate.issueIds?.includes(i.issueId)?{...i,closed:true,closedBy:'scoped_recheck',closedCommit:commit}:i)});
+   this.closeCheckedIssues(c);
+  }
   this.event(c,'workflow_complete',{...token,commit});
+ }
+ queueRepair(c,issues,evidenceIds) {
+  const x=this.state(c).cycle;
+  const tasks=[...new Set(issues.map(i=>i.taskId))];
+  const total=Object.values(x.repairs).reduce((n,v)=>n+v,0);
+  if(total+tasks.length>x.budgets.cycleRepairs || tasks.some(id=>(x.repairs[id]||0)>=x.budgets.taskRepairs)) {
+   this.block(c,'自动局部修复预算已达上限，保留成果与证据',evidenceIds);return;
+  }
+  this.update(c,{phase:'repairing',repairs:{...x.repairs,...Object.fromEntries(tasks.map(id=>[id,(x.repairs[id]||0)+1]))}});
+  for(const taskId of tasks) {
+   this.event(c,'task_update',{id:taskId,status:'repair',failures:(x.tasks.find(t=>t.id===taskId).failures||0)+1,advice:issues.filter(i=>i.taskId===taskId)});
+   this.event(c,'cycle_repair',{cycleId:x.cycleId,task:taskId,from:x.gates.find(g=>g.kind==='model')?.reviewerId,to:x.tasks.find(t=>t.id===taskId).member,issueIds:issues.filter(i=>i.taskId===taskId).map(i=>i.issueId),evidenceIds});
+  }
+ }
+ requestRecheck(c,issues,commit) {
+  const x=this.state(c).cycle;
+  if(x.rechecks>=x.budgets.rechecks) {this.block(c,'范围复查预算已达上限',issues.map(i=>i.issueId));return;}
+  const review=x.gates.find(g=>g.kind==='model'&&g.phase==='final');
+  if(!review){this.block(c,'语义问题需要独立审查者',issues.map(i=>i.issueId));return;}
+  const recheck={...review,id:'recheck:'+id(),phase:'recheck',status:'pending',commit,issueIds:issues.map(i=>i.issueId),scope:[...new Set(issues.map(i=>i.location.split(':')[0]))],criteriaIds:[...new Set(issues.map(i=>i.criterionId))],evidenceIds:[]};
+  this.update(c,{rechecks:x.rechecks+1,gates:[...x.gates,recheck],phase:'repairing'});
+ }
+ closeCheckedIssues(c) {
+  const x=this.state(c).cycle;
+  const issues=x.issues.map(i=>!i.closed&&i.patchCommit===x.finalCommit&&!i.semantic&&i.checkIds.length&&i.checkIds.every(id=>x.gates.some(g=>g.id===id&&['passed','reused'].includes(g.status)&&g.commit===x.finalCommit))?{...i,closed:true,closedBy:'check',closedCommit:x.finalCommit}:i);
+  const unresolved=issues.some(i=>!i.closed);
+  this.update(c,{issues,...(!unresolved?{gates:x.gates.map(g=>g.kind==='model'&&g.status==='changes_requested'?{...g,status:'passed',commit:x.finalCommit,coverage:'reviewed_plus_checked_patch',patchEvidenceIds:x.evidence.filter(e=>e.commit===x.finalCommit&&e.result==='passed').map(e=>e.evidenceId)}:g)}:{})});
+ }
+ async investigate(c,issue,token) {
+  this.update(c,{issues:this.state(c).cycle.issues.map(i=>i.issueId===issue.issueId?{...i,verificationAttempted:true}:i)});
+  if(issue.semantic || !issue.checkIds.length) {this.requestRecheck(c,[issue],this.state(c).cycle.finalCommit);return;}
+  const x=this.state(c).cycle;let failed=false;
+  for(const checkId of issue.checkIds) {
+   const gate=x.gates.find(g=>g.id===checkId);
+   const evidence=x.evidence.findLast(e=>e.checkId===checkId&&e.commit===x.finalCommit);
+   // Existing matching formal evidence answers the specified verification question.
+   if(!evidence || evidence.result!=='passed')failed=true;
+   this.event(c,'issue_verification',{cycleId:x.cycleId,issueId:issue.issueId,checkId,evidenceId:evidence?.evidenceId,result:evidence?.result||'unknown'});
+  }
+  if(!this.valid(c,token))return;
+  if(failed) {
+   const confirmed={...issue,kind:'blocking'};
+   this.update(c,{issues:this.state(c).cycle.issues.map(i=>i.issueId===issue.issueId?confirmed:i)});this.queueRepair(c,[confirmed],[token.scheduleId]);
+  } else {
+   this.update(c,{issues:this.state(c).cycle.issues.map(i=>i.issueId===issue.issueId?{...i,closed:true,closedBy:'verification',closedCommit:x.finalCommit}:i)});this.closeCheckedIssues(c);
+  }
  }
  deliver(c) {
   const s=this.state(c),x=s.cycle;
+  if(x?.phase==='delivered')return x.delivery;
   if(!canDeliver(x,s.questions))throw Error('批次尚未满足交付条件');
+  const environment=verificationEnvironment(this.e.config);
+  const stale=x.gates.filter(g=>g.kind==='check'&&g.phase==='final'&& !x.evidence.some(e=>g.evidenceIds.includes(e.evidenceId)&&fingerprint(e.environment)===fingerprint(environment)));
+  if(stale.length){this.update(c,{phase:'validating',gates:x.gates.map(g=>stale.some(v=>v.id===g.id)||g.kind==='model'?{...g,status:'pending'}:g)});return;}
   if(this.e.git(s.path,['rev-parse','HEAD'])!==x.finalCommit||this.e.git(s.path,['status','--porcelain']))throw Error('交付快照已变化');
   const text=[x.goal,...x.tasks.map(t=>`- ${t.title}：${t.summary}`),`最终提交：${x.finalCommit}`,`检查：${x.gates.filter(g=>g.kind==='check').map(g=>g.id+' '+g.status).join('；')}`,x.policy==='checks_only'?'按策略无需模型审查':`独立审查提交：${x.reviewedCommit}`,x.tasks.map(t=>t.handoff).filter(Boolean).join('\n')].join('\n');
   const delivery={cycleId:x.cycleId,finalCommit:x.finalCommit,reviewedCommit:x.reviewedCommit,policy:x.policy,checks:x.evidence,reviewCoverage:x.gates.filter(g=>g.kind==='model'),unresolvedIssues:x.issues.filter(i=>!i.closed),tasks:x.tasks,usage:x.tasks.map(t=>t.handoff).filter(Boolean).join('\n')};
@@ -170,7 +258,7 @@ export class Workflow {
  }
  resume(c) {
   const s=this.state(c),x=s.cycle;if(!x)return;
-  this.update(c,{generation:x.generation+1,gates:x.gates.map(g=>['running','rate_wait'].includes(g.status)?{...g,status:'pending'}:g),phase:x.resumePhase || (x.phase==='blocked'?'executing':x.phase)});
+  this.update(c,{generation:x.generation+1,gates:x.gates.map(g=>['running','rate_wait',...(x.blockedReason?.includes('环境')?['failed']:[])].includes(g.status)?{...g,status:'pending'}:g),phase:x.resumePhase || (x.phase==='blocked'?'executing':x.phase)});
   this.event(c,'status',{status:'working'});
   if(x.tasks.some(t=>t.status==='running')) {this.escalate(c,'ambiguous_recovery',s.events.filter(e=>e.type==='workflow_start').slice(-1).map(e=>String(e.id)));return;}
   for(const task of x.tasks.filter(t=>t.status==='rate_wait'))this.event(c,'task_update',{id:task.id,status:task.resumeStatus||'queued'});

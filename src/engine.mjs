@@ -120,6 +120,10 @@ export class Engine {
     mkdirSync(join(path, ".nickyoung"), { recursive: true });
     const notes = join(path, ".nickyoung", "项目须知.md");
     if (!existsSync(notes)) writeFileSync(notes, "# 项目须知\n");
+    if (s.workflowVersion === "adaptive_v1" && this.git(path, ["status", "--porcelain", "--", ".nickyoung/项目须知.md"])) {
+      this.git(path, ["add", ".nickyoung/项目须知.md"]);
+      this.git(path, ["commit", "-m", "记录项目须知"]);
+    }
     this.event(c, "project_update", {
       branch,
       base: this.git(path, ["rev-parse", "HEAD"]),
@@ -244,6 +248,7 @@ export class Engine {
         readOnly: leader || readOnly,
         taskId,
         leader,
+        cycleId: s.cycleId, generation: s.cycle?.generation,
       });
     const proc = runModel({
       selection,
@@ -380,6 +385,7 @@ export class Engine {
         leader: true, ...(adaptive ? { role: "planner", purpose: s.cycle?.planRevision ? "coordinate" : "plan", trigger: reason, cycleId: s.cycleId, fresh: true } : {}),
       });
       if (adaptive && generation !== this.state(c).cycle?.generation && this.state(c).cycle?.planRevision === s.cycle?.planRevision) return;
+      if (this.state(c).status === "paused") return;
       if (adaptive) {
         for (const member of r.recruits || []) await this.action(c, { type: "recruit", ...member });
         if (r.plan) this.workflow.submit(c, r.plan);
@@ -414,9 +420,15 @@ export class Engine {
   async teamAction(token, action) {
     const scope = this.teamTokens.get(token);
     if (!scope) throw new Error("团队回合已结束");
+    const current = this.state(scope.conversation);
+    if (current.workflowVersion === "adaptive_v1" && (current.status !== "working" || scope.cycleId !== current.cycleId || scope.generation !== current.cycle?.generation)) {
+      throw Error("过时团队回合");
+    }
     if (action.type !== "project_command") {
       if (!scope.leader) throw new Error("成员不能调度团队");
-      return this.action(scope.conversation, action);
+      const result = await this.action(scope.conversation, action);
+      if (action.type === "submit_plan") scope.generation = this.state(scope.conversation).cycle.generation;
+      return result;
     }
     if (scope.leader) throw new Error("负责人仅使用只读文件工具");
     if (typeof action.command !== "string") throw new Error("缺少命令");
