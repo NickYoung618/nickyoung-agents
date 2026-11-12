@@ -243,7 +243,7 @@ function panel(s) {
     $("#panel").innerHTML =
       '<button id="expandGraph">展开协作图</button>' + graph(s);
 }
-function graph(s) {
+function graph(s,expanded=false) {
   const events = s.events.filter((e) =>
     [
       "task",
@@ -260,9 +260,10 @@ function graph(s) {
       "answer",
     ].includes(e.type),
   );
-  const width = Math.max(440, s.members.length * 132 + 70),
+  const width = expanded?Math.max(440,window.innerWidth-160):Math.max(440, s.members.length * 132 + 70),
     height = 100 + events.length * 42;
-  const x = (id) => 70 + s.members.findIndex((m) => m.id === id) * 132;
+  const gap=expanded&&s.members.length>1?(width-140)/(s.members.length-1):132;
+  const x = (id) => 70 + s.members.findIndex((m) => m.id === id) * gap;
   let out = `<div class="graphviewport"><svg class="collaboration" width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" xmlns="http://www.w3.org/2000/svg"><defs><marker id="arrowhead" markerWidth="8" markerHeight="8" refX="7" refY="3" orient="auto-start-reverse"><path d="M0,0 L0,6 L8,3 z" fill="#007aff"/></marker></defs>`;
   for (const m of s.members)
     out += `<line class="lane" x1="${x(m.id)}" y1="55" x2="${x(m.id)}" y2="${height}"/><circle class="graphavatar" cx="${x(m.id)}" cy="22" r="17"/><text x="${x(m.id)}" y="27" text-anchor="middle">${escape(m.name[0])}</text><text x="${x(m.id)}" y="52" text-anchor="middle">${escape(m.name)}</text>`;
@@ -448,7 +449,7 @@ $("#panel").onclick = async (e) => {
     }
     dialog.innerHTML =
       '<button class="close">关闭</button><h2>团队协作</h2>' +
-      graph(conversations.find((s) => s.id === current));
+      graph(conversations.find((s) => s.id === current),true);
     dialog.onclick = (e) => {
       if (e.target.className === "close") dialog.close();
       const jump = e.target.closest("[data-jump]");
