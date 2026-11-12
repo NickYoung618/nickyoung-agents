@@ -407,7 +407,7 @@ function setDrawer(open) {
   if (matchMedia('(max-width: 600px)').matches) {
     $('.ny-live').setAttribute('role', open ? 'dialog' : 'complementary');
     $('.ny-live').setAttribute('aria-modal', String(open));
-    if (open) $('#closeTeam').focus(); else $('#toggleRight').focus();
+    if (open) $('#closeTeam').focus({preventScroll:true}); else $('#toggleRight').focus({preventScroll:true});
   }
 }
 $('#toggleRight').onclick = () => setDrawer(!$('.shell').classList.contains('show-live'));
@@ -419,8 +419,8 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Tab') {
     const items = [...$('.ny-live').querySelectorAll('button:not(:disabled), summary, [tabindex="0"]')].filter(n => n.getClientRects().length);
     const first = items[0], last = items.at(-1);
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
-    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus({preventScroll:true}); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus({preventScroll:true}); }
   }
 });
 const effortLabels = {

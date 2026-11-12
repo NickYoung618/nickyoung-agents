@@ -48,7 +48,7 @@ try {
  const context=await browser.newContext({viewport:{width:1536,height:864}});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(String(e)));
  const load=async()=>{await page.goto(origin);await page.waitForFunction(()=>document.querySelector('#homeRecent button'));};
- baseline=true;await load();await page.screenshot({path:new URL('baseline-home.png',out).pathname});await page.click('[data-view-nav="task"]');await page.screenshot({path:new URL('baseline-task.png',out).pathname});baseline=false;
+ baseline=true;await load();await page.screenshot({animations:'disabled',path:new URL('baseline-home.png',out).pathname});await page.click('[data-view-nav="task"]');await page.screenshot({animations:'disabled',path:new URL('baseline-task.png',out).pathname});baseline=false;
  await load();
  await page.fill('#homeInput','创建失败后仍保留的需求');await page.selectOption('#projectSelect','__custom');await page.fill('#path','/isolated/new-project');
  await page.locator('#fileInput').setInputFiles({name:'reference.txt',mimeType:'text/plain',buffer:Buffer.from('fixture attachment')});
@@ -56,7 +56,7 @@ try {
  assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');assert.equal(createCount,1);assert.equal(createBody.files[0].name,'reference.txt');assert.match(await page.locator('#homeAttachments').textContent(),/reference.txt/);
  await page.reload();await page.waitForSelector('#homeRecent button');assert.equal(await page.inputValue('#homeInput'),'创建失败后仍保留的需求');assert.equal(await page.inputValue('#path'),'/isolated/new-project');
  evidence.push('创建失败保留需求与项目选择，刷新恢复草稿');
- await page.click('[data-view-nav="task"]');await page.screenshot({path:new URL('working-light.png',out).pathname});await page.fill('#input','会话独立草稿');
+ await page.click('[data-view-nav="task"]');await page.screenshot({animations:'disabled',path:new URL('working-light.png',out).pathname});await page.fill('#input','会话独立草稿');
  await page.click('#executionLog > summary');await page.waitForSelector('#rawEvents details');await page.click('#rawEvents details:last-child > summary');
  const before=await page.evaluate(()=>{const box=document.querySelector('#messages');box.scrollTop=100;return box.scrollTop;});
  const id=state[0].events.at(-1).id+1;state[0].events.push({id,type:'message',time:new Date().toISOString(),data:{member:'leader',text:'新的实际事件'}});send();
@@ -95,17 +95,17 @@ try {
    const ms=performance.now()-start;const renderMs=await page.evaluate(()=>{const r=performance.getEntriesByType('resource').filter(e=>e.name.endsWith('/api/state')).at(-1);return r ? Math.round(performance.now()-r.responseEnd) : null;});const rawNodes=await page.locator('#rawEvents details').count();assert.ok(rawNodes<=103,`raw log rendered too many nodes: ${rawNodes}`);assert.ok(await page.locator('#messages > .message').count()<=8);await page.fill('#input',`历史 ${count} 条仍可输入`);evidence.push({events:count,wallMs:Math.round(ms),renderObservationUpperBoundMs:renderMs,includesSSEDebounce:true});
  }
  state=[makeState(4)];state[0].questions=[{id:'q',question:'是否只允许登录用户访问？',yes:'仅登录用户可用',no:'允许公开访问',answered:false}];send();
- await page.waitForSelector('#questions .question');await page.click('[data-view-nav="decision"]');await page.screenshot({path:new URL('decisions-pending-light.png',out).pathname});await page.click('#decisionContent [data-decision="true"]');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('决定已记录'));evidence.push('决策选项清楚，答复后确认');
+ await page.waitForSelector('#questions .question');await page.click('[data-view-nav="decision"]');await page.screenshot({animations:'disabled',path:new URL('decisions-pending-light.png',out).pathname});await page.click('#decisionContent [data-decision="true"]');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('决定已记录'));evidence.push('决策选项清楚，答复后确认');
  state[0].status='done';state[0].tasks[0].status='passed';state[0].events.push({id:99,type:'task_update',time:new Date().toISOString(),data:{id:'t1',status:'passed'}},{id:100,type:'check',time:new Date().toISOString(),data:{task:'t1',passed:true,command:'node --test',output:'fixture only'}},{id:101,type:'review',time:new Date().toISOString(),data:{task:'t1',verdict:'pass',commit:'fixture123'}},{id:102,type:'report',time:new Date().toISOString(),data:{text:'已完成命令行工具。\n使用：node cli.mjs\n本页是 UI 测试夹具。'}});send();
  await page.click('[data-view-nav="result"]');await page.waitForSelector('.evidence-strip');assert.match(await page.locator('#resultContent').textContent(),/机器验收通过 1 次/);evidence.push('交付摘要和真实事件计数入口');
  for(const theme of ['light','dark'])for(const [width,height] of [[1536,864],[1366,768],[1280,720],[800,800],[390,844],[360,740]]) {
    await page.emulateMedia({colorScheme:theme});await page.setViewportSize({width,height});
    for(const view of ['home','task','decision','result','settings']) {
-     if(view==='settings'){await page.click('#settings');await page.waitForSelector('.modelrow');}else await page.click(`[data-view-nav="${view}"]`);await page.screenshot({path:new URL(`${view}-${width}-${theme}.png`,out).pathname});
+     if(view==='settings'){await page.click('#settings');await page.waitForSelector('.modelrow');}else await page.click(`[data-view-nav="${view}"]`);await page.screenshot({animations:'disabled',path:new URL(`${view}-${width}-${theme}.png`,out).pathname});
      assert.ok(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),`overflow ${width}/${view}`);
      if(view==='task') {const input=await page.locator('#input').boundingBox();assert.ok(input && input.y+input.height<=height,`input ${width}`);}
    }
-   if(width<=600) {await page.click('#toggleRight');await page.waitForFunction(()=>document.activeElement.id==='closeTeam');await page.screenshot({path:new URL(`drawer-${width}-${theme}.png`,out).pathname});await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>document.activeElement.id),'toggleRight');}
+   if(width<=600) {await page.click('#toggleRight');await page.waitForFunction(()=>document.activeElement.id==='closeTeam');await page.waitForFunction(()=>{const r=document.querySelector('.ny-live').getBoundingClientRect();return r.left>=50 && r.right<=innerWidth+1;});assert.ok(await page.evaluate(()=>[...document.querySelectorAll('.ny-workspace,.ny-columns,.ny-center')].every(n=>n.scrollLeft===0)), '抽屉聚焦不应横向移动工作区');await page.screenshot({animations:'disabled',path:new URL(`drawer-${width}-${theme}.png`,out).pathname});await page.keyboard.press('Escape');assert.equal(await page.evaluate(()=>document.activeElement.id),'toggleRight');}
  }
  evidence.push('6 个视口 × 深浅色 × 5 个主视图无页面横向溢出；手机抽屉支持 Esc 与焦点返回');
  await page.emulateMedia({colorScheme:'light'});await page.setViewportSize({width:1280,height:720});await page.click('#settings');await page.waitForSelector('.modelrow');const model=await page.inputValue('.modelrow .model');await page.click('#refreshModels');await page.waitForFunction(()=>!document.querySelector('#refreshModels').disabled);assert.equal(await page.inputValue('.modelrow .model'),model);evidence.push('扫描目录保留当前模型配置');await page.click('.testModel');await page.waitForFunction(()=>document.querySelector('.testResult').textContent.includes('连接测试失败'));await page.click('#refreshModels');await page.waitForFunction(()=>!document.querySelector('#refreshModels').disabled);assert.match(await page.locator('.testResult').textContent(),/连接测试失败/);evidence.push('测试失败保留原因，目录扫描不清除测试结果');

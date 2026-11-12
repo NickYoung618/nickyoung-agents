@@ -52,8 +52,9 @@ export function deliveryEvidence(s, report) {
     if (e.type === 'task_update' && tasks.has(e.data.id)) Object.assign(tasks.get(e.data.id), e.data);
   }
   const incomplete = [...tasks.values()].filter(t => t.status !== 'passed' && t.status !== 'resolved');
-  const usage = String(report.data.text || '').split('\n').filter(line => /(?:使用|运行|启动|node |npm |python |https?:\/\/)/.test(line)).slice(0,3).join('\n');
+  const reportText = String(report.data.text || '');
+  const usage = [...new Set([...(reportText.match(/\b(?:node|npm|pnpm|python3?)\s+[A-Za-z0-9_.\/:@= -]+/g) || []), ...(reportText.match(/https?:\/\/[^\s<>()，。]+/g) || [])].map(s => s.trim()))].slice(0,3).join('\n');
   return { usage, incomplete, passed: checks.filter(e => e.data.passed).length, failed: checks.filter(e => !e.data.passed).length,
     reviews: reviews.map(e => ({ id: e.id, verdict: e.data.verdict, commit: e.data.commit })),
-    summary: String(report.data.text || '').split('\n').filter(Boolean).slice(0, 5).join('\n').slice(0,600) };
+    summary: reportText.split('。').slice(0,2).join('。').slice(0,320) };
 }
