@@ -193,8 +193,9 @@ export class Engine {
     c,
     member,
     prompt,
-    { leader = false, cwd, readOnly = false, taskId, taskRole } = {},
+    { leader = false, cwd, readOnly = false, taskId, taskRole, cycleId = null, role, purpose, trigger, gateId, fresh = false } = {},
   ) {
+    const queuedAt = Date.now();
     if (!leader && !this.memberTurns.has(c + ":" + member.id))
       this.event(c, "member", { id: member.id, status: "queued" });
     const releaseMember = leader
@@ -206,7 +207,12 @@ export class Engine {
     const key = c + ":" + member.id;
     const started = Date.now();
     this.event(c, "member", { ...selection, id: member.id, status: "running" });
-    this.event(c, "run_start", { member: member.id, ...selection });
+    const trace = { runId: id(), cycleId, taskId, gateId,
+      role: role || (leader ? "planner" : taskRole === "reviewer" ? "reviewer" : "executor"),
+      purpose: purpose || (leader ? "coordinate" : taskRole === "reviewer" ? "review" : "execute"),
+      trigger: trigger || (leader ? "legacy_wake" : "legacy_task"),
+      waitDuration: started - queuedAt };
+    this.event(c, "run_start", { member: member.id, ...selection, ...trace });
     const token = id();
     if (leader || selection.channel === "claude")
       this.teamTokens.set(token, {
@@ -232,11 +238,11 @@ export class Engine {
             }
           : undefined,
       session:
-        member.sessionChannel === selection.channel
+        !fresh && member.sessionChannel === selection.channel
           ? member.session
           : undefined,
       timeout: this.config.timeout,
-      onEvent: (e) => this.event(c, "process", { member: member.id, event: e }),
+      onEvent: (e) => this.event(c, "process", { member: member.id, runId: trace.runId, event: e }),
     });
     proc.taskId = taskId;
     this.running.set(key, proc);
@@ -249,6 +255,7 @@ export class Engine {
         sessionChannel: selection.channel,
       });
       this.event(c, "model_result", {
+        ...trace,
         member: member.id,
         tier: member.tierId || member.role || "负责人",
         model: r.model,
@@ -269,6 +276,7 @@ export class Engine {
     } catch (e) {
       if (e.signal && !e.timedOut) {
         this.event(c, "run_interrupted", {
+          ...trace,
           member: member.id,
           model: selection.model,
           duration: Date.now() - started,
@@ -278,6 +286,8 @@ export class Engine {
         throw e;
       }
       this.event(c, "run_failed", {
+        ...trace,
+        usage: e.events?.findLast(x => x.usage)?.usage,
         member: member.id,
         model: selection.model,
         tier: member.tierId || member.role || "负责人",
