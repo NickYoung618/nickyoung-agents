@@ -80,3 +80,7 @@ npm run build
 `node scripts/acceptance-repair.mjs` 会消耗模型额度，运行受控缺陷的真实返修场景。日常开发使用本地测试即可。实际场景结果及尚未覆盖的验收见 [RESULT.md](RESULT.md)。
 
 Codex 的本应用团队工具使用按工具配置的 `approval_mode = "approve"`，命令执行仍受项目沙箱约束；配置字段见 [官方 MCP 文档](https://learn.chatgpt.com/docs/extend/mcp)。
+
+## vNext 使用体验优化
+
+新增项目选择、任务首屏摘要、会话草稿恢复、稳定的实时更新、自适应真实协作图、决策选项与交付证据台。桌面支持专注阅读，手机团队抽屉支持键盘关闭和焦点返回。实施与验证边界见 [UX-VNEXT.md](docs/UX-VNEXT.md)，截图和事件证据在 `evidence/ux-vnext/`。浏览器回归：`npm run test:ui`。

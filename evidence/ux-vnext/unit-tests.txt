@@ -1,0 +1,58 @@
+
+> nickyoung@0.1.0 test
+> node --test --test-isolation=none tests/*.test.mjs
+
+✔ 原样保留所有原生强度与隐藏标记，不按固定名单截断 (22.076691ms)
+✔ Claude 按各模型实际能力列出强度，缺少元数据不猜测 (0.761848ms)
+✔ 同一 Claude 完整模型被多个别名引用时只列一次 (2.487179ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/59cd217e'
+✔ 通道切换交接上下文，同通道模型变更保留会话，对话覆盖不改全局配置 (860.7174ms)
+✔ 未通过的任务阻止收工，遗留任务允许交付 (9.642126ms)
+✔ 实现与审查不可为同一人，验收命令不能为空 (9.768231ms)
+✔ 暂停确实停止本对话进程 (6.109037ms)
+✔ 会诊重试门槛与第三次失败停止 (13.302366ms)
+✔ 遗留关闭必须关联已通过审查的替代任务 (6.344513ms)
+✔ 非 Git 已有目录等待确认，保留原文件 (189.689311ms)
+✔ 取消正在执行的任务会终止对应成员，不影响其他任务 (2.490033ms)
+✔ 服务恢复保留记录，将中断任务交回负责人 (3.836356ms)
+✔ 讨论最多两轮，超过上限不再调用成员 (2.125715ms)
+✔ 请示未回答不能收工，等待期间无关任务仍能调度 (10.523824ms)
+✔ 同伴答复齐全后提问者自动继续，不经负责人 (28.836781ms)
+✔ 被新需求替代的请示可明确结束，不伪造用户答案 (3.392448ms)
+✔ 讨论和任务共用成员并发上限，同一成员不会重复启动 (5.656944ms)
+✔ 取消排队任务不会终止同一成员正在执行的另一任务 (1.051377ms)
+✔ 简单回复结束后回到待命，不持续显示团队工作中 (42.371359ms)
+✔ 改派会移除旧成员尚未启动的排队回合 (22.856658ms)
+✔ HTTPS 登录隔离、限速、来源校验及改密注销 (6347.766563ms)
+✔ 停止回合确实终止子进程 (19.78653ms)
+✔ 进程非零退出码和标准输出保留 (208.131383ms)
+✔ 服务商拒绝显示原始原因，不混入用量元数据 (4.648237ms)
+✔ 换模后历史发言仍标注当时的实际模型 (0.497549ms)
+✔ 限流记录真实恢复时间，恢复后续跑，暂停清理重试 (2527.061584ms)
+✔ 事件重放保留任务、请示及暂停状态 (11.194206ms)
+✔ 第一次返修、第二次会诊、第三次停止；方案问题立即会诊 (2.130501ms)
+✔ 统计按交付时的模型归属，缓存用量与返修可对账 (4.824771ms)
+✔ 摘要区分审查者、暂停、已交付和等待决定 (6.797637ms)
+✔ 5000 条事件只投影最近关键进展，过程不会淹没结论 (9.897441ms)
+✔ 1 至 8 成员布局均在边界内，节点不重叠 (10.993133ms)
+✔ 派发、送审、返修和同伴问答保留事件 ID 与正确方向 (5.655945ms)
+✔ 草稿按会话隔离，存储不可用有反馈 (3.306632ms)
+✔ 多次交付证据只统计相应报告前的回合，不隐藏失败 (2.734179ms)
+ℹ tests 35
+ℹ suites 0
+ℹ pass 35
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 10604.155209

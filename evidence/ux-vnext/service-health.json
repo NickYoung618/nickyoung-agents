@@ -1,0 +1,23 @@
+[
+  {
+    "path": "/api/ui-version",
+    "status": 200,
+    "version": "20261113-ux-1"
+  },
+  {
+    "path": "/api/state",
+    "status": 200
+  },
+  {
+    "path": "/studio/event-projection.mjs",
+    "status": 200
+  },
+  {
+    "path": "/studio/draft-manager.mjs",
+    "status": 200
+  },
+  {
+    "path": "/studio/agent-graph.mjs",
+    "status": 200
+  }
+]
