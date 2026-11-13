@@ -1,3 +1,4 @@
+import { productFiles } from "./artifacts.mjs";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
 import { resolve, join, basename } from "node:path";
@@ -138,6 +139,9 @@ export class Engine {
       project: s.path,
       members: s.members,
       tasks: s.tasks,
+      goals: s.events.filter(e => e.type === "message" && e.data.member === "user"),
+      decisions: s.events.filter(e => ["decision", "answer", "notice", "artifact_feedback"].includes(e.type)),
+      existingNotes: s.path && existsSync(join(s.path, ".nickyoung", "项目须知.md")) ? readFileSync(join(s.path, ".nickyoung", "项目须知.md"), "utf8") : "",
       events: s.events
         .filter((e) => !["process", "model_result"].includes(e.type))
         .slice(-80),
@@ -491,7 +495,7 @@ export class Engine {
         break;
       }
       case "notice":
-        writeFileSync(join(s.path, ".nickyoung", "项目须知.md"), a.text);
+        // Persistent notice events carry platform context without modifying product files.
         this.event(c, "notice", { text: a.text });
         break;
       case "decision":
@@ -675,6 +679,7 @@ export class Engine {
       cwd = worktree;
     }
     try {
+      if (!review && cwd && productFiles(cwd).length) throw new Error("项目存在未提交产品改动，请保留并处理后再继续，平台未自动覆盖或提交。");
       const m = s.members.find(
         (m) => m.id === (review ? t.reviewer : t.member),
       );
@@ -776,11 +781,16 @@ export class Engine {
           );
         } else {
           this.event(c, "task_update", { id: t.id, status: "passed" });
+          if (this.artifacts) {
+            try { await this.artifacts.collect(c, t, s.path); }
+            catch (e) { this.event(c, "artifact_error", {task:t.id, message:e.message}); }
+          }
           this.wake(c);
         }
       } else {
-        this.git(cwd, ["add", "--all"]);
-        this.git(cwd, ["commit", "--allow-empty", "-m", t.title]);
+        const files = productFiles(cwd);
+        if (files.length) this.git(cwd, ["add", "--force", "--", ...files]);
+        if (this.git(cwd, ["diff", "--cached", "--name-only"])) this.git(cwd, ["commit", "-m", t.title]);
         let commit = this.git(cwd, ["rev-parse", "HEAD"]);
         this.event(c, "task_update", { id: t.id, commit });
         let ok = true;

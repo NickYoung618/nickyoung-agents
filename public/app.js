@@ -1,3 +1,5 @@
+import { applyEvent, project } from "./studio/conversation-state.mjs";
+import { artifactCards, artifactAction } from "./studio/artifact-workbench.mjs";
 const modelTests = new Map();
 let modelCatalog = null,
   showHiddenModels = false;
@@ -53,7 +55,7 @@ async function api(path, data) {
       ? {}
       : {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: { "Content-Type": "application/json", "Idempotency-Key": data.requestId || crypto.randomUUID() },
           body: JSON.stringify(data),
         },
   );
@@ -74,10 +76,27 @@ function name(s, id) {
     : s.members.find((m) => m.id === id)?.name || id;
 }
 let refreshing, refreshAgain = false;
+let updateCursor=0;
+const detailLoads=new Map(),loadedDetails=new Set();
+async function ensureDetail(id) {
+  if(!id||loadedDetails.has(id)||detailLoads.has(id))return;
+  const pending=(async()=>{
+    try {
+      const detail=await api(`conversations/${id}/detail`);
+      if(detail?.id&&Array.isArray(detail.events)) {
+        const newer=conversations.find(c=>c.id===id)?.events.filter(e=>e.id>(detail.events.at(-1)?.id||0))||[];
+        for(const e of newer)applyEvent(detail,e);
+        conversations=conversations.map(c=>c.id===id?detail:c);
+      }
+      loadedDetails.add(id);render();
+    }catch(e){$('#notice').textContent=e.message;}finally{detailLoads.delete(id);}
+  })();detailLoads.set(id,pending);return pending;
+}
 async function refresh() {
   if (refreshing) { refreshAgain = true; return refreshing; }
   refreshing = (async () => {
-    do { refreshAgain = false; conversations = await api("state"); render(); } while (refreshAgain);
+    do { refreshAgain = false; if(!updateCursor){const summaries=await api('summaries').catch(()=>null);conversations=Array.isArray(summaries)?summaries:await api('state');updateCursor=Math.max(0,...conversations.map(c=>c.historyCursor||c.events.at(-1)?.id||0));}
+      else {const delta=await api('updates?after='+updateCursor);if(Array.isArray(delta.events)){const map=new Map(conversations.map(c=>[c.id,c]));for(const e of delta.events){if(!map.has(e.conversation))map.set(e.conversation,project([]));const c=map.get(e.conversation);c.id=e.conversation;applyEvent(c,e);}conversations=[...map.values()];updateCursor=delta.cursor;}else conversations=await api('state');} render(); } while (refreshAgain);
   })();
   try { await refreshing; } finally { refreshing = null; }
 }
@@ -92,6 +111,7 @@ function updateRegion(selector, html) {
   box.dataset.html = html;
 }
 function render() {
+  ensureDetail(current);
   let s = conversations.find((s) => s.id === current);
   $("#conversations").innerHTML = conversations
     .map(
@@ -1014,10 +1034,10 @@ function drawStudio(s) {
       c.events.filter((e) => e.type === "report").map((e) => ({ c, e })),
     )
     .reverse();
-  updateRegion('#resultContent', reports.length ? reports.map(({c,e}) => {
+  updateRegion('#resultContent', artifactCards(conversations,escape) + (reports.length ? reports.map(({c,e}) => {
     const evidence = deliveryEvidence(c, e);
-    return `<article class="card"><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>交付摘要</h3>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>失败记录 ${evidence.failed} 次</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></article>`;
-  }).join('') : '<div class="card ny-small">还没有交付成果。</div>');
+    return `<details class="card" id="delivery-${e.id}"><summary>报告、验收与审查详情 · ${escape(c.title)}</summary><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>报告与辅助证据</h3><p>${c.events.some(item=>item.type==='artifact'&&item.id<=e.id)?'使用入口及验证状态见对应版本成果卡。':'历史报告，使用入口尚未验证。'}</p>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>机器检查失败 ${evidence.failed}</span><span>审查退回 ${evidence.reviewFailed}</span><span>运行异常 ${evidence.runtimeFailed}</span><span>当前未解决 ${evidence.incomplete.length}</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></details>`;
+  }).join('') : '<div class="card ny-small">还没有交付成果。</div>'));
   if (s) {
     $("#taskTitle").textContent = s.title;
     $("#taskTitle").title = s.title;
@@ -1031,7 +1051,7 @@ function drawStudio(s) {
     const handoff = studioEdges(s).at(-1);
     $("#taskCounts").textContent = `${summary.passed} / ${s.tasks.length} 项已通过 · 需要你 ${summary.waiting} 项` +
       (handoff ? ` · 最近交接：${name(s, handoff.from)} → ${name(s, handoff.to)}` : '') +
-      (summary.last ? ` · 最后事件 ${new Date(summary.last.time).toLocaleTimeString()}` : '');
+      (summary.last ? ` · 最后真实活动 ${new Date(summary.last.time).toLocaleTimeString()}` : '');
     updateRegion("#taskList", s.tasks.length
       ? [...s.tasks].filter(t => $("#taskFilter").value !== "blocked" || ["queued","review","consultation","rate_wait","stopped","deferred"].includes(t.status)).sort((a,b) => taskGroup(a).localeCompare(taskGroup(b)))
           .map(
@@ -1232,6 +1252,7 @@ $("#decisionContent").onclick = async (e) => {
   }
 };
 $('#resultContent').onclick = async e => {
+  if(await artifactAction(e,api,refresh,text=>$('#notice').textContent=text))return;
   const copy = e.target.closest('[data-copy-report]');
   if (copy) {
     const report = conversations.flatMap(c => c.events).find(e => e.id === Number(copy.dataset.copyReport));

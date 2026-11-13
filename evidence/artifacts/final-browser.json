@@ -1,0 +1,16 @@
+{
+  "kind": "browser-against-final-code-and-copy-of-real-model-artifacts",
+  "isolation": {
+    "parentBlocked": true,
+    "cookieBlocked": true,
+    "apiBlocked": true,
+    "apiStatus": null
+  },
+  "errors": [],
+  "userAcceptance": false,
+  "viewports": [
+    1536,
+    390
+  ],
+  "addComplete": true
+}

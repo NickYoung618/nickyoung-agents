@@ -178,3 +178,11 @@ body { margin: 0; padding: 20px; }
   body { padding: 0; }
   #ny-live-studio { border-radius: 0; border-width: 0; }
 }
+
+/* Artifact workbench */
+.artifact-card iframe { width:100%; min-height:420px; border:1px solid var(--border,#aaa); background:white; }
+.artifact-card textarea { width:100%; min-height:96px; margin:12px 0; }
+.artifact-card pre { white-space:pre-wrap; overflow-wrap:anywhere; max-height:360px; overflow:auto; }
+.artifact-card button,.artifact-card a { margin:5px; }
+.artifact-card input[type=file] { max-width:100%; }
+@media(max-width:600px) { .artifact-card iframe { min-height:360px; } .artifact-card button { min-height:44px; } }

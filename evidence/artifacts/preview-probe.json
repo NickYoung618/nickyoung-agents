@@ -1,0 +1,47 @@
+{
+  "kind": "runtime-probe-not-independent-review",
+  "verification": {
+    "status": "passed",
+    "time": "2026-11-13T10:24:39.530Z",
+    "evidence": [
+      {
+        "kind": "scenario",
+        "name": "添加、完成并刷新保留状态",
+        "passed": true,
+        "steps": [
+          {
+            "action": "fill",
+            "selector": "#todoInput",
+            "value": "成果验收事项"
+          },
+          {
+            "action": "click",
+            "selector": "#add"
+          },
+          {
+            "action": "text",
+            "selector": "#list li:last-child",
+            "value": "成果验收事项"
+          },
+          {
+            "action": "check",
+            "selector": "#list li:last-child input[type=checkbox]"
+          },
+          {
+            "action": "text",
+            "selector": "#list li:last-child",
+            "value": "成果验收事项 · 已完成"
+          },
+          {
+            "action": "reload"
+          },
+          {
+            "action": "text",
+            "selector": "#list li:last-child",
+            "value": "成果验收事项 · 已完成"
+          }
+        ]
+      }
+    ]
+  }
+}

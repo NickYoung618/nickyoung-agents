@@ -1,0 +1,17 @@
+Switched to a new branch 'nickyoung/349b29d7'
+隔离任务已创建 349b29d7-19ed-488a-9bc0-ee577a251972
+Preparing worktree (detached HEAD fb994d6)
+{"id":"349b29d7-19ed-488a-9bc0-ee577a251972","status":"working","tasks":[{"id":"5484ac8b-b93a-4839-b691-4d43da0769b7","status":"running","commit":"fb994d63801a4ed5998c29b9b786f8399fdd6811"}]}
+file:///home/ubuntu/disk/dzk/nickyoung/scripts/acceptance-artifacts.mjs:28
+ if(s.status!=='done'||!s.tasks.length||s.tasks.some(t=>t.status!=='passed'))throw Error('真实任务尚未通过');
+                                                                                   ^
+
+Error: 真实任务尚未通过
+    at file:///home/ubuntu/disk/dzk/nickyoung/scripts/acceptance-artifacts.mjs:28:84
+
+Node.js v24.15.0
+隔离任务已创建 349b29d7-19ed-488a-9bc0-ee577a251972
+Preparing worktree (detached HEAD fb994d6)
+{"id":"349b29d7-19ed-488a-9bc0-ee577a251972","status":"done","tasks":[{"id":"5484ac8b-b93a-4839-b691-4d43da0769b7","status":"passed","commit":"fb994d63801a4ed5998c29b9b786f8399fdd6811"}]}
+Preparing worktree (detached HEAD 0f49f6f)
+网页、CLI、已有项目修改及从成果页反馈新版均通过 /tmp/nickyoung-artifacts-live-mOJkRE
