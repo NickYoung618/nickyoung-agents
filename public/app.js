@@ -817,17 +817,6 @@ events.onerror = () => {
   $("#notice").textContent = "连接中断，正在重连…";
   $("#connectionState").textContent = "正在重连 · 任务状态保留";
 };
-await refresh();
-if (conversations.length) {
-  current = conversations.at(-1).id;
-  render();
-  requestAnimationFrame(() => {
-    $("#messages").scrollTo({
-      top: $("#messages").scrollHeight,
-      behavior: "instant",
-    });
-  });
-} else $("#panel").textContent = "还没有成员";
 
 async function addFiles(files) {
   for (const file of files) {
@@ -1345,3 +1334,19 @@ for(const id of ['artifactSearch','artifactType','artifactProject','artifactArch
 $('#projectsContent').onclick=e=>{const a=e.target.closest('[data-project-artifact]');if(a){$('#artifactProject').value=a.dataset.projectId;setArtifactFilters({project:a.dataset.projectId,query:'',type:'all',archive:'active'});$('#artifactSearch').value='';$('#artifactType').value='all';$('#artifactArchive').value='active';showStudioView('result');document.querySelector(`[data-artifact="${a.dataset.projectArtifact}"]`)?.scrollIntoView({block:'start'});return;}const b=e.target.closest('[data-open-project]');if(b){current=b.dataset.openProject;studioView='task';render();}const outcome=e.target.closest('[data-project-outcomes]');if(outcome){$('#artifactProject').value=outcome.dataset.projectOutcomes;setArtifactFilters({project:outcome.dataset.projectOutcomes});studioView='result';render();}};
 $('#homeOutcomes').onclick=e=>{const b=e.target.closest('[data-home-artifact]');if(b){for(const [id,value] of [['artifactSearch',''],['artifactProject','all'],['artifactType','all'],['artifactArchive','active']])$('#'+id).value=value;setArtifactFilters({query:'',project:'all',type:'all',archive:'active'});showStudioView('result');document.querySelector(`[data-artifact="${b.dataset.homeArtifact}"]`)?.scrollIntoView({block:'start'});}};
 $('#editIntent').onclick=async()=>{const s=conversations.find(c=>c.id===current);if(!s)return;const goal=prompt('修订当前目标',s.intent?.goal||s.title);if(!goal)return;const criteria=prompt('本轮验收条件（保留原条件，明确变化）',s.intent?.criteria||'各任务的原验收条件');if(criteria===null)return;try{await api(`conversations/${s.id}/intent`,{goal,criteria,expected:s.intent?.expected||s.kind||'auto'});await refresh();}catch(e){$('#notice').textContent=e.message;}};
+
+
+await refresh();
+if (conversations.length && !current) {
+  current = conversations.at(-1).id;
+  render();
+  requestAnimationFrame(() => {
+    $("#messages").scrollTo({
+      top: $("#messages").scrollHeight,
+      behavior: "instant",
+    });
+  });
+} else if (!conversations.length) $("#panel").textContent = "还没有成员";
+
+
+document.documentElement.dataset.appReady="true";

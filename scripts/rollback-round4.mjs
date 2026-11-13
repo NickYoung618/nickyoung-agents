@@ -5,7 +5,7 @@ export async function rollbackRelease(backupDir){
  const previous=JSON.parse(readFileSync(join(backupDir,'previous.json'))),target=previous.root===root?join(data,'releases','rollback-'+Date.now()):previous.root;
  if(previous.root===root){mkdirSync(target,{recursive:true});execFileSync('tar',['-xf',join(backupDir,'known-good-code.tar'),'-C',target]);symlinkSync(join(root,'node_modules'),join(target,'node_modules'),'dir');}
  // Reconstruct the legacy representation before running a version without external payload support.
- if(!previous.version.version.startsWith('20261113-workbench-4'))store.materializePayloads();
+ if(!previous.version.version.includes('workbench-4'))store.materializePayloads();
  const dir=join(homedir(),'.config/systemd/user/nickyoung.service.d');mkdirSync(dir,{recursive:true});writeFileSync(join(dir,'release.conf'),`[Service]\nWorkingDirectory=${target}\nExecStart=\nExecStart=${process.execPath} ${target}/src/server.mjs\nEnvironment=NY_DATA=${data}\nEnvironment=NY_REVISION=${previous.version.revision||'rollback'}\nTimeoutStopSec=20\n`);
  execFileSync('systemctl',['--user','daemon-reload']);execFileSync('systemctl',['--user','restart','nickyoung'],{timeout:22000});store.db.close();return{target,database:'保留当前数据库和使用数据，未覆盖备份'};
 }

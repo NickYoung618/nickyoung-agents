@@ -226,8 +226,8 @@ const server = https.createServer(
         return json(res, 401, { error: "请登录" });
       }
       if(p==='/api/maintenance'&&req.method==='POST'){const b=await body(req);if(b.action==='resume'){lifecycle.maintenance=false;engine.draining=false;artifacts.restartCleanup();return json(res,200,lifecycle.status());}return json(res,200,await lifecycle.drain());}
-      if(p==='/api/release')return json(res,200,existsSync(join(root,'release.json'))?JSON.parse(readFileSync(join(root,'release.json'))):{version:'20261113-workbench-4.1',revision:process.env.NY_REVISION||'working-tree',immutable:false});
-      if(p==='/api/health')return json(res,200,{version:'20261113-workbench-4.1',revision:process.env.NY_REVISION||'working-tree',...lifecycle.status(),resources:resources.snapshot()});
+      if(p==='/api/release')return json(res,200,existsSync(join(root,'release.json'))?JSON.parse(readFileSync(join(root,'release.json'))):{version:'20261114-workbench-4.2',revision:process.env.NY_REVISION||'working-tree',immutable:false});
+      if(p==='/api/health')return json(res,200,{version:'20261114-workbench-4.2',revision:process.env.NY_REVISION||'working-tree',...lifecycle.status(),resources:resources.snapshot()});
       if(lifecycle.maintenance&&req.method!=='GET')return json(res,503,{error:'服务正在维护排空，请稍后重试；草稿已保留'});
       const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|verify|cancel-verify|stop|feedback|accept|archive|upgrade-data|package|download|restore-plan|restore|compare))?)?$/);
       if(artifactRoute) {
@@ -291,7 +291,7 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-workbench-4.1",revision:process.env.NY_REVISION||"working-tree" });
+        return json(res, 200, { version: "20261114-workbench-4.2",revision:process.env.NY_REVISION||"working-tree" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === '/api/summaries') {
         return json(res,200,store.summaries());
