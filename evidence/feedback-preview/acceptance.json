@@ -1,0 +1,41 @@
+{
+  "fixture": true,
+  "realModelCalls": 0,
+  "baselineCommit": "8c2fde8f17691741b450c8b8e7190966e6ab9fec",
+  "sourceFixtureCommit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+  "npmBuild": "passed",
+  "npmTest": {
+    "total": 92,
+    "passed": 92,
+    "failed": 0
+  },
+  "existingUIRegression": "passed",
+  "previewInteractionRegression": "passed",
+  "previewChecks": [
+    "A01 登录 UI 与运行接口显示相同构建；选择流程明确可见",
+    "A06/A07 连续工具事件在回合结束前显示并可追溯，未清空输入",
+    "A09 点击工具提及的文件打开实际源码",
+    "A08/A14 切换会话不带入上一作品；无产物有明确提示",
+    "A02 原动画在登录工作台内播放、暂停冻结、继续运动、重播",
+    "A11 iframe 不能访问主站 DOM/存储/接口",
+    "A11 新标签仍受 CSP sandbox 隔离",
+    "A15 交付卡可打开作品，下载链接可访问",
+    {
+      "name": "A03/A04/A05 草稿版本更新、跟随最新、历史画面与输入焦点、构建失败保留",
+      "observedRequestThroughVisibleMs": 856,
+      "registeredToObservedUpperBoundMs": 635,
+      "targetMs": 2000,
+      "includesBundlingAndRoundTrip": true
+    },
+    "A13 四种视口无横向溢出，输入仍可见"
+  ],
+  "productionRestarted": false,
+  "pushed": false,
+  "merged": false,
+  "limitations": [
+    "static HTML/TS/JS/CSS/local assets only",
+    "backend/API/WebSocket/HMR unsupported",
+    "production and real model efficiency not measured",
+    "artifact automatic retention cleanup not implemented"
+  ]
+}

@@ -12,6 +12,10 @@ export const planSchema = object({
   scope: strings,
   conventions: strings,
   contractPaths: strings,
+  deliveryTarget: {
+    type: "string",
+    enum: ["inline_preview", "downloadable_source"],
+  },
   criteria: array(object({ id: string, text: string })),
   tasks: array(
     object({

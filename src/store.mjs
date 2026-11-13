@@ -1,3 +1,4 @@
+import { blankState, applyStateEvent } from "../public/studio/live-state.mjs";
 import { DatabaseSync } from "node:sqlite";
 export class Store {
   constructor(file) {
@@ -31,57 +32,8 @@ export class Store {
   }
 }
 export function project(events) {
-  let s = {
-    id: events[0]?.conversation,
-    workflowVersion: "legacy",
-    cycles: [],
-    members: [],
-    tasks: [],
-    questions: [],
-    events,
-    status: "idle",
-  };
-  for (const e of events) {
-    const d = e.data;
-    if (e.type === "created" || e.type === "project_update")
-      Object.assign(s, d);
-    if (e.type === "cycle") {
-      if (!s.cycles.some((x) => x.cycleId === d.cycleId))
-        s.cycles.push(structuredClone(d));
-      s.cycleId = d.cycleId;
-    }
-    if (e.type === "cycle_update")
-      Object.assign(
-        s.cycles.find((x) => x.cycleId === d.cycleId) || {},
-        structuredClone(d),
-      );
-    if (e.type === "status") s.status = d.status;
-    if (e.type === "leader_selection") s.leaderSelection = d;
-    if (e.type === "recruit") s.members.push(d);
-    if (e.type === "member")
-      Object.assign(s.members.find((m) => m.id === d.id) || {}, d);
-    if (e.type === "task") s.tasks.push(d);
-    if (e.type === "task_update")
-      Object.assign(s.tasks.find((t) => t.id === d.id) || {}, d);
-    if (e.type === "question") s.questions.push({ ...d, answered: false });
-    if (e.type === "question_closed")
-      Object.assign(s.questions.find((q) => q.id === d.id) || {}, {
-        answered: true,
-        status: "withdrawn",
-        reason: d.reason,
-      });
-    if (e.type === "answer")
-      Object.assign(s.questions.find((q) => q.id === d.id) || {}, {
-        answered: true,
-        answer: d.answer,
-      });
-  }
-  for (const cycle of s.cycles)
-    cycle.tasks = s.tasks.filter(
-      (t) =>
-        t.cycleId === cycle.cycleId && t.planRevision === cycle.planRevision,
-    );
-  s.cycle = s.cycles.find((x) => x.cycleId === s.cycleId);
+  const s = blankState(events[0]?.conversation);
+  for (const event of events) applyStateEvent(s, event);
   return s;
 }
 export function failureState(failures, design = false) {

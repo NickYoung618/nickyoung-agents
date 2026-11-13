@@ -7,6 +7,7 @@ export function plan(n = 3, policy = "final_review") {
     goal: "连续实现",
     scope: ["src/"],
     conventions: ["接口不变"],
+    deliveryTarget: "downloadable_source",
     contractPaths: ["src/api/"],
     criteria: [{ id: "c", text: "运行正确" }],
     tasks: Array.from({ length: n }, (_, i) => ({

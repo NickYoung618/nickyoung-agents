@@ -1,0 +1,23 @@
+{
+  "name": "embodied-intelligence",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22.18.0"
+  },
+  "config": {
+    "playwright_browsers_path": ".cache/ms-playwright"
+  },
+  "scripts": {
+    "dev": "vite --host 0.0.0.0",
+    "build": "tsc --noEmit && vite build",
+    "test": "node --experimental-strip-types --test tests/*.test.ts",
+    "test:e2e": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.3.8"
+  }
+}
