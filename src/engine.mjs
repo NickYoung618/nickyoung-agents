@@ -984,6 +984,7 @@ export class Engine {
     }
   }
   resume(c) {
+    if(this.state(c).status==='paused'&&[...this.running.keys()].some(key=>key.startsWith(c+':')))throw Error('当前进程正在停止，请在已停止后继续。');
     if (!this.state(c).branch) return;
     for (const t of this.state(c).tasks)
       if (

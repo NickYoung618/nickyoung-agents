@@ -138,6 +138,9 @@ function render() {
   )
     ? "继续"
     : "暂停";
+  const stopping=s.status==='paused'&&s.members.some(m=>m.status==='running');
+  if(stopping)$('#pause').textContent='正在停止…';
+  $('#pause').disabled=stopping;
   document.title =
     (s.questions.some((q) => !q.answered)
       ? "等你决定 · "
@@ -339,7 +342,8 @@ $("#pause").onclick = async () => {
   } catch (e) {
     $("#notice").textContent = e.message;
   } finally {
-    $("#pause").disabled = false;
+    const latest=conversations.find(c=>c.id===current);
+    $("#pause").disabled = latest?.status==='paused'&&latest.members.some(m=>m.status==='running');
   }
 };
 $("#questions").onclick = async (e) => {
