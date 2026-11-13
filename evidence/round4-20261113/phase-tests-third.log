@@ -1,0 +1,24 @@
+✔ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (6437.581924ms)
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (3632.985143ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '035bb09f0a00de3488f24196c739be3474ccf7db'
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (95.07148ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.559164ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '8cea2cfeb9cfe3a0cad857eb1e4af3513a50bfcd'
+fatal: path '.nickyoung/artifacts.json' does not exist in 'c75d2fdb59a8a4f6010d8fdbbf161b2b41126004'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in '56d81b0c3cd25d9cd6b97b5e2d0d30c6d07ffab8'
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (457.45504ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (3.002452ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (63.849692ms)
+✔ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (912.715177ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (266.056597ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (142.03962ms)
+✔ 内存不足时不启动重操作，恢复资源后可以执行 (2.43739ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 13919.727005

@@ -1,0 +1,18 @@
+{
+  version: '20261114-workbench-4.2',
+  revision: '1254172dfe38ac57ae90d09c0f6f1f6358bf88d4',
+  release: '/home/ubuntu/disk/dzk/nickyoung/data/releases/20261114-workbench-4.2-1254172dfe38',
+  previousRoot: '/home/ubuntu/disk/dzk/nickyoung/data/releases/20261113-workbench-4.1-e6893ed943d1',
+  backup: '/home/ubuntu/disk/dzk/nickyoung/data/backups/round4-2026-11-13T16-04-15-866Z',
+  imported: { artifacts: 0, sessions: 6 },
+  health: {
+    version: '20261114-workbench-4.2',
+    revision: '1254172dfe38ac57ae90d09c0f6f1f6358bf88d4',
+    maintenance: false,
+    connections: 1,
+    running: 0,
+    resources: { availableMb: 3704, limit: 4, used: 0, active: [], queue: [] }
+  },
+  time: '2026-11-13T16:04:18.756Z',
+  runningBefore: 0
+}

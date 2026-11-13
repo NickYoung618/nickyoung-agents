@@ -1,0 +1,494 @@
+{
+  "kind": "historical-fixed-commit-reverified",
+  "isolated": true,
+  "newModelCalls": false,
+  "sessions": [
+    {
+      "id": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "title": "帮我做一个纯 Node 命令行待办清单，能添加、列出、完成待办，关闭再打开数据还在。命令怎么写你定，给我一段使用说明。项",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "projectId": "15c4e383-7c79-4667-a9c4-41876becf57f",
+      "status": "recovered",
+      "reason": "来自实际文件，等待独立核验",
+      "artifacts": [
+        {
+          "id": "4f55a1d1-dcbf-4016-b805-de69c36c1579",
+          "key": "historical-cli",
+          "name": "待办 CLI",
+          "type": "cli",
+          "version": 1,
+          "commit": "c00caafd2f48c7d8468695e0c76d018fe4693e22",
+          "entry": "todo.js",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:26.885Z",
+            "evidence": [
+              {
+                "kind": "example-step",
+                "args": [
+                  "todo.js",
+                  "list"
+                ],
+                "output": "[ ] 1. 历史核验\n"
+              },
+              {
+                "kind": "example",
+                "args": [
+                  "todo.js",
+                  "add",
+                  "历史核验"
+                ],
+                "input": "",
+                "output": "已添加 #1 历史核验\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              417,
+              579,
+              742
+            ],
+            "time": "2026-11-13T14:41:26.885Z"
+          },
+          "limits": [
+            "使用 Node 24；使用数据不包含在源码包内"
+          ],
+          "userAcceptance": null
+        },
+        {
+          "id": "440785d6-00fb-48e7-955d-2795d498bf65",
+          "key": "historical-document",
+          "name": "使用说明 / 本次文档修改",
+          "type": "document",
+          "version": 1,
+          "commit": "c00caafd2f48c7d8468695e0c76d018fe4693e22",
+          "entry": "README.md",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:27.380Z",
+            "evidence": [
+              {
+                "kind": "document",
+                "output": "# 待办 CLI\n\n纯 Node.js、零依赖的命令行待办清单。需要 Node.js 18 或更新版本。\n\n## 运行与安装\n\n在项目目录直接运行，无需安装依赖：\n\n```sh\nnode todo.js help\nnode todo.js list\n```\n\n也可以在项目目录执行 `npm link`，之后在任意目录用 `todo` 调用，例如 `todo list`。\n\n## 三条命令\n\n下面的示例从空清单开始，按顺序运行：\n\n```text\n$ node todo.js add 买牛奶\n已添加 #1 买牛奶\n$ node todo.js add 写 周报\n已添加 #2 写 周报\n$ node todo.js list\n[ ] 1. 买牛奶\n[ ] 2. 写 周报\n$ node todo.js done 1\n已完成 #1 买牛奶\n$ node todo.js list\n[x] 1. 买牛奶\n[ ] 2. 写 周报\n$ node todo.js done 1\n#1 已是完成状态\n```\n\n`add <内容...>` 用空格拼接内容并去除首尾空白；也可用引号包住内容。编号从 1 开始自增，`list` 按编号升序显示；空清单输出 `暂无待办`。\n\n无参数或 `help` 会显示用法，退出码为 0。空内容、无效或不存在的编号、未知命令会向 stderr 输出错误，退出码为 1。\n\n## 数据位置\n\n默认保存在用户家目录的 `.todos.json`（即 `~/.todos.json`）。每次添加或完成后写入 JSON，关闭终端、重新运行仍然保留数据。写入先使用同目录临时文件，再重命名替换数据文件。\n\n可以用环境变量 `TODO_FILE` 指定其他文件；父目录须已存在。以下为 POSIX shell 用法：\n\n```sh\nexport TODO_FILE=\"$PWD/my-todos.json\"\nnode todo.js add 买牛奶\nnode todo.js list\n```\n\n`TODO_FILE` 对 `todo` 命令同样有效；相对路径相对于当前工作目录。取消设置后恢复默认位置：`unset TODO_FILE`。\n\n## 测试\n\n```sh\nnpm test\n```\n\n使用内置 `node:test`，通过独立 Node 进程验证命令。每个用例在项目的 `test` 目录内创建临时目录，并显式设置 `TODO_FILE`，不访问真实家目录的数据，测试结束后清理。\n待办数据只保存在本机。\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              417,
+              579,
+              742
+            ],
+            "time": "2026-11-13T14:41:27.380Z"
+          },
+          "limits": [],
+          "userAcceptance": null
+        }
+      ],
+      "preservedEarlierVersions": 0
+    },
+    {
+      "id": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "title": "这是小项目验收：做一个 Node 命令行名字列表工具，支持 add 和 list",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "projectId": "e303747c-4a00-43c9-a524-e4644dd3852d",
+      "status": "recovered",
+      "reason": "来自实际文件，等待独立核验",
+      "artifacts": [
+        {
+          "id": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+          "key": "historical-cli",
+          "name": "名字列表 CLI",
+          "type": "cli",
+          "version": 1,
+          "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+          "entry": "cli.cjs",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:27.595Z",
+            "evidence": [
+              {
+                "kind": "example-step",
+                "args": [
+                  "cli.cjs",
+                  "list"
+                ],
+                "output": "历史核验\n"
+              },
+              {
+                "kind": "example",
+                "args": [
+                  "cli.cjs",
+                  "add",
+                  "历史核验"
+                ],
+                "input": "",
+                "output": ""
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              1245
+            ],
+            "time": "2026-11-13T14:41:27.595Z"
+          },
+          "limits": [
+            "使用 Node 24；使用数据不包含在源码包内"
+          ],
+          "userAcceptance": null
+        },
+        {
+          "id": "a78a973d-aae1-4011-9963-57c01ef65f54",
+          "key": "historical-document",
+          "name": "使用说明 / 本次文档修改",
+          "type": "document",
+          "version": 1,
+          "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+          "entry": "README.md",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:27.791Z",
+            "evidence": [
+              {
+                "kind": "document",
+                "output": "# name-list\n\nname-list 是本地名字列表命令行工具，支持添加和查看名字。\n\n数据只在本地保存，重启后仍可读取。\n\n运行需要 Node 24。\n\n无需安装第三方依赖。在项目目录运行：\n\n```sh\nnode cli.cjs add \"张 三\"\nnode cli.cjs add '李,小\"明'\nnode cli.cjs list\n```\n\n名字按添加顺序逐行输出，重复名字会保留；空列表没有输出。\n`add` 接受一个非空名字参数，包含空格的名字需要引号包裹。\n缺失名字或未知命令会向 stderr 提示错误，并以非零状态退出。\n\n数据以 JSON 字符串数组保存在**运行命令时的当前工作目录**下的 `names.json`，\n不同工作目录使用各自的数据文件。文件不存在时视为空列表；存储损坏时会报错，不覆盖原文件。\n从其他目录运行时，请使用 `cli.cjs` 的绝对路径。\n\n运行两个集成测试：\n\n```sh\nnpm test\n```\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              1245
+            ],
+            "time": "2026-11-13T14:41:27.791Z"
+          },
+          "limits": [],
+          "userAcceptance": null
+        }
+      ],
+      "preservedEarlierVersions": 0
+    },
+    {
+      "id": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "title": "在这个已有项目里做一处小文档改动：README 末尾追加“格式：JSON”，不要",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "projectId": "e303747c-4a00-43c9-a524-e4644dd3852d",
+      "status": "recovered",
+      "reason": "来自实际文件，等待独立核验",
+      "artifacts": [
+        {
+          "id": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+          "key": "historical-cli",
+          "name": "名字列表 CLI",
+          "type": "cli",
+          "version": 1,
+          "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+          "entry": "cli.cjs",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:27.595Z",
+            "evidence": [
+              {
+                "kind": "example-step",
+                "args": [
+                  "cli.cjs",
+                  "list"
+                ],
+                "output": "历史核验\n"
+              },
+              {
+                "kind": "example",
+                "args": [
+                  "cli.cjs",
+                  "add",
+                  "历史核验"
+                ],
+                "input": "",
+                "output": ""
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              1245
+            ],
+            "time": "2026-11-13T14:41:27.595Z"
+          },
+          "limits": [
+            "使用 Node 24；使用数据不包含在源码包内"
+          ],
+          "userAcceptance": null
+        },
+        {
+          "id": "9c43454f-431b-4585-81d3-ee13c5a7f37e",
+          "key": "historical-document",
+          "name": "使用说明 / 本次文档修改",
+          "type": "document",
+          "version": 2,
+          "commit": "852359fa9541f14d50cddf01045586c9d0e9085c",
+          "entry": "README.md",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:41:27.988Z",
+            "evidence": [
+              {
+                "kind": "document",
+                "output": "# name-list\n\nname-list 是本地名字列表命令行工具，支持添加和查看名字。\n\n数据只在本地保存，重启后仍可读取。\n\n运行需要 Node 24。\n\n无需安装第三方依赖。在项目目录运行：\n\n```sh\nnode cli.cjs add \"张 三\"\nnode cli.cjs add '李,小\"明'\nnode cli.cjs list\n```\n\n名字按添加顺序逐行输出，重复名字会保留；空列表没有输出。\n`add` 接受一个非空名字参数，包含空格的名字需要引号包裹。\n缺失名字或未知命令会向 stderr 提示错误，并以非零状态退出。\n\n数据以 JSON 字符串数组保存在**运行命令时的当前工作目录**下的 `names.json`，\n不同工作目录使用各自的数据文件。文件不存在时视为空列表；存储损坏时会报错，不覆盖原文件。\n从其他目录运行时，请使用 `cli.cjs` 的绝对路径。\n\n运行两个集成测试：\n\n```sh\nnpm test\n```\n\n格式：JSON\n\n支持中文名字\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              1505
+            ],
+            "time": "2026-11-13T14:41:27.988Z"
+          },
+          "limits": [],
+          "userAcceptance": null
+        }
+      ],
+      "preservedEarlierVersions": 0
+    },
+    {
+      "id": "9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "title": "本轮仅回答：如果接下来做一个小 Node CLI，你会选择什么实现模型和推理强度",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "projectId": "ceb45f5c-9b35-4ade-98c7-776e98f06670",
+      "status": "answer-only",
+      "reason": "问答会话，无需开发成果",
+      "artifacts": [],
+      "preservedEarlierVersions": 0
+    },
+    {
+      "id": "931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "title": "基于open code，做一个多智能体之间直观的交互图给我",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "projectId": "110f1c32-b6b5-49da-8d7f-1e579d3b20da",
+      "status": "recovered",
+      "reason": "来自实际文件，等待独立核验",
+      "artifacts": [
+        {
+          "id": "22d32390-af29-4f99-af64-4d731ae7a686",
+          "key": "historical-web",
+          "name": "opencode-agent-graph",
+          "type": "web",
+          "version": 2,
+          "commit": "57b4d62afa84b60db3408717cfe4ecf5fd5dba3a",
+          "entry": "index.html",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:46:39.713Z",
+            "commit": "57b4d62afa84b60db3408717cfe4ecf5fd5dba3a",
+            "evidence": [
+              {
+                "kind": "scenario",
+                "name": "演示协作图选择与搜索",
+                "passed": true,
+                "steps": [
+                  {
+                    "action": "text",
+                    "selector": "h1",
+                    "value": "OpenCode 多智能体协作图"
+                  },
+                  {
+                    "action": "click",
+                    "selector": "button[aria-label=\"选择智能体 砚舟，开发，运行中\"]"
+                  },
+                  {
+                    "action": "text",
+                    "selector": "aside",
+                    "value": "砚舟"
+                  },
+                  {
+                    "action": "fill",
+                    "selector": "input[type=\"search\"]",
+                    "value": "不存在"
+                  },
+                  {
+                    "action": "text",
+                    "selector": "main",
+                    "value": "没有匹配的智能体"
+                  }
+                ]
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              2754
+            ],
+            "time": "2026-11-13T14:46:39.713Z"
+          },
+          "limits": [
+            "历史项目在固定提交的独立目录重新构建和验证，原报告不变",
+            "预览提供演示模式；真实 OpenCode 连接需要独立部署及服务认证/CORS配置，不代理外部服务"
+          ],
+          "userAcceptance": null
+        },
+        {
+          "id": "17800d9b-a2c9-40ab-9f34-dddc7d980312",
+          "key": "historical-document",
+          "name": "使用说明 / 本次文档修改",
+          "type": "document",
+          "version": 1,
+          "commit": "57b4d62afa84b60db3408717cfe4ecf5fd5dba3a",
+          "entry": "README.md",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:42:08.247Z",
+            "evidence": [
+              {
+                "kind": "document",
+                "output": "# OpenCode 多智能体协作图\n\nReact + TypeScript + Vite 应用，使用 React Flow（`@xyflow/react`）展示多智能体协作。页面明确标识“演示模式”，包含协调、调研、开发、测试、审查 5 个角色，使用带方向箭头及标签的委派/汇报关系串起一个虚构场景。运行中、等待、完成、失败均有文字和颜色图例。\n\n**默认打开演示模式，也可连接真实 OpenCode 1.19.5 服务读取会话快照。** 演示模式中的节点、关系和活动均为虚构；真实模式只展示实际会话、parentID 父子关系及元数据，不代表智能体互发消息。\n\n## 使用流程与数据边界\n\n1. 在画布中点击智能体，查看角色、状态、当前任务与关联事件；点击关系线或关系标签，查看来源、目标、关系类型与事件。\n2. 节点和关系标签均支持 Tab 聚焦、Enter / 空格选择；选中的节点或关系与详情同步高亮。\n3. 点击详情或时间线的事件，会选中并将相关节点定位至画布中央。若该节点已被筛选隐藏，会自动清空筛选后定位。\n4. 使用姓名/角色搜索和状态下拉框组合筛选；只显示两端节点均可见的关系。筛掉当前选项时清除详情，清空筛选后恢复全部。无结果时提供明确提示及恢复按钮。\n5. 拖动画布平移、滚轮或控件缩放，点击“适应视图”恢复总览。桌面采用画布与详情双栏，窄屏纵向排列，可滚动访问全部内容。\n\n只读领域契约在 `src/graph/model.ts`：`GraphData` 包含节点、关系、事件；React Flow 类型仅用于展示层。演示数据集中在 `src/graph/demo.ts`，`App` 支持通过 `graph` 属性注入同一契约，供后续适配层使用。连接容器使用既有只读适配器读取快照，每次读取结束后 5 秒再刷新；图编辑、SSE、消息历史及持久化均未实现。\n\n## 安装与启动\n\n使用 Node.js 22.12+（22 系列）或 24+ 的兼容版本，推荐 Node.js 24 LTS；依赖使用精确版本，并由 `package-lock.json` 锁定。工具兼容性参考 [Vite 官方要求](https://vite.dev/guide/) 及 [Vitest 官方要求](https://vitest.dev/guide/)。\n\n```bash\nnpm ci\nnpm run dev -- --host 127.0.0.1 --port 5173\n```\n\n浏览器打开终端给出的本地地址。`dev` 直接使用 Vite，支持 `--host` 和 `--port`。npm 缓存存放在项目内 `.npm-cache/`，适配用户目录只读的运行环境。\n\n## 浏览器准备\n\n首次验收前安装匹配当前 Playwright 版本的 Chromium，下载文件保存在工作目录：\n\n```bash\nPLAYWRIGHT_BROWSERS_PATH=.playwright npx playwright install chromium\n```\n\n此环境变量语法适用于 Bash；PowerShell 可先执行 `$env:PLAYWRIGHT_BROWSERS_PATH='.playwright'`，再运行 `npx playwright install chromium`。Playwright 配置默认从项目 `.playwright/` 读取浏览器，也支持外部通过 `PLAYWRIGHT_BROWSERS_PATH` 覆盖。Linux 运行器需预装 Chromium 所需系统库；普通可管理的 Linux 主机可使用 Playwright 的 `install-deps chromium` 补齐系统依赖。\n\n## 独立验收\n\n准备好浏览器后，在项目根目录逐条运行：\n\n```bash\nnpm ci\nnpm run test -- --run\nnpm run typecheck\nnpm run build\nnpm run test:e2e\nnpm run test:opencode\nnpm run test:e2e:opencode\n```\n\n- Vitest + Testing Library：57 个测试（原有 40 项 + 连接生命周期及组件新增 17 项）覆盖中文标题、演示模式标识、画布挂载、节点与边筛选、空结果/清空恢复、隐藏选择清理及关联事件。jsdom 不提供真实布局，布局与图节点操作由浏览器测试检查。\n- Playwright：6 个 Chromium 测试加载真实页面，操作节点/关系选择、键盘选择、事件定位、搜索与状态筛选/恢复、缩放及视图适配；分别在桌面和 320px 下验证状态筛选、空结果搜索恢复后的事件居中、1.1 倍缩放及选择一致性，等待视图稳定后检查，防止自动总览覆盖定位。检查窄屏无横向溢出、详情可访问，以及无 `pageerror` 和原生 `error`。保存整页截图 `test-results/**/app-desktop.png`、`test-results/**/app-mobile.png` 和各恢复场景的 `test-results/**/event-restored.png`。\n- `test:e2e` 自动启动独立 Vite webServer（`127.0.0.1:4173`），无需手动启动应用。端口已占用时会失败，避免误测其他服务。\n- `typecheck` 检查应用、测试、脚本及构建配置；`build` 生成 `dist/`。\n\n`npm run test` 可进入 Vitest 监听模式。浏览器、缓存、构建产物及测试报告均由 `.gitignore` 排除。\n\n\n## OpenCode V1 只读快照适配\n\n已实际验证 **OpenCode CLI 1.19.5 + `@opencode-ai/sdk` 1.19.5**，均精确锁定。接口依据 [V1 Server 文档](https://opencode.ai/v1/docs/server/) 和 [V1 SDK 文档](https://opencode.ai/v1/docs/sdk/)，使用 SDK 根入口导出的官方生成 `Session` / `SessionStatus` 类型投影，不使用最新嵌入式 SDK。这里仅保证所列版本的已测契约，不宣称兼容全部 OpenCode 版本。\n\n入口是 `src/opencode/index.ts`：\n\n```ts\nimport { readSnapshot } from './src/opencode'\n\nconst controller = new AbortController()\nconst snapshot = await readSnapshot({\n  url: 'http://127.0.0.1:4096', // 也支持 https://host/prefix\n  directory: '/绝对/工作目录', // 可选，作为目录查询参数编码\n  timeoutMs: 10_000, // 整个快照（含响应体）的总期限\n  signal: controller.signal, // 调用方可选的 AbortSignal\n  // fetch: customFetch, // 可注入标准 fetch 实现\n  // auth: { username: 'opencode', password: '内存密码' },\n})\n// snapshot = { health, sessions, statuses, coverage, graph }\n```\n\n- 应用模块仅请求 `GET /global/health`、`GET /session`、`GET /session/status`。两个会话接口带可选 `directory` 查询；保留服务 URL 路径前缀。目录不会从标题或浏览器环境猜测。\n- 支持可选内存 Basic Auth（UTF-8 凭据），不写入本地存储、文件或 URL；拒绝 URL 内嵌用户名密码、查询、片段及非 HTTP(S) 协议。禁止重定向以避免跨地址转发凭据。跨域浏览器读取仍需服务或反向代理正确配置 CORS；真实浏览器的连接流程已验证。\n- `OpenCodeError.code` 区分 `config`、`http`（附状态码）、`contract`、`network`、`timeout`、`cancelled`；错误不回显凭据或响应体。注入 fetch 即使忽略 signal，超时或取消也会及时结束调用；真正停止底层 I/O 仍依赖 fetch 遵守信号。\n- 会话列表按实际 1.19.5 服务 `/doc` 声明的 `limit` 查询读取：从 100 开始逐次翻倍，直到返回条数小于本次 limit；数量刚好等于 limit 时继续读取。该 V1 列表没有用于向后翻页的 continuation cursor，因此采用扩大前缀重读，不把同一前缀累加成重复会话，也不换成另一个固定上限。总超时/取消覆盖所有批次，后续读取失败则拒绝整个快照，不返回部分图。\n- `coverage.status` 对已验证版本 1.19.5 返回 `complete`，其他版本返回 `unverified` 并明确提示可能截断；`coverage.requestedLimit` 记录最后请求大小。这里的完整性以已验证服务遵守 limit 契约为前提，不是数据库事务快照；读取期间并发增删可能改变列表，界面会醒目显示未知版本的完整性提示。\n- 校验所有消费的字段：健康标志/版本，会话 `id`、`title`、可选 `parentID`、合法毫秒时间 `time.created/updated`，状态 `type` 及 retry 的 `attempt/message/next`。忽略未消费的新增字段，拒绝重复会话 ID 与异常数据，空列表返回空图。\n- `GraphData` 节点表示 **真实会话**，`id/name` 保留会话 ID/标题；`session` 保存原 ID、标题、parentID 和状态语义。角色与当前任务均为“未提供”，不从标题推测智能体身份或工作。\n- 只对两端确实存在的 `parentID` 生成 `parent-child`（“父子会话”）关系；这不是已观测到的委派、消息或汇报。孤儿不生成悬空边，真实循环/自环保留，使用迭代布局避免递归溢出，并按 ID 排序保证乱序输入布局稳定。\n- `busy → running/运行中`；`retry → retry/重试中`，保留重试次数、原因和下一次时间；`idle → idle/空闲`；缺失或未来未知类型 `→ unknown/未知`。**空闲不代表完成**。实测新建父子会话的状态表条目均缺失，因此实际映射为“未知”，不补造空闲状态。\n- 事件仅来自 `session.time.created/updated`，使用原始时间的 ISO 字符串，并明确标注“元数据”及字段来源。这不是消息历史、状态变更记录或任务完成事件。当前未读取消息、SSE 或执行任何模型调用。\n\n### 真实服务契约命令\n\n```bash\nnpm run test:opencode\n```\n\n运行器目前实际验证在 **Linux x64 glibc（支持 AVX2）+ Node.js 24**。通过官方 `opencode-linux-x64@1.19.5` 平台二进制启动 `opencode serve`，绕开 `opencode-ai` 包安装后脚本在只读用户目录中的版本探测失败；SDK 使用同版本。平台包为可选依赖，其他平台可安装应用，但本脚本需要提供匹配平台的已验证 CLI 运行器，不能把跳过当作实连通过。\n\n脚本申请临时回环端口，在工作目录的 `test-results/opencode-contract-*` 下建立独立工作目录及 XDG 数据/缓存/配置/状态目录。使用测试专用 Basic Auth，仅在该本地服务上 `POST /session` 创建 205 个夹具（最早父会话、203 个普通会话、最新子会话），不调用模型。随后直接调用交付的适配器读取真实 HTTP 响应，核对实际 `/doc` 的 limit 参数，断言版本、205 个会话、跨读取批次的父子关系及真实状态映射，并验证请求 limit 为 100 → 200 → 400，同时断言适配器只发 GET。成功或失败后终止服务并删除该次临时目录，输出真实版本、临时地址及断言结果。CLI 的 `--port 0` 实测会回退默认端口，因此运行器先向系统申请临时端口，再明确传入 CLI，并校验实际监听端口。\n\n\n## 从浏览器连接真实服务\n\n1. 默认“演示模式”。展开“连接 OpenCode · 只读配置”，填写完整服务 URL（默认 `http://127.0.0.1:4096`）、可选绝对工作目录；有认证时勾选 Basic Auth 并填写用户名/密码，点击“连接 OpenCode”。草稿编辑不会改变已经提交的连接，已提交目标单独显示。\n2. 连接后节点明确标为“会话”，详情显示 Session ID、标题、parentID、观测状态及原始 retry 信息。可按会话标题/ID 搜索并筛选状态；关系和图例标明“父子会话”，活动区域标为“会话元数据事件”。\n3. 手动刷新或等待自动刷新。默认每次读取结束 5 秒后再读取，不并发；不变、标题或状态更新保持缩放、平移和选择，节点集合/筛选变化才重新适应视图。\n4. 首次失败显示错误及重试；刷新失败保留最后成功快照，但醒目标为“数据已过期”，显示“失去连接”、错误和最后成功更新时间。网络错误提示检查地址/网络/CORS，401/403 提示认证，超时和契约错误单独提示。空列表显示“当前工作目录没有会话”，与筛选空态分开。\n5. “断开连接”清除图、筛选、选择、内存凭据并取消请求；可重新连接或“返回演示”。切换目标/模式拒绝迟到响应覆盖。凭据不写入 URL、localStorage、sessionStorage 或应用日志。\n\n### 本地启动示例\n\n先按上文启动页面于 `http://127.0.0.1:5173`。本仓库锁定的 CLI 平台包适用于 Linux x64 glibc/AVX2；在另一个终端从项目根目录启动服务：\n\n```bash\nmkdir -p .opencode-runtime\nXDG_DATA_HOME=\"$PWD/.opencode-runtime/data\" \\\nXDG_CACHE_HOME=\"$PWD/.opencode-runtime/cache\" \\\nXDG_CONFIG_HOME=\"$PWD/.opencode-runtime/config\" \\\nXDG_STATE_HOME=\"$PWD/.opencode-runtime/state\" \\\nOPENCODE_SERVER_USERNAME=opencode \\\nOPENCODE_SERVER_PASSWORD='设置你自己的服务密码' \\\nnode_modules/opencode-linux-x64/bin/opencode serve \\\n  --hostname 127.0.0.1 --port 4096 --cors http://127.0.0.1:5173\n```\n\n已安装兼容 V1 CLI 的常规环境也可使用 `opencode serve --hostname 127.0.0.1 --port 4096 --cors http://127.0.0.1:5173`。未设置服务密码时可不勾选 Basic Auth；设置密码时默认用户名为 `opencode`，也可使用 `OPENCODE_SERVER_USERNAME` 指定。\n\n允许的 Origin 必须与浏览器地址的协议、主机和端口完全对应：`localhost:5173` 和 `127.0.0.1:5173` 是不同 Origin；改用其他页面端口也要修改 `--cors`。HTTPS 页面连接 HTTP 服务还受浏览器混合内容规则限制，应使用同协议代理或 HTTPS 服务。通过反向代理连接时，服务 URL 可包含路径前缀。\n\n### 真实浏览器验收\n\n```bash\nnpm run test:e2e:opencode\n```\n\n自动启动页面服务 `127.0.0.1:4185`，另在隔离目录/临时回环端口启动真实锁定版本 OpenCode，允许测试页面 Origin 的 CORS 并启用 Basic Auth。测试专用 Node 请求创建两个父/子会话；随后 Playwright 浏览器实际填写表单，经真实 HTTP 验证节点、关系、详情、元数据、手动/自动刷新、标题更新后保持视图/选择、ID 搜索、断开与返回演示，断言应用请求仅 GET、无 pageerror/原生 error、320px 无横向溢出及无浏览器存储。成功路径没有 route mock。标题更新夹具 PATCH 与应用流量分开。\n\n新增 2 个真实浏览器用例（1280px、320px），截图为 `test-results/opencode-browser/**/opencode-1280.png` 和 `opencode-320.png`。运行结束后终止服务并清理隔离目录。原有 6 个演示浏览器流程继续由 `test:e2e` 执行；连接失败/取消/竞态/轮询生命周期使用明确标注的可控 reader mock 单测，不能替代真实成功路径。\n\n当前仍只保证已验证版本契约；快照不保证事务一致，5 秒轮询不等于事件流；不会读取消息历史、执行模型或向用户服务写入会话。真实节点表示会话，角色与当前任务若接口未提供，详情如实显示“未提供”。\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              2754
+            ],
+            "time": "2026-11-13T14:42:08.247Z"
+          },
+          "limits": [],
+          "userAcceptance": null
+        }
+      ],
+      "preservedEarlierVersions": 1
+    },
+    {
+      "id": "b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "title": "做一个具身智能的动画给我",
+      "project": "/home/ubuntu/disk/dzk/nickyoung-workspace/b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "projectId": "608ea284-ea43-4d66-9ae9-766ee5388b91",
+      "status": "recovered",
+      "reason": "来自实际文件，等待独立核验",
+      "artifacts": [
+        {
+          "id": "c5959b1c-d356-4398-8f3a-f86127b452e3",
+          "key": "historical-web",
+          "name": "embodied-intelligence",
+          "type": "web",
+          "version": 1,
+          "commit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+          "entry": "index.html",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:42:14.911Z",
+            "commit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+            "evidence": [
+              {
+                "kind": "scenario",
+                "name": "动画暂停、继续和重播",
+                "passed": true,
+                "steps": [
+                  {
+                    "action": "text",
+                    "selector": "h1",
+                    "value": "具身智能"
+                  },
+                  {
+                    "action": "click",
+                    "selector": "#play-toggle"
+                  },
+                  {
+                    "action": "text",
+                    "selector": "#play-toggle",
+                    "value": "继续"
+                  },
+                  {
+                    "action": "click",
+                    "selector": "#play-toggle"
+                  },
+                  {
+                    "action": "text",
+                    "selector": "#play-toggle",
+                    "value": "暂停"
+                  },
+                  {
+                    "action": "click",
+                    "selector": "#replay"
+                  },
+                  {
+                    "action": "text",
+                    "selector": "#play-status",
+                    "value": "循环"
+                  }
+                ]
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              3203
+            ],
+            "time": "2026-11-13T14:42:14.911Z"
+          },
+          "limits": [
+            "历史项目在固定提交的独立目录重新构建和验证，原报告不变"
+          ],
+          "userAcceptance": null
+        },
+        {
+          "id": "d4ff5f83-340d-4256-8048-e699d3061ea1",
+          "key": "historical-document",
+          "name": "使用说明 / 本次文档修改",
+          "type": "document",
+          "version": 1,
+          "commit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+          "entry": "README.md",
+          "verification": {
+            "status": "passed",
+            "time": "2026-11-13T14:42:15.875Z",
+            "evidence": [
+              {
+                "kind": "document",
+                "output": "# 具身智能 · 抓取闭环动画\n\nVite + TypeScript 中文科普单页，使用本地 SVG 演示机器人感知—规划—行动—反馈的完整抓取闭环。动画采用预设时间轴，用于说明概念，不连接真实机器人，也不执行真实模型推理。\n\n默认自动播放，每轮 30 秒：0–6 秒扫描并框选物体，6–10 秒显示规划路径，10–25 秒接近、夹紧、抬起、搬运、放下与松爪，25–30 秒检测目标区并反馈成功，随后重置。夹爪释放后物体留在目标区至下一轮。\n\n可点击“暂停 / 继续”和“从头重播”，也可用 Tab 聚焦按钮、空格或 Enter 操作。重播从第 0 秒开始并播放，清除上一轮结果。暂停冻结全部场景运动，继续从当前姿态恢复。系统设置减少动态效果时默认暂停；可主动点击“播放”或“从头重播”观看。\n\n## 启动\n\n需要 Node.js 22.18+（推荐 Node.js 24）与 npm。\n\n```sh\nnpm ci\nnpm run dev\n```\n\n打开终端提示的本地地址（默认 http://localhost:5173）。不需要 API 密钥、远程字体或外部图片，运行时无外部素材请求。\n\n## 验收\n\n在项目根目录依次执行：\n\n```sh\nnpm ci\nnpm run build\nnpm test\nnpx playwright install chromium\nnpm run test:e2e\n```\n\n- `build`：先执行 TypeScript 检查，再构建到 `dist/`。\n- `test`：Node.js 原生测试，执行 `tests/*.test.ts`，验证中文内容、阶段边界、夹取 / 运输 / 释放关系、固定臂长与连续姿态、30 秒循环重置。\n- `test:e2e`：启动本地 Vite 服务，真实打开 Chromium，在 1440×900 和 320×740 下检查标题、SVG、内容和无横向溢出；使用 Playwright clock 逐帧推进至少两个完整循环，读取实际 SVG 变换矩阵验证抓持、运输与目标落点，检查键盘控件、暂停冻结、无跳跃续播、重播和减少动态效果。捕获页面异常与控制台错误，断言为空。\n\n截图保存在 `test-results/animation-1440×900-两轮闭环与键盘控件/` 和 `test-results/animation-320×740-两轮闭环与键盘控件/`，每轮包含 `cycle-N-perception.png`、`cycle-N-planning.png`、`cycle-N-grasp.png`、`cycle-N-transport.png`、`cycle-N-feedback.png`；同目录有 `browser-errors.json` 和记录实际 SVG 坐标的 `motion-evidence.json`。基础布局截图为 `test-results/page-视口-页面与场景正常/page.png`。失败时另保留追踪信息。生成文件不提交到仓库，每次测试重新生成。\n\n首次在精简 Linux 环境运行时，如浏览器提示缺少系统库，需要由运行环境安装 Chromium 的系统依赖（具备权限时可用 `npx playwright install-deps chromium`）。测试所用端口 4173 需空闲；配置会自行启动与停止服务，不复用其他进程。\n\n浏览器缓存通过 `package.json` 的 `config.playwright_browsers_path` 固定到项目的 `.cache/ms-playwright`，npm 缓存通过 `.npmrc` 固定到 `.cache/npm`。上述命令可直接用于主目录只读的沙箱，无需额外设置环境变量。npm / npx 会将配置传递给 Playwright，安装和测试使用同一路径；显式设置 `PLAYWRIGHT_BROWSERS_PATH` 时，以该环境变量为准。\n\n## 实现结构\n\n- `src/content.ts`：标题和四阶段科普数据。\n- `src/timeline.ts`：纯函数时间轴与两段机械臂逆运动学；以毫秒采样所有位置、夹爪开合、扫描、轨迹和反馈。可在此调整时序与关键坐标，机械臂连杆长度保持固定。\n- `src/animation.ts`：唯一的 `requestAnimationFrame` 循环，驱动 SVG、阶段高亮、中文说明、进度与控件；全部运动共用同一时间源，不使用独立计时器或 CSS 动画。\n- `src/main.ts`：SVG 场景及中文页面结构，`#scene-controls` 提供原生键盘可操作按钮与可读进度。\n- `src/style.css`：深色视觉与桌面、手机自适应布局。\n- `tests/` 与 `playwright.config.ts`：基础断言及浏览器验收入口。\n"
+              }
+            ]
+          },
+          "provenance": {
+            "kind": "historical",
+            "source": "实际 Git 提交与文件检查",
+            "confidence": "program-verified",
+            "reportIds": [
+              3203
+            ],
+            "time": "2026-11-13T14:42:15.875Z"
+          },
+          "limits": [],
+          "userAcceptance": null
+        }
+      ],
+      "preservedEarlierVersions": 0
+    }
+  ],
+  "registeredVersion": "20261114-workbench-4.2"
+}

@@ -1,0 +1,168 @@
+
+> nickyoung@0.1.0 test
+> node --test --test-isolation=none tests/*.test.mjs
+
+✔ 关键写入重复请求不重复创建，增量补齐有序且预览 Origin 不能访问管理 API (846.631776ms)
+✔ 固定提交核验、测试命令分离、失败新版保留旧版、无效入口不可用 (317.725793ms)
+✔ 元数据分开但保留已有跟踪文件，恢复保护用户改动和 HEAD (310.109504ms)
+✔ 历史报告不提供正则入口，分别统计审查退回和运行异常 (0.645917ms)
+✔ 预览启动失败、过期、重新启动及并发限制 (157.586387ms)
+✔ 增量事件重连去重且历史验收条件不会被状态更新污染 (0.729573ms)
+✔ 真实超时清理、两项预览并发上限和示例文件权限 (1439.333523ms)
+✔ 恢复仅改变所列代码，数据库与环境配置保持原值 (290.765947ms)
+✔ 项目忽略平台目录时仍提交产品成果清单，不夹带附件 (141.287795ms)
+✔ 原样保留所有原生强度与隐藏标记，不按固定名单截断 (1.510645ms)
+✔ Claude 按各模型实际能力列出强度，缺少元数据不猜测 (0.940114ms)
+✔ 同一 Claude 完整模型被多个别名引用时只列一次 (0.445213ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/fd0ebdd1'
+✔ 通道切换交接上下文，同通道模型变更保留会话，对话覆盖不改全局配置 (374.565932ms)
+✔ 未通过的任务阻止收工，遗留任务允许交付 (4.002389ms)
+✔ 实现与审查不可为同一人，验收命令不能为空 (2.59704ms)
+✔ 暂停确实停止本对话进程 (1.64601ms)
+✔ 会诊重试门槛与第三次失败停止 (5.164401ms)
+✔ 遗留关闭必须关联已通过审查的替代任务 (4.461042ms)
+✔ 非 Git 已有目录等待确认，保留原文件 (93.305284ms)
+✔ 取消正在执行的任务会终止对应成员，不影响其他任务 (9.29592ms)
+✔ 服务恢复保留记录，将中断任务交回负责人 (6.042055ms)
+✔ 讨论最多两轮，超过上限不再调用成员 (3.808922ms)
+✔ 请示未回答不能收工，等待期间无关任务仍能调度 (8.455272ms)
+✔ 同伴答复齐全后提问者自动继续，不经负责人 (6.918203ms)
+✔ 被新需求替代的请示可明确结束，不伪造用户答案 (1.710024ms)
+✔ 讨论和任务共用成员并发上限，同一成员不会重复启动 (9.499993ms)
+✔ 取消排队任务不会终止同一成员正在执行的另一任务 (2.770847ms)
+✔ 简单回复结束后回到待命，不持续显示团队工作中 (3.882637ms)
+✔ 改派会移除旧成员尚未启动的排队回合 (4.082868ms)
+✔ HTTPS 登录隔离、限速、来源校验及改密注销 (1608.414768ms)
+✖ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (1795.0454ms)
+✖ 预览过期、失败及重新启动准确反馈并回收原进程 (873.987455ms)
+✖ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (1443.310973ms)
+✖ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (1498.791394ms)
+✔ 停止回合确实终止子进程 (10.887369ms)
+✔ 进程非零退出码和标准输出保留 (140.105389ms)
+✔ 服务商拒绝显示原始原因，不混入用量元数据 (0.707002ms)
+✔ 换模后历史发言仍标注当时的实际模型 (2.6171ms)
+✔ 限流记录真实恢复时间，恢复后续跑，暂停清理重试 (2069.390994ms)
+✔ 事件重放保留任务、请示及暂停状态 (2.411367ms)
+✔ 第一次返修、第二次会诊、第三次停止；方案问题立即会诊 (0.609592ms)
+✔ 统计按交付时的模型归属，缓存用量与返修可对账 (2.547284ms)
+✔ 摘要区分审查者、暂停、已交付和等待决定 (0.890958ms)
+✔ 5000 条事件只投影最近关键进展，过程不会淹没结论 (12.35754ms)
+✔ 1 至 8 成员布局均在边界内，节点不重叠 (1.298377ms)
+✔ 派发、送审、返修和同伴问答保留事件 ID 与正确方向 (4.296595ms)
+✔ 草稿按会话隔离，存储不可用有反馈 (4.979059ms)
+✔ 多次交付证据只统计相应报告前的回合，不隐藏失败 (0.423027ms)
+✔ 写入后暂停继续，自己的未提交改动能完成且无需用户中间提交 (891.67465ms)
+✔ 中断与服务重启持久恢复检查点，不重复认定模型改动为用户脏文件 (1158.410736ms)
+✔ 暂停期间用户修改同一文件会明确停等；拒绝不丢内容，明确采用后可以继续 (785.220437ms)
+✔ 暂停期间无关用户文件保持原样并排除交付提交，包含已暂存用户改动 (877.454205ms)
+✔ 初始用户改动保留；任务开始前拒绝自动接管；改派复用任务检查点 (821.223893ms)
+✔ 真实子进程写入事件形成持久检查点，SIGTERM 中断后可再次运行 (1581.347039ms)
+✔ 取消后的未完成文件保留，新任务不会自动接管或提交它们 (250.283676ms)
+ℹ tests 55
+ℹ suites 0
+ℹ pass 51
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 20043.56152
+
+✖ failing tests:
+
+test at tests/preview-lifecycle.test.mjs:5:1
+✖ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (1795.0454ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:5:61)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at tests/preview-lifecycle.test.mjs:6:1
+✖ 预览过期、失败及重新启动准确反馈并回收原进程 (873.987455ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:6:49)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at tests/preview-lifecycle.test.mjs:7:1
+✖ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (1443.310973ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:7:54)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at tests/preview-lifecycle.test.mjs:9:1
+✖ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (1498.791394ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:9:53)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)

@@ -1,0 +1,15 @@
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+fatal: cannot change to '/unavailable-original-project': No such file or directory
+{
+  imported: { artifacts: 11, sessions: 6 },
+  packages: 10,
+  idempotent: true
+}

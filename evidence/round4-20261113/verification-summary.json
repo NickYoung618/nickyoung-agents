@@ -1,0 +1,36 @@
+{
+  "version": "20261114-workbench-4.2",
+  "revision": "1254172dfe38ac57ae90d09c0f6f1f6358bf88d4",
+  "automated": {
+    "log": "tests-4.2-final.log",
+    "passed": 71,
+    "failed": 0
+  },
+  "browser": {
+    "ui": "ui-4.2/browser.json",
+    "historyAndPackages": "browser.json",
+    "stableFeedback": "repair-regression/browser.json",
+    "expiry": "repair-regression/expiry-browser.json",
+    "recovery": "repair-regression/recovery-browser.json",
+    "slowBootstrap": "bootstrap-browser.json"
+  },
+  "trueModels": {
+    "data": "data/round4-live",
+    "conversation": "13500849-faad-4415-8a7c-44d95e878e3c",
+    "runStarts": 8,
+    "reviewCommits": [
+      "6a5034c8dfb8d0947f4cb17c0b0a95d797fbf4e3",
+      "4805354428cf0c994348e5c5963f5a7f33792cb1"
+    ],
+    "newProvider": false,
+    "userAcceptance": false,
+    "evidence": "live.json"
+  },
+  "history": "history-final.json",
+  "restoration": "restore.json",
+  "rollover": "rollover.json",
+  "production": "production.json",
+  "backup": "/home/ubuntu/disk/dzk/nickyoung/data/backups/round4-2026-11-13T16-04-15-866Z",
+  "crossSession": "cross-session-fixed.log",
+  "rollbackDrain": "rollback-drain-test.log"
+}

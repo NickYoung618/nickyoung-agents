@@ -1,0 +1,10 @@
+fatal: path '.nickyoung/artifacts.json' does not exist in '3106a647536aa2241c4b0ed46c7b77cac1c01bc6'
+fatal: path '.nickyoung/artifacts.json' does not exist in '3106a647536aa2241c4b0ed46c7b77cac1c01bc6'
+{
+  ready: true,
+  kind: 'development',
+  implementation: 1,
+  verified: 1,
+  pendingData: [],
+  issues: []
+}

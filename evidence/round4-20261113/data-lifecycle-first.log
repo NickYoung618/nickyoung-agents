@@ -1,0 +1,10 @@
+✔ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (9788.62921ms)
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (3537.341769ms)
+ℹ tests 2
+ℹ suites 0
+ℹ pass 2
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 14268.29631

@@ -1,0 +1,27 @@
+{
+  "version": "20261113-workbench-4.1",
+  "revision": "42a242eee48bf142a530e5d6b7775616c5117a47",
+  "release": "/home/ubuntu/disk/dzk/nickyoung/data/releases/20261113-workbench-4.1-42a242eee48b",
+  "previousRoot": "/home/ubuntu/disk/dzk/nickyoung/data/releases/20261113-workbench-4-24ae30ff199f",
+  "backup": "/home/ubuntu/disk/dzk/nickyoung/data/backups/round4-2026-11-13T15-50-10-005Z",
+  "imported": {
+    "artifacts": 0,
+    "sessions": 6
+  },
+  "health": {
+    "version": "20261113-workbench-4.1",
+    "revision": "42a242eee48bf142a530e5d6b7775616c5117a47",
+    "maintenance": false,
+    "connections": 1,
+    "running": 0,
+    "resources": {
+      "availableMb": 3651,
+      "limit": 4,
+      "used": 0,
+      "active": [],
+      "queue": []
+    }
+  },
+  "time": "2026-11-13T15:50:12.529Z",
+  "runningBefore": 0
+}

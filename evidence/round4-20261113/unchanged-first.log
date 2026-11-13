@@ -1,0 +1,16 @@
+fatal: path '.nickyoung/artifacts.json' does not exist in '2a6345ddcb7947b7df25a242984a6b98e1d983a3'
+fatal: path '.nickyoung/artifacts.json' does not exist in '2a6345ddcb7947b7df25a242984a6b98e1d983a3'
+{
+  ready: false,
+  kind: 'development',
+  implementation: 1,
+  verified: 1,
+  pendingData: [],
+  issues: [
+    {
+      task: 'two',
+      reason: '缺少结构化成果清单或成果收集失败',
+      retry: '补充 .nickyoung/artifacts.json 并重新交付'
+    }
+  ]
+}

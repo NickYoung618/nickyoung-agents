@@ -1,0 +1,14 @@
+{
+  "kind": "isolated-synthetic-history-not-model-events",
+  "events": 20002,
+  "firstMs": 463.3091290000002,
+  "cachedMeanMs": 0.4207061299999987,
+  "deltaMs": 1.0795539999999164,
+  "summaryEvents": 9,
+  "pageSize": 250,
+  "hasMore": true,
+  "indexes": [
+    "events_conversation_type_id",
+    "events_conversation_id"
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "controlledRunner": true,
+  "realModelCalls": false,
+  "browserPauseResume": true,
+  "actualHttpsProcessRestart": true,
+  "userUnrelatedPreserved": true,
+  "modelInterrupted": 1,
+  "task": "passed"
+}

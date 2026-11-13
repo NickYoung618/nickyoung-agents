@@ -1,0 +1,38 @@
+{
+  "fixture": true,
+  "baseline": "b517b30",
+  "checks": [
+    "创建失败保留需求与项目选择，刷新恢复草稿",
+    "SSE 更新保留输入、滚动位置和展开日志",
+    "版本变化提示主动更新，保留输入",
+    "1/2/3/4/6/8 人布局无重叠",
+    "超过 8 人聚合，成员详情可访问",
+    "新交接单次动画，减少动态效果与暂停无动画，选中成员保持",
+    {
+      "events": 500,
+      "wallMs": 240,
+      "renderObservationUpperBoundMs": 27,
+      "includesSSEDebounce": true
+    },
+    {
+      "events": 2000,
+      "wallMs": 258,
+      "renderObservationUpperBoundMs": 45,
+      "includesSSEDebounce": true
+    },
+    {
+      "events": 5000,
+      "wallMs": 510,
+      "renderObservationUpperBoundMs": 285,
+      "includesSSEDebounce": true
+    },
+    "决策选项清楚，答复后确认",
+    "交付摘要和真实事件计数入口",
+    "6 个视口 × 深浅色 × 5 个主视图无页面横向溢出；手机抽屉支持 Esc 与焦点返回",
+    "扫描目录保留当前模型配置",
+    "测试失败保留原因，目录扫描不清除测试结果",
+    "新建项目成功后进入任务并清理已发送草稿",
+    "页面脚本异常 0"
+  ],
+  "errors": []
+}
