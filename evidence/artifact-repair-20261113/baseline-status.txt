@@ -1,0 +1,25 @@
+ M PLAN.md
+ M README.md
+ M RESULT.md
+ M docs/UX-VNEXT.md
+ M prompts/leader.md
+ M prompts/member.md
+ M public/app.js
+ M public/index.html
+ M public/studio/event-projection.mjs
+ M public/ui-package.css
+ M src/engine.mjs
+ M src/server.mjs
+ M src/store.mjs
+ M tests/ui.mjs
+?? docs/ARTIFACT-WORKBENCH.md
+?? evidence/artifact-repair-20261113/
+?? evidence/artifacts/
+?? public/studio/artifact-workbench.mjs
+?? public/studio/conversation-state.mjs
+?? scripts/acceptance-artifacts.mjs
+?? scripts/capture-artifacts.mjs
+?? scripts/deploy-artifacts.mjs
+?? src/artifacts.mjs
+?? tests/artifact-http.test.mjs
+?? tests/artifacts.test.mjs

@@ -53,3 +53,15 @@ node scripts/rollback-artifact-repair.mjs /绝对路径/data/backups/artifact-re
 回滚前再次检查运行任务，并保存当前代码；仅恢复代码，数据库、登录、模型配置和成果数据保持当前内容。生产数据库备份是应急恢复材料，脚本不会覆盖数据库。
 
 本轮提交位于独立 `fix/artifact-workbench-repair` 分支，以实际未提交实现快照作为明确的基线提交。主工作区分支和原暂存区不切换、不清空；修复提交的 diff 只包含本轮变化。部署记录保存实际代码提交，证据提交另行记录。
+
+## 本次发布记录
+
+生产版本为 `20261113-artifacts-3`，运行代码提交 `1c9e8cf97a368742288562d208452890d09b5058`，服务 active。部署前运行任务为 0，配置与原登录会话保留。55 项 npm 测试与六视口回归通过；新增浏览器和进程证据见本次证据目录。
+
+回滚位置：`/home/ubuntu/disk/dzk/nickyoung/data/backups/artifact-repair-2026-11-13T12-09-28-649Z`。
+
+```bash
+node scripts/rollback-artifact-repair.mjs /home/ubuntu/disk/dzk/nickyoung/data/backups/artifact-repair-2026-11-13T12-09-28-649Z
+```
+
+线上只读浏览器检查没有创建任务或发送反馈，生产事件数及登录会话数保持不变。生产历史会话无结构化网页成果，因此没有在生产成果中执行添加、验收等写入操作；这些交互由保留真实提交重建的隔离夹具覆盖。
