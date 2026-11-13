@@ -1,3 +1,4 @@
+import { dirtyWork, readWorkFile, sameWork, preserveWork, workChanges } from "./work-checkpoints.mjs";
 import { productFiles } from "./artifacts.mjs";
 import { randomUUID } from "node:crypto";
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from "node:fs";
@@ -118,8 +119,10 @@ export class Engine {
       base: this.git(path, ["rev-parse", "HEAD"]),
     });
   }
-  async message(c, text, files = []) {
+  async message(c, text, files = [], feedback) {
     const s = this.state(c);
+    if(feedback){const prior=s.events.find(e=>e.type==='message'&&e.data.artifactFeedback?.id===feedback.id&&e.data.artifactFeedback?.requestId===feedback.requestId);
+      if(prior){if(prior.data.artifactFeedback.text!==feedback.text)throw Error('请求标识已用于另一条修改要求');return;}}
     const attachments = [];
     for (const f of files) {
       const dir = join(s.path, ".nickyoung", "附件");
@@ -128,9 +131,14 @@ export class Engine {
       writeFileSync(path, Buffer.from(f.data, "base64"));
       attachments.push({ name: f.name, path });
     }
-    this.event(c, "message", { member: "user", text, attachments });
+    this.store.db.exec('BEGIN');
+    try{
+      this.event(c,"message",{member:'user',text,attachments,...(feedback?{artifactFeedback:feedback}:{})});
+      if(feedback)this.event(c,'artifact_feedback',feedback);
+      if(s.branch)this.event(c,'status',{status:'working'});
+      this.store.db.exec('COMMIT');
+    }catch(e){this.store.db.exec('ROLLBACK');throw e;}
     if (!s.branch) return;
-    this.event(c, "status", { status: "working" });
     this.wake(c);
   }
   context(c) {
@@ -240,7 +248,13 @@ export class Engine {
           ? member.session
           : undefined,
       timeout: this.config.timeout,
-      onEvent: (e) => this.event(c, "process", { member: member.id, event: e }),
+      onEvent: (e) => {
+        this.event(c,"process",{member:member.id,event:e});
+        if(taskId&&taskRole==='member'){
+          const last=this.store.events(c).findLast(x=>x.type==='work_checkpoint'&&x.data.task===taskId)?.data;
+          if(last)this.checkpoint(c,taskId,cwd||s.path,last.protected);
+        }
+      },
     });
     proc.taskId = taskId;
     this.running.set(key, proc);
@@ -663,6 +677,28 @@ export class Engine {
       }
     }
   }
+  checkpoint(c,task,path,protectedFiles={}) {
+    const all=dirtyWork(path),own=Object.fromEntries(Object.entries(all).filter(([file])=>!(file in protectedFiles)));
+    const value={task,head:this.git(path,['rev-parse','HEAD']),own,protected:protectedFiles};
+    const previous=this.store.events(c).findLast(e=>e.type==='work_checkpoint'&&e.data.task===task)?.data;
+    if(JSON.stringify(previous)!==JSON.stringify(value))this.event(c,'work_checkpoint',value);
+    return value;
+  }
+  workConflict(c,t,conflicts) {
+    this.event(c,'work_conflict',{task:t.id,conflicts});
+    this.event(c,'task_update',{id:t.id,status:'waiting_user',advice:conflicts.map(x=>x.file+': '+x.reason).join('；')});
+    if(!this.state(c).questions.some(q=>q.purpose==='work_conflict'&&q.task===t.id&&!q.answered))this.event(c,'question',{id:id(),purpose:'work_conflict',task:t.id,question:'检测到用户改动：'+conflicts.map(x=>x.file).join('、')+'。保留当前内容并以它为基础继续？',yes:'保留当前文件作为新的实现基础，仅接管这些冲突文件。',no:'保留所有文件并暂停，暂不继续修改。',conflicts});
+  }
+  resolveWorkConflict(c,question,answer) {
+    if(!answer){this.event(c,'status',{status:'paused'});return;}
+    const s=this.state(c),previous=s.events.findLast(e=>e.type==='work_checkpoint'&&e.data.task===question.task)?.data;
+    const protectedFiles={...previous?.protected};
+    const conflicts=new Set(question.conflicts.map(x=>x.file));
+    for(const [file,value] of Object.entries(dirtyWork(s.path)))if(!(file in (previous?.own||{}))&&!conflicts.has(file))protectedFiles[file]=value;
+    for(const conflict of question.conflicts)delete protectedFiles[conflict.file];
+    this.checkpoint(c,question.task,s.path,protectedFiles);
+    this.event(c,'task_update',{id:question.task,status:'repair'});this.event(c,'status',{status:'working'});this.pump();
+  }
   async task(c, t) {
     let s = this.state(c);
     const review = t.status === "review";
@@ -670,8 +706,7 @@ export class Engine {
       id: t.id,
       status: review ? "reviewing" : "running",
     });
-    let cwd = s.path,
-      worktree;
+    let cwd = s.path, worktree, protectedFiles={}, checkpointActive=false;
     if (review) {
       worktree = join(this.config.data, "reviews", t.id + "-" + t.failures);
       mkdirSync(resolve(worktree, ".."), { recursive: true });
@@ -679,7 +714,13 @@ export class Engine {
       cwd = worktree;
     }
     try {
-      if (!review && cwd && productFiles(cwd).length) throw new Error("项目存在未提交产品改动，请保留并处理后再继续，平台未自动覆盖或提交。");
+      if(!review&&cwd){
+        const previous=this.store.events(c).findLast(e=>e.type==='work_checkpoint'&&e.data.task===t.id)?.data;
+        const changes=workChanges(cwd,previous,this.git(cwd,['rev-parse','HEAD']));
+        if(!previous&&Object.keys(changes.dirty).length){this.workConflict(c,t,Object.keys(changes.dirty).map(file=>({file,reason:'任务开始前已有未提交改动'})));return;}
+        if(changes.conflicts.length){this.workConflict(c,t,changes.conflicts);return;}
+        protectedFiles=changes.protected;checkpointActive=true;this.checkpoint(c,t.id,cwd,protectedFiles);
+      }
       const m = s.members.find(
         (m) => m.id === (review ? t.reviewer : t.member),
       );
@@ -691,6 +732,8 @@ export class Engine {
           review,
           commit: t.commit,
           advice: t.advice,
+          protectedUserFiles:Object.keys(protectedFiles),
+          userFileRule:"保留 protectedUserFiles，不修改或提交这些用户文件。任务自身未完成改动已保留，可在其上继续。",
           context: this.context(c),
         }),
         { cwd, taskId: t.id, taskRole: review ? "reviewer" : "member" },
@@ -768,6 +811,8 @@ export class Engine {
         if (unanswered) this.wake(c);
         return;
       }
+      const overwritten=Object.keys(protectedFiles).filter(file=>!sameWork(protectedFiles[file],readWorkFile(cwd,file)));
+      if(overwritten.length){preserveWork(cwd,protectedFiles);this.workConflict(c,t,overwritten.map(file=>({file,reason:'模型触及用户保留文件，用户原内容已保留'})));return;}
       if (review) {
         if (this.git(cwd, ["status", "--porcelain"]))
           throw new Error("审查者修改了成果，审查无效");
@@ -788,9 +833,9 @@ export class Engine {
           this.wake(c);
         }
       } else {
-        const files = productFiles(cwd);
+        const files = productFiles(cwd).filter(file=>!(file in protectedFiles));
         if (files.length) this.git(cwd, ["add", "--force", "--", ...files]);
-        if (this.git(cwd, ["diff", "--cached", "--name-only"])) this.git(cwd, ["commit", "-m", t.title]);
+        if (files.length && this.git(cwd, ["diff", "--cached", "--name-only", "--", ...files])) this.git(cwd, ["commit", "--only", "-m", t.title, "--", ...files]);
         let commit = this.git(cwd, ["rev-parse", "HEAD"]);
         this.event(c, "task_update", { id: t.id, commit });
         let ok = true;
@@ -856,7 +901,7 @@ export class Engine {
           }
           if (!ok) break;
         }
-        if (ok && this.git(cwd, ["diff", "HEAD"])) {
+        if (ok && productFiles(cwd).some(file=>!(file in protectedFiles))) {
           ok = false;
           this.event(c, "check", {
             task: t.id,
@@ -876,6 +921,11 @@ export class Engine {
           );
       }
     } finally {
+      if(checkpointActive){
+        const changed=Object.keys(protectedFiles).filter(file=>!sameWork(protectedFiles[file],readWorkFile(cwd,file)));
+        if(changed.length){preserveWork(cwd,protectedFiles);this.workConflict(c,t,changed.map(file=>({file,reason:'模型触及用户文件，已保留用户原内容'})));}
+        this.checkpoint(c,t.id,cwd,protectedFiles);
+      }
       if (worktree) {
         this.git(s.path, ["worktree", "remove", "--force", worktree]);
       }
@@ -927,7 +977,11 @@ export class Engine {
       }
     this.event(c, "status", { status: "paused" });
     this.drainMembers();
-    for (const [k, p] of this.running) if (k.startsWith(c + ":")) p.stop();
+    for (const [k,p] of this.running)if(k.startsWith(c+':')){
+      const s=this.state(c),task=s.tasks.find(t=>t.id===p.taskId),last=s.events.findLast(e=>e.type==='work_checkpoint'&&e.data.task===p.taskId)?.data;
+      if(task&&last&&task.status!=='reviewing')this.checkpoint(c,p.taskId,s.path,last.protected);
+      p.stop();
+    }
   }
   resume(c) {
     if (!this.state(c).branch) return;

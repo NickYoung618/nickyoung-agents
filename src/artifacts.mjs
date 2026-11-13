@@ -1,5 +1,5 @@
 import { randomUUID, randomBytes } from 'node:crypto';
-import { mkdirSync, readFileSync, existsSync, statSync, realpathSync } from 'node:fs';
+import { mkdirSync, readFileSync, existsSync, statSync, realpathSync, mkdtempSync, rmSync, readdirSync } from 'node:fs';
 import { resolve, join, extname } from 'node:path';
 import { execFileSync, spawn } from 'node:child_process';
 import http from 'node:http';
@@ -17,18 +17,23 @@ function local(root, file='.') {
 }
 export class Artifacts {
   constructor(store, data, emit=()=>{}, options={}) {
-    Object.assign(this,{store,data,emit}); this.previews=new Map(); this.starting=new Set(); this.verifying=new Map();
+    Object.assign(this,{store,data,emit}); this.previews=new Map(); this.starting=new Map(); this.verifying=new Map(); this.validationRuns=new Map();
     this.ttl=options.ttl || 20*60*1000;
     this.timer=setInterval(()=>{for(const [id,p] of this.previews) if(p.status==='running' && p.expires<Date.now()) this.stop(id,'expired');},1000); this.timer.unref();
   }
+  recover(){
+    for(const c of this.store.conversations()){const latest=new Map();for(const e of c.events)if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+    for(const entry of readdirSync(this.data,{withFileTypes:true}))if(entry.isDirectory()&&entry.name.startsWith('validation-'))rmSync(join(this.data,entry.name),{recursive:true,force:true});
+  }
   event(c,type,data) {const e=this.store.append(c,type,data);this.emit(e);return e;}
   list(c) {
-    const items=new Map();
+    const items=new Map(),accepted=new Map();
     for(const e of this.store.events(c)) {
       if(e.type==='artifact') items.set(e.data.id,{...e.data});
-      if(e.type==='artifact_user_acceptance' && items.has(e.data.id)) items.get(e.data.id).userAcceptance=e.data;
+      if(e.type==='artifact_validation' && items.has(e.data.id))items.get(e.data.id).validation=e.data;
+      if(e.type==='artifact_user_acceptance')accepted.set(e.data.id,e.data);
     }
-    return [...items.values()].map(a=>({...a,preview:this.status(a.id)}));
+    return [...items.values()].map(a=>({...a,userAcceptance:accepted.get(a.id)||a.userAcceptance,preview:this.status(a.id)}));
   }
   get(c,id) {const a=this.list(c).find(a=>a.id===id);if(!a)throw Error('成果不存在');return a;}
   snapshot(a) {return join(this.data,'artifacts',a.id);}
@@ -76,47 +81,60 @@ export class Artifacts {
   node(cwd,args,input='',root=cwd) {
     return new Promise((yes,no)=>{const p=spawn(process.execPath,['--permission','--allow-fs-read='+root,'--allow-fs-write='+root,'--max-old-space-size=128',...args],{cwd,env:{PATH:process.env.PATH,HOME:cwd},stdio:['pipe','pipe','pipe'],detached:true});let output='';const t=setTimeout(()=>{try{process.kill(-p.pid,'SIGKILL');}catch{}},15000);p.stdout.on('data',x=>{output+=x;if(output.length>100000)p.kill();});p.stderr.on('data',x=>{output+=x;});p.on('error',no);p.on('close',code=>{clearTimeout(t);code===0?yes(output):no(Error(output||'示例运行失败或超时'));});p.stdin.end(input);});
   }
-  status(id) {const p=this.previews.get(id);return p?{status:p.status,url:p.status==='running'?'/preview/'+p.token+'/':null,expires:p.expires,reason:p.reason}: {status:'stopped'};}
+  status(id) {const p=this.previews.get(id);if(p?.status==='running'&&p.expires<=Date.now())this.stop(id,'expired');return p?{status:p.status,url:p.status==='running'?'/preview/'+p.token+'/':null,expires:p.expires,reason:p.reason}: {status:'stopped'};}
   async start(c,id) {
+    if(this.starting.has(id))return this.starting.get(id);
+    const pending=this.startVersion(c,id);this.starting.set(id,pending);
+    try{return await pending;}catch(e){if(!this.previews.get(id)?.reason){const a=this.get(c,id);this.previews.set(id,{id,conversation:c,commit:a.commit,status:'failed',reason:e.message});this.event(c,'preview',{id,commit:a.commit,status:'failed',reason:e.message});}throw e;}finally{this.starting.delete(id);}
+  }
+  async startVersion(c,id) {
     const a=this.get(c,id);if(a.type!=='web')throw Error('该成果不是网页');
-    if(this.previews.get(id)?.status==='running')return this.status(id);
-    if(this.starting.has(id))throw Error('预览正在启动');
-    if([...this.previews.values()].filter(p=>p.status==='running').length+this.starting.size>=2)throw Error('最多同时运行两个预览，请先停止其他预览');
+    const current=this.status(id);if(current.status==='running')return current;
+    if([...this.previews.values()].filter(p=>['starting','running'].includes(p.status)).length>=2)throw Error('最多同时运行两个预览，请先停止其他预览');
     if(!statSync(local(this.snapshot(a),a.entry)).isFile())throw Error('成果入口不存在');
-    this.starting.add(id);
     const p={token:randomBytes(24).toString('hex'),status:'starting',expires:Date.now()+this.ttl,root:this.snapshot(a),conversation:c,id,commit:a.commit};this.previews.set(id,p);
     try {
       if(a.start.length) {
         if(a.start[0]!=='node'||a.start.length<2||a.start.some(x=>typeof x!=='string')||a.start.includes('--test'))throw Error('预览启动仅支持 node server.mjs；端口读取 PORT，监听 HOST');
         if(a.start[1].startsWith('-') || !statSync(local(local(p.root,a.cwd),a.start[1])).isFile())throw Error('启动入口必须是快照内的 Node 文件');
-        const probe=http.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));p.port=probe.address().port;await new Promise(r=>probe.close(r));
+        const probe=http.createServer();await new Promise(r=>probe.listen(0,'127.0.0.1',r));p.port=probe.address().port;await new Promise(r=>probe.close(r));if(p.cancelled)throw Error('启动已取消');
         p.child=spawn(process.execPath,['--permission','--allow-fs-read='+p.root,'--allow-fs-write='+p.root,'--max-old-space-size=128',...a.start.slice(1)],{cwd:local(p.root,a.cwd),env:{PATH:process.env.PATH,HOME:p.root,HOST:'127.0.0.1',PORT:String(p.port)},detached:true,stdio:['ignore','pipe','pipe']});
         p.log='';for(const s of [p.child.stdout,p.child.stderr])s.on('data',x=>p.log=(p.log+x).slice(-8000));
         p.child.on('error',e=>{p.reason=e.message;p.status='failed';});
         p.child.on('exit',()=>{if(p.status==='running'){p.status='failed';p.reason=p.log||'预览进程已退出';this.event(c,'preview',{id,commit:a.commit,status:'failed',reason:p.reason});}});
         let ready=false;
-        for(let n=0;n<60;n++){if(p.child.exitCode!==null)break;try{const r=await fetch(`http://127.0.0.1:${p.port}/`,{signal:AbortSignal.timeout(500)});if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
+        for(let n=0;n<60;n++){if(p.cancelled)throw Error('启动已取消');if(p.child.exitCode!==null)break;try{const r=await fetch(`http://127.0.0.1:${p.port}/`,{signal:AbortSignal.timeout(500)});if(r.ok){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,100));}
         if(!ready)throw Error(p.log||'启动后健康检查失败');
       } else {p.static=true;local(p.root,a.entry);}
+      if(p.cancelled)throw Error('启动已取消');
       p.status='running';this.event(c,'preview',{id,commit:a.commit,status:'running',time:new Date().toISOString()});
       return this.status(id);
-    }catch(e){p.reason=e.message;this.stop(id,'failed');throw e;}finally{this.starting.delete(id);}
+    }catch(e){p.reason=e.message;this.stop(id,p.cancelled?'stopped':'failed');throw e;}
   }
   async verify(c,id) {
     if(this.verifying.has(id))return this.verifying.get(id);
+    if(this.verifying.size>=2)throw Error('最多同时执行两个成果验收');
     const pending=this.verifyVersion(c,id);this.verifying.set(id,pending);
     try{return await pending;}finally{this.verifying.delete(id);}
   }
   async verifyVersion(c,id) {
-    const a=this.get(c,id);const p=this.previews.get(id);
-    if(!p || p.status!=='running')throw Error('预览尚未运行');
-    delete a.preview;
-    a.verification={status:'failed',time:new Date().toISOString(),evidence:[]};
+    const a=this.get(c,id);
+    delete a.preview;delete a.validation;
+    a.verification={status:'failed',time:new Date().toISOString(),commit:a.commit,evidence:[]};
+    const runId=randomUUID(),runDir=mkdtempSync(join(this.data,'validation-'));
+    const isolated=new Artifacts(this.store,this.data,()=>{});
+    isolated.snapshot=()=>runDir;isolated.event=()=>{};
+    const run={id:runId,manager:isolated,dir:runDir,cancelled:false};this.validationRuns.set(id,run);
+    this.event(c,'artifact_validation',{id,commit:a.commit,runId,status:'running'});
     let browser,deadline;
     try {
       if(!a.scenarios.length || a.scenarios.some(s=>!s.steps?.length || !s.steps.some(step=>step.action==='text')))throw Error('缺少用户场景验收步骤；健康检查通过不代表成果可使用');
+      const archive=git(a.project,['archive',a.commit],{encoding:null});execFileSync('tar',['-x','-C',runDir],{input:archive});
+      await isolated.start(c,id);if(run.cancelled)throw Error('验收已取消');
+      const p=isolated.previews.get(id);
       const { chromium }=await import('playwright');browser=await chromium.launch({headless:true,args:['--no-sandbox']});
-      deadline=setTimeout(()=>browser.close(),60000);
+      run.browser=browser;if(run.cancelled)throw Error('验收已取消');
+      deadline=setTimeout(()=>{run.cancelled=true;browser.close();isolated.stop(id);},60000);
       const page=await browser.newPage({ignoreHTTPSErrors:true});
       // Same opaque-origin boundary as the actual workbench iframe.
       
@@ -136,11 +154,13 @@ export class Artifacts {
         a.verification.evidence.push({kind:'scenario',name:scenario.name,passed:true,steps:scenario.steps});
       }
       a.verification.status='passed';
-    }catch(e){a.verification.reason=e.message;}finally{clearTimeout(deadline);await browser?.close();}
-    this.event(c,'artifact',a);return a;
+    }catch(e){a.verification.reason=run.cancelled?'验收已取消或超时':String(e.message).replace(/\/preview\/[a-f0-9]+/g,'/preview/[temporary]');}finally{clearTimeout(deadline);await browser?.close();await isolated.close();this.validationRuns.delete(id);rmSync(runDir,{recursive:true,force:true});}
+    this.event(c,'artifact',a);this.event(c,'artifact_validation',{id,commit:a.commit,runId,status:run.cancelled?'cancelled':a.verification.status,reason:a.verification.reason});return this.get(c,id);
   }
-  stop(id,status='stopped') {const p=this.previews.get(id);if(p){if(p.child?.pid)try{process.kill(-p.child.pid,'SIGTERM');const pid=p.child.pid;setTimeout(()=>{try{process.kill(-pid,'SIGKILL');}catch{}},2000).unref();}catch{}p.status=status;this.event(p.conversation,'preview',{id,commit:p.commit,status});}return this.status(id);}
+  cancelVerification(id){const run=this.validationRuns.get(id);if(run){run.cancelled=true;run.manager.stop(id);run.browser?.close();}return {status:run?'stopping':'stopped'};}
+  stop(id,status='stopped') {const p=this.previews.get(id);if(p){p.cancelled=true;if(p.child?.pid)try{process.kill(-p.child.pid,'SIGTERM');const pid=p.child.pid;setTimeout(()=>{try{process.kill(-pid,'SIGKILL');}catch{}},2000).unref();}catch{}p.status=status;this.event(p.conversation,'preview',{id,commit:p.commit,status});}return this.status(id);}
   async serve(req,res,token,path) {
+    for(const run of this.validationRuns.values())if([...run.manager.previews.values()].some(p=>p.token===token))return run.manager.serve(req,res,token,path);
     const p=[...this.previews.values()].find(p=>p.token===token);
     if(!p||p.status!=='running'||p.expires<Date.now()){res.writeHead(410,{'Content-Type':'text/plain; charset=utf-8'});res.end('预览已失效，请回成果页重新启动。');return;}
     // Opaque origin sandbox prevents preview scripts from reading assistant cookies or management APIs.
@@ -167,6 +187,6 @@ export class Artifacts {
     if(plan.files.length)git(this.get(c,id).project,['restore','--source',plan.target,'--staged','--worktree','--',...plan.files]);
     this.event(c,'artifact_restore',plan);return plan;
   }
-  close(){clearInterval(this.timer);for(const id of this.previews.keys())this.stop(id);}
+  async close(){clearInterval(this.timer);for(const id of this.validationRuns.keys())this.cancelVerification(id);for(const id of this.previews.keys())this.stop(id);await Promise.allSettled([...this.starting.values(),...this.verifying.values()]);await Promise.all([...this.previews.values()].map(p=>p.child&&p.child.exitCode===null&&p.child.signalCode===null?new Promise(r=>p.child.once('close',r)):Promise.resolve()));}
 }
 export function mime(file) {return {'.html':'text/html; charset=utf-8','.js':'text/javascript','.mjs':'text/javascript','.css':'text/css','.json':'application/json','.svg':'image/svg+xml','.png':'image/png','.md':'text/plain; charset=utf-8'}[extname(file)]||'text/plain; charset=utf-8';}

@@ -1,5 +1,5 @@
 import { applyEvent, project } from "./studio/conversation-state.mjs";
-import { artifactCards, artifactAction } from "./studio/artifact-workbench.mjs";
+import { artifactCards, artifactAction, syncArtifacts, reconnectArtifacts, updateArtifactRegion, artifactDraftEvent } from "./studio/artifact-workbench.mjs";
 const modelTests = new Map();
 let modelCatalog = null,
   showHiddenModels = false;
@@ -96,7 +96,7 @@ async function refresh() {
   if (refreshing) { refreshAgain = true; return refreshing; }
   refreshing = (async () => {
     do { refreshAgain = false; if(!updateCursor){const summaries=await api('summaries').catch(()=>null);conversations=Array.isArray(summaries)?summaries:await api('state');updateCursor=Math.max(0,...conversations.map(c=>c.historyCursor||c.events.at(-1)?.id||0));}
-      else {const delta=await api('updates?after='+updateCursor);if(Array.isArray(delta.events)){const map=new Map(conversations.map(c=>[c.id,c]));for(const e of delta.events){if(!map.has(e.conversation))map.set(e.conversation,project([]));const c=map.get(e.conversation);c.id=e.conversation;applyEvent(c,e);}conversations=[...map.values()];updateCursor=delta.cursor;}else conversations=await api('state');} render(); } while (refreshAgain);
+      else {const delta=await api('updates?after='+updateCursor);if(Array.isArray(delta.events)){const map=new Map(conversations.map(c=>[c.id,c]));for(const e of delta.events){if(!map.has(e.conversation))map.set(e.conversation,project([]));const c=map.get(e.conversation);c.id=e.conversation;applyEvent(c,e);}conversations=[...map.values()];updateCursor=delta.cursor;}else conversations=await api('state');} await syncArtifacts(conversations,api);render(); } while (refreshAgain);
   })();
   try { await refreshing; } finally { refreshing = null; }
 }
@@ -784,6 +784,7 @@ events.onmessage = (event) => {
   );
 };
 events.onopen = () => {
+  reconnectArtifacts();
   fetch("/api/ui-version", { cache: "no-store" })
     .then((response) => response.ok ? response.json() : null)
     .then((version) => {
@@ -1034,7 +1035,7 @@ function drawStudio(s) {
       c.events.filter((e) => e.type === "report").map((e) => ({ c, e })),
     )
     .reverse();
-  updateRegion('#resultContent', artifactCards(conversations,escape) + (reports.length ? reports.map(({c,e}) => {
+  updateArtifactRegion($('#resultContent'), artifactCards(conversations,escape) + (reports.length ? reports.map(({c,e}) => {
     const evidence = deliveryEvidence(c, e);
     return `<details class="card" id="delivery-${e.id}"><summary>报告、验收与审查详情 · ${escape(c.title)}</summary><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>报告与辅助证据</h3><p>${c.events.some(item=>item.type==='artifact'&&item.id<=e.id)?'使用入口及验证状态见对应版本成果卡。':'历史报告，使用入口尚未验证。'}</p>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>机器检查失败 ${evidence.failed}</span><span>审查退回 ${evidence.reviewFailed}</span><span>运行异常 ${evidence.runtimeFailed}</span><span>当前未解决 ${evidence.incomplete.length}</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></details>`;
   }).join('') : '<div class="card ny-small">还没有交付成果。</div>'));
@@ -1251,6 +1252,9 @@ $("#decisionContent").onclick = async (e) => {
     $("#input").focus();
   }
 };
+$('#resultContent').addEventListener('toggle',artifactDraftEvent,true);
+$('#resultContent').addEventListener('input',artifactDraftEvent);
+$('#resultContent').addEventListener('change',artifactDraftEvent);
 $('#resultContent').onclick = async e => {
   if(await artifactAction(e,api,refresh,text=>$('#notice').textContent=text))return;
   const copy = e.target.closest('[data-copy-report]');

@@ -32,7 +32,8 @@ try{
  if(s.status!=='done'||!s.tasks.length||s.tasks.some(t=>t.status!=='passed'))throw Error('真实任务尚未通过');
  let artifacts=await call(`conversations/${r.id}/artifacts`);result.artifacts=artifacts;
  const web=artifacts.find(a=>a.type==='web'),cli=artifacts.find(a=>a.type==='cli');if(!web||!cli)throw Error('未产出结构化成果');
- result.web=await call(`conversations/${r.id}/artifacts/${web.id}/start`,{});
+ await call(`conversations/${r.id}/artifacts/${web.id}/start`,{});
+ result.web=await call(`conversations/${r.id}/artifacts/${web.id}/verify`,{});
  if(result.web.verification.status!=='passed')throw Error('网页场景未通过：'+result.web.verification.reason);
  // Browser uses the actual delivery UI, with no user acceptance button clicked.
  const {chromium}=await import('playwright');const browser=await chromium.launch({headless:true,args:['--no-sandbox']});

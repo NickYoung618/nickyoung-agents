@@ -1,5 +1,5 @@
 export const labels = {
-  idle: '待开始', working: '进行中', paused: '已暂停', interrupted: '等待恢复',
+  waiting_user:'等待用户处理文件冲突', idle: '待开始', working: '进行中', paused: '已暂停', interrupted: '等待恢复',
   done: '已交付', error: '遇到问题', queued: '待执行', running: '实现中',
   review: '待审查', reviewing: '审查中', repair: '返修中', consultation: '待处理方案',
   passed: '已通过', deferred: '遗留', stopped: '已停止', cancelled: '已取消',

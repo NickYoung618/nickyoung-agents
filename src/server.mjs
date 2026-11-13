@@ -119,7 +119,7 @@ const selectionKey = (s) =>
 const engine = new Engine(store, config, save, (e) => {
   for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`);
 });
-const artifacts = new Artifacts(store, data, e => { for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`); });
+const artifacts = new Artifacts(store, data, e => { for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`); },{ttl:config.previewTimeout});
 engine.artifacts = artifacts;
 const writes = new Map();
 function json(res, status, value) {
@@ -219,22 +219,22 @@ const server = https.createServer(
         }
         return json(res, 401, { error: "请登录" });
       }
-      const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|stop|feedback|accept|download|restore-plan|restore|compare))?)?$/);
+      const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|verify|cancel-verify|stop|feedback|accept|download|restore-plan|restore|compare))?)?$/);
       if(artifactRoute) {
         const [,c,id,action]=artifactRoute;
         if(!engine.state(c).id) throw Error('对话不存在');
         if(!id) return json(res,200,artifacts.list(c));
         const a=artifacts.get(c,id);
-        if(['start','stop','feedback','accept','restore'].includes(action)&&req.method!=='POST')return json(res,405,{error:'需要 POST'});
+        if(['start','verify','cancel-verify','stop','feedback','accept','restore'].includes(action)&&req.method!=='POST')return json(res,405,{error:'需要 POST'});
         const b=req.method==='POST'?await body(req):{};
-        if(action==='start') {await artifacts.start(c,id);await artifacts.verify(c,id);return json(res,200,artifacts.get(c,id));}
+        if(action==='start') {await artifacts.start(c,id);return json(res,200,artifacts.get(c,id));}
+        if(action==='verify')return json(res,200,await artifacts.verify(c,id));
+        if(action==='cancel-verify')return json(res,200,artifacts.cancelVerification(id));
         if(action==='stop')return json(res,200,artifacts.stop(id));
         if(action==='feedback') {
           if(!b.text?.trim())throw Error('请输入修改要求');
-          const prior=store.events(c).find(e=>e.type==='artifact_feedback'&&b.requestId&&e.data.requestId===b.requestId);
-          if(prior)return json(res,200,{ok:true});
-          artifacts.event(c,'artifact_feedback',{id,version:a.version,commit:a.commit,text:b.text,requestId:b.requestId});
-          await engine.message(c,`修改成果「${a.name}」v${a.version}（${a.commit}），保留 key=${a.key}。新版必须重新验证，保留旧版。要求：${b.text}`,b.files||[]);
+          if(typeof b.requestId!=='string'||!b.requestId)throw Error('修改请求需要稳定的 requestId');
+          await engine.message(c,`修改成果「${a.name}」v${a.version}（${a.commit}），保留 key=${a.key}。新版必须重新验证，保留旧版。要求：${b.text}`,b.files||[],{id,version:a.version,commit:a.commit,text:b.text,requestId:b.requestId});
           return json(res,200,{ok:true});
         }
         if(action==='accept') {if(a.verification.status!=='passed')throw Error('该版本尚未验证通过');artifacts.event(c,'artifact_user_acceptance',{id,version:a.version,commit:a.commit,time:new Date().toISOString(),source:'user-button'});return json(res,200,{ok:true});}
@@ -278,7 +278,7 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-artifacts-2" });
+        return json(res, 200, { version: "20261113-artifacts-3" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === '/api/summaries') {
         const retained=new Set(['task','task_update','report','artifact','artifact_feedback','artifact_user_acceptance','check','review','error','run_failed','preview']);
@@ -430,7 +430,8 @@ const server = https.createServer(
             throw new Error("无效回答");
           const question = s.questions.find((q) => q.id === b.id);
           engine.event(c, "answer", b);
-          if (question.purpose === "init_repo") {
+          if(question.purpose==="work_conflict")engine.resolveWorkConflict(c,question,b.answer);
+          else if (question.purpose === "init_repo") {
             if (b.answer) {
               engine.initialize(c);
               engine.event(c, "status", { status: "working" });
@@ -578,11 +579,12 @@ server.listen(
       "NickYoung HTTPS listening on " + (process.env.NY_PORT || config.port),
     );
     artifacts.origin = `https://127.0.0.1:${server.address().port}`;
+    artifacts.recover();
     engine.recover();
   },
 );
-process.on("SIGTERM", () => {
-  artifacts.close();
+process.on("SIGTERM", async () => {
+  await artifacts.close();
   engine.shutdown();
   for (const r of clients) r.end();
   server.close(() => process.exit(0));
