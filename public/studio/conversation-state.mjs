@@ -8,6 +8,8 @@ export function applyEvent(s,e) {
     const d = e.data;
     if (e.type === "created" || e.type === "project_update")
       Object.assign(s, d);
+    if(e.type==='intent')s.intent={...d,eventId:e.id};
+    if(e.type==='requirement_status'&&(!s.requirement||(d.sourceMessage||0)>=(s.requirement.sourceMessage||0)))s.requirement={...d,eventId:e.id};
     if (e.type === "status") s.status = d.status;
     if (e.type === "leader_selection") s.leaderSelection = d;
     if (e.type === "recruit") s.members.push({...d});

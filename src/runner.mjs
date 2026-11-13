@@ -54,6 +54,7 @@ export const leaderSchema = {
             "reviewer",
             "title",
             "description",
+            "deliveryType",
             "text",
             "question",
             "yes",
@@ -97,6 +98,7 @@ leaderSchema.properties.actions.items.properties.participants = {
   items: { type: "string" },
 };
 leaderSchema.properties.actions.items.required.push("participants");
+leaderSchema.properties.actions.items.required.push("deliveryType");
 leaderSchema.properties.actions.items.properties.replacement = {
   type: "string",
 };
@@ -289,7 +291,7 @@ export function runModel({
     if (session) args.push("--resume", session);
   } else {
     bin = process.env.NY_CODEX || "codex";
-    const dir = new URL("../data/schemas", import.meta.url).pathname;
+    const dir = join(process.env.NY_DATA||new URL("../data",import.meta.url).pathname,"schemas");
     mkdirSync(dir, { recursive: true });
     const file = join(
       dir,

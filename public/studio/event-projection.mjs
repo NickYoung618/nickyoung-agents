@@ -19,6 +19,8 @@ export function progress(s) {
     next = waiting ? `${waiting} 项决定需要你答复，其余工作按实际状态推进。` : '等待当前工作结果；可查看任务清单和证据。';
   } else if (busy.length) action = busy.map(m => `${m.name}正在处理需求`).join('；');
   else if (waiting) { action = `${waiting} 项决定等待答复`; next = '打开待你决定，查看各选项后果。'; }
+  const resourceWait=s.events.findLast(e=>e.type==='resource_wait'),resourceReady=s.events.findLast(e=>e.type==='resource_ready');
+  if(s.status==='working'&&resourceWait&&resourceWait.id>(resourceReady?.id||0)){action='等待资源 · '+resourceWait.data.reason;next='资源释放后自动继续，可以停止闲置预览释放预算。';}
   const activity=s.events.findLast(e=>['process','message','check','review','run_start','artifact','preview'].includes(e.type));
   const process=s.events.findLast(e=>e.type==='process');
   const command=process?.data.event?.item?.command || process?.data.event?.command;

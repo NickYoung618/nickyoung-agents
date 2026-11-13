@@ -1,5 +1,5 @@
 import { applyEvent, project } from "./studio/conversation-state.mjs";
-import { artifactCards, artifactAction, syncArtifacts, reconnectArtifacts, updateArtifactRegion, artifactDraftEvent } from "./studio/artifact-workbench.mjs";
+import { artifactCards, artifactAction, syncArtifacts, reconnectArtifacts, updateArtifactRegion, artifactDraftEvent, setArtifactFilters } from "./studio/artifact-workbench.mjs";
 const modelTests = new Map();
 let modelCatalog = null,
   showHiddenModels = false;
@@ -96,7 +96,7 @@ async function refresh() {
   if (refreshing) { refreshAgain = true; return refreshing; }
   refreshing = (async () => {
     do { refreshAgain = false; if(!updateCursor){const summaries=await api('summaries').catch(()=>null);conversations=Array.isArray(summaries)?summaries:await api('state');updateCursor=Math.max(0,...conversations.map(c=>c.historyCursor||c.events.at(-1)?.id||0));}
-      else {const delta=await api('updates?after='+updateCursor);if(Array.isArray(delta.events)){const map=new Map(conversations.map(c=>[c.id,c]));for(const e of delta.events){if(!map.has(e.conversation))map.set(e.conversation,project([]));const c=map.get(e.conversation);c.id=e.conversation;applyEvent(c,e);}conversations=[...map.values()];updateCursor=delta.cursor;}else conversations=await api('state');} await syncArtifacts(conversations,api);render(); } while (refreshAgain);
+      else {const delta=await api('updates?after='+updateCursor);if(Array.isArray(delta.events)){const map=new Map(conversations.map(c=>[c.id,c]));for(const e of delta.events){if(!map.has(e.conversation))map.set(e.conversation,project([]));const c=map.get(e.conversation);c.id=e.conversation;applyEvent(c,e);}conversations=[...map.values()];updateCursor=delta.cursor;if(delta.hasMore)refreshAgain=true;}else conversations=await api('state');} await syncArtifacts(conversations,api);render(); } while (refreshAgain);
   })();
   try { await refreshing; } finally { refreshing = null; }
 }
@@ -297,7 +297,7 @@ async function sendRequest(home = false) {
   try {
     if (target) await api(`conversations/${target}/message`, { text, files });
     else {
-      const r = await api('conversations', { text, path: selectedPath(), files });
+      const r = await api('conversations', { text, path: selectedPath(), files,kind:$('#taskKind').value });
       current = r.id;
       studioView = 'task';
     }
@@ -712,13 +712,18 @@ function renderTimeline(s) {
   if (changed && !bottom) { $('#newProgress').hidden = false; $('#newProgress').textContent = '有新进展 · 跳到最新'; }
   messageSignature = signature;
 }
+const rawPages=new Map();
 function renderRaw(s, target) {
+  if(!s)return;
+  if(!rawPages.has(s.id)){rawPages.set(s.id,[]);api(`conversations/${s.id}/events?limit=100`).then(page=>{if(Array.isArray(page.events)){rawPages.set(s.id,page.events);if(current===s.id)renderRaw(s,target);}}).catch(e=>$('#notice').textContent=e.message);}
+
   const raw = $('#rawEvents');
   if (target) raw.dataset.target = target;
   if (!target && raw.dataset.target) target = raw.dataset.target;
   const limit = Number(raw.dataset.limit) || 100;
   const opened = new Set([...raw.querySelectorAll('details[open]')].map(n => Number(n.id.slice(3))));
-  const recent = s.events.slice(-limit);
+  const page=rawPages.get(s.id)||[];const merged=[...new Map([...page,...s.events.filter(e=>e.id>(page.at(-1)?.id||0))].map(e=>[e.id,e])).values()].sort((a,b)=>a.id-b.id);
+  const recent = (page.length?merged:s.events).slice(-limit);
   const ids = new Set(recent.map(e => e.id));
   const events = target ? s.events.filter(e => e.id === Number(target)) : [...s.events.filter(e => opened.has(e.id) && !ids.has(e.id)), ...recent];
   const old = new Map([...raw.children].map(n => [n.id, n]));
@@ -727,22 +732,22 @@ function renderRaw(s, target) {
     const detail = document.createElement('details'); detail.id = `raw${e.id}`;
     const summary = document.createElement('summary'); summary.textContent = `#${e.id} · ${e.type === 'model_change' ? '模型配置已更新' : e.type} · ${new Date(e.time).toLocaleTimeString()}`;
     detail.append(summary);
-    detail.addEventListener('toggle', () => {
+    detail.addEventListener('toggle', async () => {
       if (!detail.open || detail.querySelector('pre')) return;
-      const pre = document.createElement('pre'); pre.textContent = JSON.stringify(e.data, null, 2); detail.append(pre);
+      const pre = document.createElement('pre'); pre.textContent = JSON.stringify(e.data.payload?(await api(`events/${e.id}/payload`)).data:e.data, null, 2); detail.append(pre);
     });
     return detail;
   }));
   if (!target && s.events.length > 100) {
     const button = document.createElement('button'); button.textContent = '加载更早的原始记录';
-    button.onclick = () => { const first = events[0]?.id; const older = s.events.filter(e => e.id < first).slice(-100); renderRawPage(s, older, raw); button.remove(); };
+    button.onclick = () => { const first = events[0]?.id; api(`conversations/${s.id}/events?before=${first}&limit=100`).then(page=>renderRawPage(s,page.events||[],raw));button.remove(); };
     raw.prepend(button);
   }
 }
 function renderRawPage(s, events, raw) {
   const fragment = document.createDocumentFragment();
   for (const e of events) { const details = document.createElement('details'); const summary = document.createElement('summary'); summary.textContent = `#${e.id} · ${e.type}`; const pre = document.createElement('pre'); pre.textContent = JSON.stringify(e.data, null, 2); details.append(summary, pre); fragment.append(details); }
-  if (events.length && s.events.some(e => e.id < events[0].id)) { const b = document.createElement('button'); b.textContent = '加载更早的原始记录'; b.onclick = () => { renderRawPage(s, s.events.filter(e => e.id < events[0].id).slice(-100), raw); b.remove(); }; fragment.prepend(b); }
+  if (events.length && s.events.some(e => e.id < events[0].id)) { const b = document.createElement('button'); b.textContent = '加载更早的原始记录'; b.onclick = () => { api(`conversations/${s.id}/events?before=${events[0].id}&limit=100`).then(page=>renderRawPage(s,page.events||[],raw));b.remove(); }; fragment.prepend(b); }
   raw.dataset.limit = (Number(raw.dataset.limit) || 100) + events.length;
   raw.prepend(fragment);
 }
@@ -952,14 +957,14 @@ function showStudioView(view) {
           home: "工作台",
           task: "当前任务",
           decision: "待你决定",
-          result: "交付成果",
+          result: "交付成果",projects:"项目与版本",
           settings: "模型设置",
         }[view];
   for (const [id, v] of [
     ["homeView", "home"],
     ["taskView", "task"],
     ["decisionView", "decision"],
-    ["resultView", "result"],
+    ["resultView", "result"],["projectsView","projects"],
     ["settingsDialog", "settings"],
   ])
     $("#" + id).hidden = v !== view;
@@ -1043,10 +1048,12 @@ function drawStudio(s) {
     const evidence = deliveryEvidence(c, e);
     return `<details class="card" id="delivery-${e.id}"><summary>报告、验收与审查详情 · ${escape(c.title)}</summary><div class="ny-small">${escape(c.title)} · ${escape(new Date(e.time).toLocaleString())}</div><h3>报告与辅助证据</h3><p>${c.events.some(item=>item.type==='artifact'&&item.id<=e.id)?'使用入口及验证状态见对应版本成果卡。':'历史报告，使用入口尚未验证。'}</p>${evidence.incomplete.length ? `<p>未通过或遗留：${evidence.incomplete.map(t => escape(t.title || t.id) + " · " + escape(labels[t.status] || t.status)).join("；")}</p>` : ""}<p class="delivery-summary">${escape(evidence.summary)}</p><div class="evidence-strip"><span>机器验收通过 ${evidence.passed} 次</span><span>机器检查失败 ${evidence.failed}</span><span>审查退回 ${evidence.reviewFailed}</span><span>运行异常 ${evidence.runtimeFailed}</span><span>当前未解决 ${evidence.incomplete.length}</span><span>独立审查 ${evidence.reviews.length} 次</span></div>${evidence.reviews.map(r => `<button data-open="${c.id}" data-event="${r.id}">审查${r.verdict === 'pass' ? '通过' : '退回'} · ${escape(r.commit?.slice(0,8) || '未记录提交')}</button>`).join('')}<p class="delivery-summary"><strong>运行与使用：</strong>${escape(evidence.usage || "报告未单独标注命令，请展开完整报告核对。")}</p><details id="report-${e.id}"><summary>完整报告与使用说明</summary><div class="prose">${markdown(e.data.text)}</div></details><div class="task-evidence"><button data-open="${c.id}" data-changes>查看文件与 diff</button><button data-open="${c.id}">提出修改 / 继续项目</button><button data-copy-report="${e.id}">复制摘要</button></div></details>`;
   }).join('') : '<div class="card ny-small">还没有交付成果。</div>'));
+  renderProjectNavigation();
   if (s) {
     $("#taskTitle").textContent = s.title;
     $("#taskTitle").title = s.title;
-    $("#fullGoal").textContent = s.title;
+    $("#fullGoal").textContent = (s.intent?.goal||s.title)+"\n预期："+(s.intent?.expected||s.kind||"自动识别")+"\n验收："+(s.intent?.criteria||"见各任务验收条件");
+    $("#requirementStatus").textContent=s.requirement?(s.requirement.status+" · "+s.requirement.text):"";
     $("#projectPath").textContent = s.path + (s.branch ? " · " + s.branch : "");
     const summary = progress(s);
     $("#taskStatus").textContent = summary.waiting ? `等你决定 · ${summary.waiting} 项` : labels[s.status];
@@ -1326,3 +1333,14 @@ $("#homeView").ondrop = (e) => {
   e.preventDefault();
   addFiles(e.dataTransfer.files);
 };
+
+function renderProjectNavigation(){
+ const groups=new Map();for(const c of conversations){const id=c.projectId||c.path;if(!groups.has(id))groups.set(id,{id,path:c.path,conversations:[]});groups.get(id).conversations.push(c);}
+ const selected=$('#artifactProject').value,options='<option value="all">全部项目</option>'+[...groups.values()].map(p=>`<option value="${escape(p.id)}">${escape(p.path.split('/').at(-1))}</option>`).join('');if($('#artifactProject').dataset.options!==options){$('#artifactProject').innerHTML=options;$('#artifactProject').value=selected;$('#artifactProject').dataset.options=options;}
+ updateRegion('#projectsContent',[...groups.values()].map(p=>`<article class="card"><h3>${escape(p.path.split('/').at(-1))}</h3><p>${escape(p.path)}</p>${p.conversations.map(c=>`<button data-open-project="${c.id}">${escape(c.title)} · ${escape(labels[c.status]||c.status)}</button>`).join('')}<button data-project-outcomes="${escape(p.id)}">打开推荐成果与历史版本</button></article>`).join(''));
+ const cards=[...$('#resultContent').querySelectorAll('[data-artifact]:not([hidden])')].slice(0,4);updateRegion('#homeOutcomes','<h3>最近成果</h3>'+cards.map(card=>`<button data-home-artifact="${card.dataset.artifact}">${escape(card.querySelector('h3').textContent)} · 打开成果</button>`).join('')+`<p>${conversations.filter(c=>c.status==='working').length} 项进行中 · ${conversations.flatMap(c=>c.questions.filter(q=>!q.answered)).length} 项待你处理</p>`);
+}
+for(const id of ['artifactSearch','artifactType','artifactProject','artifactArchive','artifactHistory'])$('#'+id).addEventListener(id==='artifactSearch'?'input':'change',()=>{setArtifactFilters({query:$('#artifactSearch').value,type:$('#artifactType').value,project:$('#artifactProject').value,archive:$('#artifactArchive').value,history:$('#artifactHistory').checked});render();});
+$('#projectsContent').onclick=e=>{const b=e.target.closest('[data-open-project]');if(b){current=b.dataset.openProject;studioView='task';render();}const outcome=e.target.closest('[data-project-outcomes]');if(outcome){$('#artifactProject').value=outcome.dataset.projectOutcomes;setArtifactFilters({project:outcome.dataset.projectOutcomes});studioView='result';render();}};
+$('#homeOutcomes').onclick=e=>{const b=e.target.closest('[data-home-artifact]');if(b){showStudioView('result');document.querySelector(`[data-artifact="${b.dataset.homeArtifact}"]`)?.scrollIntoView({block:'start'});}};
+$('#editIntent').onclick=async()=>{const s=conversations.find(c=>c.id===current);if(!s)return;const goal=prompt('修订当前目标',s.intent?.goal||s.title);if(!goal)return;const criteria=prompt('本轮验收条件（保留原条件，明确变化）',s.intent?.criteria||'各任务的原验收条件');if(criteria===null)return;try{await api(`conversations/${s.id}/intent`,{goal,criteria,expected:s.intent?.expected||s.kind||'auto'});await refresh();}catch(e){$('#notice').textContent=e.message;}};

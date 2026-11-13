@@ -1,5 +1,5 @@
 import {launchFixture} from '../tests/artifact-repair-fixture.mjs';import {chromium} from 'playwright';import {writeFileSync} from 'node:fs';import {resolve} from 'node:path';import {DatabaseSync} from 'node:sqlite';import assert from 'node:assert/strict';
-const out='evidence/artifact-repair-20261113/',f=await launchFixture(18931,{env:{NY_CODEX:resolve('tests/quiet-model-fixture.mjs')}});let browser;const results=[];
+const out=process.env.NY_REPAIR_EVIDENCE||'evidence/artifact-repair-20261113/',f=await launchFixture(18931,{env:{NY_CODEX:resolve('tests/quiet-model-fixture.mjs')}});let browser;const results=[];
 try{
  browser=await chromium.launch({headless:true,args:['--no-sandbox']});const context=await browser.newContext({ignoreHTTPSErrors:true,viewport:{width:1536,height:864}});await context.addCookies([{name:'ny_session',value:f.token,url:f.origin}]);const page=await context.newPage(),errors=[];page.on('pageerror',e=>errors.push(String(e)));
  const web=f.artifacts.filter(a=>a.type==='web').at(-1),other=f.artifacts.find(a=>a.type==='web'&&a.id!==web.id),base=f.base(web),selector=`[data-artifact="${web.id}"]`;

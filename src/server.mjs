@@ -1,3 +1,7 @@
+import {cleanCaches} from "./storage-policy.mjs";
+import {historicalCandidates} from "./history.mjs";
+import {Lifecycle} from "./lifecycle.mjs";
+import {Resources} from "./resources.mjs";
 import { Artifacts, mime } from "./artifacts.mjs";
 import { ModelCatalog } from "./model-catalog.mjs";
 import { statistics } from "./statistics.mjs";
@@ -119,8 +123,10 @@ const selectionKey = (s) =>
 const engine = new Engine(store, config, save, (e) => {
   for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`);
 });
-const artifacts = new Artifacts(store, data, e => { for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`); },{ttl:config.previewTimeout});
+const artifacts = new Artifacts(store, data, e => { for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`); },{ttl:config.previewTimeout,startupTimeout:config.previewStartupTimeout});
 engine.artifacts = artifacts;
+const resources=new Resources(config.resourceBudget||4);engine.resources=resources;artifacts.resources=resources;
+let lifecycle;
 const writes = new Map();
 function json(res, status, value) {
   res.writeHead(status, {
@@ -219,17 +225,24 @@ const server = https.createServer(
         }
         return json(res, 401, { error: "请登录" });
       }
-      const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|verify|cancel-verify|stop|feedback|accept|download|restore-plan|restore|compare))?)?$/);
+      if(p==='/api/maintenance'&&req.method==='POST'){const b=await body(req);if(b.action==='resume'){lifecycle.maintenance=false;engine.draining=false;artifacts.restartCleanup();return json(res,200,lifecycle.status());}return json(res,200,await lifecycle.drain());}
+      if(p==='/api/release')return json(res,200,existsSync(join(root,'release.json'))?JSON.parse(readFileSync(join(root,'release.json'))):{version:'20261113-workbench-4',revision:process.env.NY_REVISION||'working-tree',immutable:false});
+      if(p==='/api/health')return json(res,200,{version:'20261113-workbench-4',revision:process.env.NY_REVISION||'working-tree',...lifecycle.status(),resources:resources.snapshot()});
+      if(lifecycle.maintenance&&req.method!=='GET')return json(res,503,{error:'服务正在维护排空，请稍后重试；草稿已保留'});
+      const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|verify|cancel-verify|stop|feedback|accept|archive|upgrade-data|package|download|restore-plan|restore|compare))?)?$/);
       if(artifactRoute) {
         const [,c,id,action]=artifactRoute;
         if(!engine.state(c).id) throw Error('对话不存在');
         if(!id) return json(res,200,artifacts.list(c));
         const a=artifacts.get(c,id);
-        if(['start','verify','cancel-verify','stop','feedback','accept','restore'].includes(action)&&req.method!=='POST')return json(res,405,{error:'需要 POST'});
+        if(['start','verify','cancel-verify','stop','feedback','accept','archive','upgrade-data','restore'].includes(action)&&req.method!=='POST')return json(res,405,{error:'需要 POST'});
         const b=req.method==='POST'?await body(req):{};
         if(action==='start') {await artifacts.start(c,id);return json(res,200,artifacts.get(c,id));}
         if(action==='verify')return json(res,200,await artifacts.verify(c,id));
         if(action==='cancel-verify')return json(res,200,artifacts.cancelVerification(id));
+        if(action==='archive'){artifacts.event(c,'artifact_archive',{id,archived:b.archived!==false});return json(res,200,{ok:true});}
+        if(action==='upgrade-data')return json(res,200,await artifacts.upgradeData(c,id));
+        if(action==='package'){const file=artifacts.package(c,id,url.searchParams.get('kind')||'source');res.writeHead(200,{'Content-Type':'application/gzip','Content-Disposition':'attachment; filename="'+id+'.tar.gz"'});return res.end(readFileSync(file));}
         if(action==='stop')return json(res,200,artifacts.stop(id));
         if(action==='feedback') {
           if(!b.text?.trim())throw Error('请输入修改要求');
@@ -260,7 +273,7 @@ const server = https.createServer(
         });
         res.write(": connected\n\n");
         const after=Number(req.headers['last-event-id']);
-        if(after)for(const e of store.db.prepare('SELECT * FROM events WHERE id>? ORDER BY id').all(after))res.write(`id: ${e.id}\ndata: ${JSON.stringify({...e,data:JSON.parse(e.data)})}\n\n`);
+        if(after)res.write(`data: ${JSON.stringify({type:'resync',after})}\n\n`);
         clients.add(res);
         const timer = setInterval(() => {
           if (
@@ -278,20 +291,30 @@ const server = https.createServer(
         return;
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-artifacts-3" });
+        return json(res, 200, { version: "20261113-workbench-4",revision:process.env.NY_REVISION||"working-tree" });
       if (p === "/api/state") return json(res, 200, store.conversations());
       if (p === '/api/summaries') {
-        const retained=new Set(['task','task_update','report','artifact','artifact_feedback','artifact_user_acceptance','check','review','error','run_failed','preview']);
-        return json(res,200,store.conversations().map(s=>({...s,historyCursor:s.events.at(-1)?.id||0,partialHistory:true,events:s.events.filter((e,i)=>retained.has(e.type)||i>=s.events.length-8)})));
+        return json(res,200,store.summaries());
       }
       const detail=p.match(/^\/api\/conversations\/([^/]+)\/detail$/);
       if(detail) {const s=engine.state(detail[1]);return json(res,s.id?200:404,s.id?s:{error:'对话不存在'});}
 
       if (p === "/api/updates") {
         const after=Number(url.searchParams.get('after'))||0;
-        const rows=store.db.prepare('SELECT * FROM events WHERE id>? ORDER BY id').all(after).map(e=>({...e,data:JSON.parse(e.data)}));
-        return json(res,200,{cursor:rows.at(-1)?.id||after,events:rows.filter(e=>e.conversation!=='system')});
+        const result=store.page(after,url.searchParams.get('limit'));return json(res,200,{...result,events:result.events.filter(e=>e.conversation!=='system')});
       }
+      const rawPage=p.match(/^\/api\/conversations\/([^/]+)\/events$/);
+      if(rawPage)return json(res,200,store.rawPage(rawPage[1],url.searchParams.get('before'),url.searchParams.get('limit')));
+      const payload=p.match(/^\/api\/events\/(\d+)\/payload$/);
+      if(payload){const row=store.db.prepare('SELECT * FROM events WHERE id=?').get(Number(payload[1]));return json(res,row?200:404,row?store.decode(row,true):{error:'事件不存在'});}
+      if(p==='/api/storage/cleanup'&&req.method==='POST'){if(lifecycle.busy())throw Error('运行任务中不能清理');return json(res,200,cleanCaches(artifacts));}
+      if(p==='/api/timings'){return json(res,200,store.summaries().map(s=>{const events=store.events(s.id,{light:true});return{id:s.id,phases:events.filter(e=>e.type==='timing').map(e=>({...e.data,eventId:e.id})),humanWait:events.filter(e=>e.type==='answer').map(e=>{const q=events.find(q=>q.type==='question'&&q.data.id===e.data.id);return{question:e.data.id,duration:q?Date.parse(e.time)-Date.parse(q.time):null,sourceEvent:q?.id};})};}));}
+      if(p==='/api/projects'){
+        const projects=new Map();for(const s of store.summaries()){const id=s.projectId||store.projectId(s.path);if(!projects.has(id))projects.set(id,{id,path:s.path,conversations:[],artifacts:[]});const p=projects.get(id);p.conversations.push({id:s.id,title:s.title,status:s.status,intent:s.intent,requirement:s.requirement});p.artifacts.push(...artifacts.list(s.id));}
+        return json(res,200,[...projects.values()].map(p=>({...p,artifacts:[...new Map(p.artifacts.map(a=>[a.id,a])).values()]})));
+      }
+      const intent=p.match(/^\/api\/conversations\/([^/]+)\/intent$/);
+      if(intent&&req.method==='POST'){const b=await body(req);if(!b.goal?.trim())throw Error('目标不能为空');engine.event(intent[1],'intent',{...b,source:'user-revision',affected:engine.state(intent[1]).tasks.filter(t=>t.status!=='passed').map(t=>t.id)});return json(res,200,{ok:true});}
       if (p === "/api/models")
         return json(
           res,
@@ -402,7 +425,7 @@ const server = https.createServer(
       if (p === "/api/conversations" && req.method === "POST") {
         let b = await body(req);
         if (!b.text?.trim()) throw new Error("请输入需求");
-        let c = await engine.create(b.text, b.path);
+        let c = await engine.create(b.text, b.path,b.kind||"auto");
         await engine.message(c, b.text, b.files);
         return json(res, 200, { id: c });
       }
@@ -563,6 +586,7 @@ function asset(p, res) {
   });
   res.end(readFileSync(f));
 }
+lifecycle=new Lifecycle(server,engine,artifacts,clients,store);lifecycle.resources=resources;if(process.env.NY_MAINTENANCE==='1'){lifecycle.maintenance=true;engine.draining=true;}
 server.on("upgrade", (req, socket) => {
   socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
   socket.destroy();
@@ -583,9 +607,7 @@ server.listen(
     engine.recover();
   },
 );
-process.on("SIGTERM", async () => {
-  await artifacts.close();
-  engine.shutdown();
-  for (const r of clients) r.end();
-  server.close(() => process.exit(0));
-});
+const stop=async()=>{
+ const deadline=setTimeout(()=>{console.error(JSON.stringify({type:'shutdown_timeout',phase:'after-checkpoints',running:engine.running.size,connections:lifecycle.sockets.size}));for(const socket of lifecycle.sockets)socket.destroy();process.exit(1);},14000);deadline.unref();
+ try{const result=await lifecycle.shutdown();clearTimeout(deadline);console.log(JSON.stringify({type:'shutdown_complete',...result}));process.exit(0);}catch(e){console.error(e.message);process.exitCode=1;}
+};process.on('SIGTERM',stop);process.on('SIGINT',stop);

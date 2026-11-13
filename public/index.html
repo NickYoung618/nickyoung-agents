@@ -1,14 +1,14 @@
 <!doctype html>
-<html lang="zh-CN" data-ui-version="20261113-artifacts-3">
+<html lang="zh-CN" data-ui-version="20261113-workbench-4">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <meta name="color-scheme" content="light dark" />
     <link rel="icon" href="/favicon.svg" />
     <title>NickYoung · 工作台</title>
-    <link rel="stylesheet" href="/ui-package.css?v=20261113-artifacts-3" />
-    <link rel="stylesheet" href="/style.css?v=20261113-artifacts-3" />
-    <link rel="stylesheet" href="/viewport.css?v=20261113-artifacts-3" />
+    <link rel="stylesheet" href="/ui-package.css?v=20261113-workbench-4" />
+    <link rel="stylesheet" href="/style.css?v=20261113-workbench-4" />
+    <link rel="stylesheet" href="/viewport.css?v=20261113-workbench-4" />
   </head>
   <body>
     <div id="ny-live-studio">
@@ -27,7 +27,7 @@
             ><button data-view-nav="decision">
               <i data-lucide="message-circle-question"></i><span>待你决定</span
               ><span id="decisionCount"></span></button
-            ><button data-view-nav="result">
+            ><button data-view-nav="projects">项目与版本</button><button data-view-nav="result">
               <i data-lucide="package-check"></i><span>交付成果</span>
             </button>
           </nav>
@@ -73,7 +73,7 @@
                     placeholder="描述你想完成的事…"
                   ></textarea>
                   <div class="ny-composer-bottom">
-                    <label class="project-picker">选择项目<select id="projectSelect" aria-label="选择项目"><option value="">新建空项目</option></select></label><button id="homeStart" class="ny-button ny-primary">
+                    <label class="project-picker">预期成果<select id="taskKind" aria-label="预期成果类型"><option value="auto">自动识别</option><option value="web">网页应用</option><option value="cli">CLI / 脚本</option><option value="document">文档</option><option value="change">已有项目修改</option><option value="answer">仅问答</option></select></label><label class="project-picker">选择项目<select id="projectSelect" aria-label="选择项目"><option value="">新建空项目</option></select></label><button id="homeStart" class="ny-button ny-primary">
                       开始<i data-lucide="arrow-up-right"></i>
                     </button>
                   </div>
@@ -88,14 +88,14 @@
                     <h3>最近任务</h3>
                     <span class="ny-small">来自真实对话记录</span>
                   </div>
-                  <div id="homeRecent"></div>
+                  <div id="homeOutcomes"></div><div id="homeRecent"></div>
                 </div>
               </section>
               <section id="taskView" class="ny-view" hidden>
                 <div class="ny-heading">
 
                   <h1 id="taskTitle">当前任务</h1>
-                  <details id="projectDetails"><summary>完整目标与项目详情</summary><p id="fullGoal"></p><p id="projectPath"></p><button id="copyPath">复制目录</button></details>
+                  <details id="projectDetails"><summary>完整目标与项目详情</summary><p id="fullGoal"></p><p id="requirementStatus"></p><button id="editIntent">修订目标与验收条件</button><p id="projectPath"></p><button id="copyPath">复制目录</button></details>
                 </div>
                 <div class="ny-focus">
                   <div class="ny-focus-top">
@@ -137,7 +137,7 @@
                   常规实现自动推进，重要决定才交给你。
                 </div>
               </section>
-              <section id="decisionView" class="ny-view" hidden>
+              <section id="projectsView" class="ny-view" hidden><h1>项目与成果版本</h1><div id="projectsContent"></div></section><section id="decisionView" class="ny-view" hidden>
                 <div class="ny-eyebrow">DECISIONS</div>
                 <h1>待你决定</h1>
                 <p class="ny-small">不受决定影响的工作会继续。</p>
@@ -146,7 +146,7 @@
               <section id="resultView" class="ny-view" hidden>
                 <div class="ny-eyebrow">DELIVERY</div>
                 <h1>交付成果</h1>
-                <div id="resultContent"></div>
+                <div class="artifact-filters"><input id="artifactSearch" type="search" placeholder="搜索成果或项目" aria-label="搜索成果"/><select id="artifactType" aria-label="成果类型"><option value="all">全部类型</option><option value="web">网页</option><option value="cli">CLI</option><option value="document">文档</option><option value="change">项目修改</option></select><select id="artifactProject" aria-label="成果项目"><option value="all">全部项目</option></select><select id="artifactArchive" aria-label="归档状态"><option value="active">未归档</option><option value="archived">已归档</option><option value="all">全部状态</option></select><label><input id="artifactHistory" type="checkbox"/>展开历史版本</label></div><div id="resultContent"></div>
               </section>
               <section id="settingsDialog" class="ny-view" hidden>
                 <button class="close ny-button" type="button">返回任务</button>
@@ -234,7 +234,7 @@
         </div>
       </div>
     </div>
-    <script src="/lucide.min.js?v=20261113-artifacts-3"></script>
-    <script type="module" src="/app.js?v=20261113-artifacts-3"></script>
+    <script src="/lucide.min.js?v=20261113-workbench-4"></script>
+    <script type="module" src="/app.js?v=20261113-workbench-4"></script>
   </body>
 </html>
