@@ -424,7 +424,7 @@ export class Engine {
     if (scope.leader) throw new Error("负责人仅使用只读文件工具");
     if (typeof action.command !== "string") throw new Error("缺少命令");
     const key = scope.conversation + ":" + scope.member + ":command";
-    const output = [];
+    const output = [], toolAt=Date.now();
     const proc = runProcess(
       "codex",
       [
@@ -458,8 +458,7 @@ export class Engine {
     } catch (e) {
       return { exitCode: e.exitCode ?? 1, events: output, error: e.message };
     } finally {
-      releaseResource();
-      this.event(c,'timing',{kind:'model',member:member.id,duration:Date.now()-started});
+      this.event(scope.conversation,'timing',{kind:'tool',member:scope.member,duration:Date.now()-toolAt});
       this.running.delete(key);
     }
   }

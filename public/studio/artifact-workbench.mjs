@@ -3,6 +3,7 @@ const previewLabels={running:'运行中',starting:'启动中',stopped:'已停止
 const filters={query:'',type:'all',project:'all',history:false,archive:'active'};
 export function setArtifactFilters(value){Object.assign(filters,value);}
 const states=new Map(), cursors=new Map(),sending=new Set();
+export function artifactInventory(){return [...new Map([...states.values()].flat().map(a=>[a.id,a])).values()];}
 let reconnect=true;
 export function reconnectArtifacts(){reconnect=true;}
 export async function syncArtifacts(conversations,api){

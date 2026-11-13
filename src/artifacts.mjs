@@ -58,7 +58,7 @@ export class Artifacts {
       if(d.limits?.some(x=>typeof x!=='string') || d.start?.some(x=>typeof x!=='string') || (d.cwd!==undefined&&typeof d.cwd!=='string') || typeof d.entry!=='string')throw Error('成果路径、命令或限制字段无效');
       if(d.data&&(typeof d.data.schema!=='string'||!Array.isArray(d.data.directories)||!d.data.directories.length))throw Error('使用数据必须声明 schema 和 directories');
       if(d.build&&(!d.build.output||d.build.output.startsWith('/')||d.build.output.split('/').includes('..')))throw Error('构建输出必须是成果内的子目录');
-      if(this.list(c).some(a=>a.commit===task.commit && a.key===(d.key||d.name)&&JSON.stringify(this.protocol(a.declaration||a))===JSON.stringify(this.protocol(d))))continue;
+      const existing=this.list(c).find(a=>a.commit===task.commit && a.key===(d.key||d.name)&&JSON.stringify(this.protocol(a.declaration||a))===JSON.stringify(this.protocol(d)));if(existing){if(existing.task===task.id||this.store.state(c).events.some(e=>e.type==='artifact_reuse'&&e.data.id===existing.id&&e.data.task===task.id))continue;this.event(c,'artifact_reuse',{id:existing.id,task:task.id,commit:task.commit,sourceCommit:existing.commit});created.push(existing);continue;}
       const projectItems=new Map();for(const state of this.store.summaries())for(const e of state.events)if(e.type==='artifact'&&e.data.project===project)projectItems.set(e.data.id,e.data);
       const previous=[...projectItems.values()].filter(a=>a.key===(d.key||d.name));
       const inputs=inputsFor(project,task.commit,d),last=previous.at(-1);
