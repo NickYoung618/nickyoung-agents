@@ -1,0 +1,9 @@
+{
+  "baseline": "d504dfa05c934c639947d71ad184d24912c4cd60",
+  "code": "1c9e8cf97a368742288562d208452890d09b5058",
+  "branch": "fix/artifact-workbench-repair",
+  "mainHeadPreserved": "aa1f35fb5efa6b3f5343fa8484b6d717d0c31be1",
+  "realIndexUntouched": true,
+  "initialCode": "f55efa934b21d39551f4026dcb6b9a3cb4644d99",
+  "deliveryRef": "refs/heads/fix/artifact-workbench-repair"
+}

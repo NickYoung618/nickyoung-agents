@@ -1,0 +1,46 @@
+{
+  "version": "20261113-artifacts-3",
+  "loginPage": true,
+  "existingSessionValid": true,
+  "configurationPreserved": true,
+  "conversations": 6,
+  "artifactEndpoints": [
+    {
+      "conversation": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "count": 0
+    },
+    {
+      "conversation": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "count": 0
+    },
+    {
+      "conversation": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "count": 0
+    },
+    {
+      "conversation": "9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "count": 0
+    },
+    {
+      "conversation": "931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "count": 0
+    },
+    {
+      "conversation": "b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "count": 0
+    }
+  ],
+  "before": {
+    "events": 3210,
+    "sessions": 4
+  },
+  "after": {
+    "events": 3210,
+    "sessions": 4
+  },
+  "posts": [],
+  "errors": [],
+  "productionDataInjected": false,
+  "previewOperationsOnProduction": false,
+  "reason": "生产历史会话无结构化网页成果，预览操作在重建隔离夹具中实测"
+}

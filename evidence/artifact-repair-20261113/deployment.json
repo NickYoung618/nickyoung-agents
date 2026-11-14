@@ -1,0 +1,19 @@
+{
+  "time": "2026-11-13T12:09:30.977Z",
+  "revision": "1c9e8cf97a368742288562d208452890d09b5058",
+  "backup": "/home/ubuntu/disk/dzk/nickyoung/data/backups/artifact-repair-2026-11-13T12-09-28-649Z",
+  "serviceRoot": "/home/ubuntu/disk/dzk/nickyoung",
+  "previousPid": 3669419,
+  "service": "active",
+  "configPreserved": true,
+  "runningBefore": 0,
+  "health": {
+    "version": "20261113-artifacts-3",
+    "/login": 200,
+    "/api/summaries": 200,
+    "/api/state": 200,
+    "/api/updates?after=0": 200,
+    "/studio/artifact-workbench.mjs": 200,
+    "/app.js": 200
+  }
+}

@@ -1,0 +1,13 @@
+{
+  version: '20261113-workbench-4',
+  sessions: 6,
+  staticFilesVerified: 16,
+  checks: [
+    '登录与原会话读取',
+    '历史成果卡和项目关系',
+    '静态动画实际暂停',
+    '刷新重连原实例',
+    '完整源码包下载',
+    '390px 视口'
+  ]
+}

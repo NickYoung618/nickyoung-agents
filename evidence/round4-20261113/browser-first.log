@@ -1,0 +1,12 @@
+{
+  kind: 'historical-fixed-commits-rebuilt-and-browser-verified',
+  checks: [
+    'opencode-agent-graph：实际控件、搜索隐藏后 iframe 保留',
+    'embodied-intelligence：实际控件、搜索隐藏后 iframe 保留',
+    '构建产物包在干净目录独立 HTTP 服务可实际播放',
+    '完整源码包在干净目录实际添加/列出，使用说明与固定提交对应'
+  ],
+  newModelCalls: false,
+  userAcceptance: false,
+  errors: []
+}

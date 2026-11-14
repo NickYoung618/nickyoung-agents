@@ -4,8 +4,8 @@ import { readFileSync, mkdirSync, writeFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
 import assert from 'node:assert/strict';
 import { performance } from 'node:perf_hooks';
-const out = new URL('../evidence/ux-vnext/', import.meta.url);
-const adaptiveOut=new URL('../evidence/adaptive/ui/',import.meta.url);mkdirSync(adaptiveOut,{recursive:true});
+const out = new URL(process.env.NY_UI_EVIDENCE || '../evidence/artifacts/ui/', import.meta.url);
+const adaptiveOut=new URL('adaptive/',out);mkdirSync(adaptiveOut,{recursive:true});
 mkdirSync(out, {recursive:true});
 const evidence = [], errors = [], streams = new Set();
 let createBody,lastMessage;
@@ -100,7 +100,7 @@ try {
  state=[makeState(4)];state[0].questions=[{id:'q',question:'是否只允许登录用户访问？',yes:'仅登录用户可用',no:'允许公开访问',answered:false}];send();
  await page.waitForSelector('#questions .question');await page.click('[data-view-nav="decision"]');await page.screenshot({animations:'disabled',path:new URL('decisions-pending-light.png',out).pathname});await page.click('#decisionContent [data-decision="true"]');await page.waitForFunction(()=>document.querySelector('#notice').textContent.includes('决定已记录'));evidence.push('决策选项清楚，答复后确认');
  state[0].status='done';state[0].tasks[0].status='passed';state[0].events.push({id:99,type:'task_update',time:new Date().toISOString(),data:{id:'t1',status:'passed'}},{id:100,type:'check',time:new Date().toISOString(),data:{task:'t1',passed:true,command:'node --test',output:'fixture only'}},{id:101,type:'review',time:new Date().toISOString(),data:{task:'t1',verdict:'pass',commit:'fixture123'}},{id:102,type:'report',time:new Date().toISOString(),data:{text:'已完成命令行工具。\n使用：node cli.mjs\n本页是 UI 测试夹具。'}});send();
- await page.click('[data-view-nav="result"]');await page.waitForSelector('.evidence-strip');assert.match(await page.locator('#resultContent').textContent(),/机器验收通过 1 次/);evidence.push('交付摘要和真实事件计数入口');
+ await page.click('[data-view-nav="result"]');await page.click('#resultContent > details > summary');await page.waitForSelector('.evidence-strip');assert.match(await page.locator('#resultContent').textContent(),/机器验收通过 1 次/);evidence.push('交付摘要和真实事件计数入口');
  for(const mode of ['checks_only','final_review','local_repair','checkpoint_wait','escalation','paused','resumed']) {
    const policy=mode==='checks_only'?'checks_only':mode==='checkpoint_wait'?'checkpoint_plus_final':'final_review';
    const x={cycleId:'cycle-'+mode,policy,reason:'明确范围、可逆修改与客观检查',phase:mode==='checkpoint_wait'?'validating':mode==='escalation'?'blocked':['paused','resumed'].includes(mode)?'executing':'delivered',blockedReason:'公共约定改变，需要有证据升级',tasks:[{id:'t1',title:'实现工具',member:'m1',status:mode==='resumed'?'running':'implemented',summary:'实现完成'}],gates:[{id:'check',kind:'check',status:['checkpoint_wait','resumed'].includes(mode)?'pending':'passed'},...(policy==='checks_only'?[]:[{id:'review',kind:'model',status:['checkpoint_wait','paused','resumed'].includes(mode)?'pending':'passed',coverage:mode==='local_repair'?'reviewed_plus_checked_patch':'full'}])]};

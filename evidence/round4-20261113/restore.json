@@ -1,0 +1,25 @@
+{
+  "kind": "actual-backup-extract-restore-in-isolation",
+  "root": "/home/ubuntu/disk/dzk/nickyoung/data/round4-rehearsal-1794585951837",
+  "release": "/home/ubuntu/disk/dzk/nickyoung/data/round4-rehearsal-1794585951837/releases/20261114-workbench-4.2-1254172dfe38",
+  "results": [
+    {
+      "name": "history",
+      "sessions": 6,
+      "opened": "c5959b1c-d356-4398-8f3a-f86127b452e3",
+      "originalRepositoryUnavailable": true,
+      "sourcePackageAvailable": true,
+      "usagePreserved": false,
+      "loginPreserved": true
+    },
+    {
+      "name": "usage",
+      "sessions": 1,
+      "opened": "389ce2aa-4f68-4284-8612-4f72b57f88e2",
+      "originalRepositoryUnavailable": true,
+      "sourcePackageAvailable": true,
+      "usagePreserved": true,
+      "loginPreserved": true
+    }
+  ]
+}

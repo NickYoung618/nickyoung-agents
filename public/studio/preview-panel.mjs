@@ -171,3 +171,12 @@ export class PreviewPanel {
         .join("") || '<p class="ny-small">暂无已登记附件。</p>';
   }
 }
+
+export function staticPreviewCards(conversations,escape,filters={}) {
+ if(filters.archive==='archived'||filters.type&&!['all','web'].includes(filters.type))return '';
+ return conversations.map(c=>{
+  if(filters.project&&filters.project!=='all'&&filters.project!==(c.projectId||c.path))return '';
+  const latest=new Map();for(const a of c.artifacts||[])if(a.kind==='static_page'&&a.status==='ready')latest.set(a.logicalKey,a);
+  return [...latest.values()].filter(a=>!filters.query||(c.title+' '+(a.logicalKey||'')).toLowerCase().includes(filters.query.toLowerCase())).map(a=>`<article class="card" id="static-delivery-${a.artifactId}"><h3>${escape(c.title)} · 静态作品 v${a.artifactVersion}</h3><p>${a.validationStatus==='verified'?'对应版本已通过程序验收':'静态草稿，尚未通过任务验收'} · ${escape((a.sourceCommit||a.sourceReferenceCommit||'提交未确认').slice(0,12))}</p><button data-open="${c.id}" data-preview="${a.artifactId}">打开作品预览</button><a href="/api/conversations/${c.id}/artifacts/${a.artifactId}/download">下载作品</a><button data-open="${c.id}">继续修改</button><p>历史版本与构建证据可在任务页的预览中查看。</p></article>`).join('');
+ }).join('');
+}

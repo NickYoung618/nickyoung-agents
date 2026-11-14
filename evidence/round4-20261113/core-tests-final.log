@@ -1,0 +1,42 @@
+fatal: path '.nickyoung/artifacts.json' does not exist in 'd4b7c8dc39e2f8b7dcdf442a5677326862cc9a73'
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (164.011227ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.821278ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in 'f091f16a6f4ae061df702b37da235f9934c1d139'
+fatal: path '.nickyoung/artifacts.json' does not exist in 'e8b12c94d5d5d2e94d2809f63d5eed809eb7580e'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in 'f98a71f153bb50a4bdcbaf751277805d8564ae6a'
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (1236.630681ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (3.469253ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (96.264476ms)
+✖ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (1092.377636ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (180.030479ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (85.69103ms)
+✔ 内存不足时不启动重操作，恢复资源后可以执行 (0.731469ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 8
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3102.080398
+
+✖ failing tests:
+
+test at tests/round4.test.mjs:9:1
+✖ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (1092.377636ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  98 !== 100
+  
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4.test.mjs:9:716)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 98,
+    expected: 100,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

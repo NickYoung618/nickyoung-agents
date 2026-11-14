@@ -13,9 +13,12 @@ export function blankState(id) {
   };
 }
 export function applyStateEvent(s, e, { append = true } = {}) {
+  s.cycles ||= [];s.artifacts ||= [];s.preview ||= {status:'unavailable'};
   if (append && e.id !== undefined && s.events.at(-1)?.id >= e.id) return false;
   if (append) s.events.push(e);
   const d = structuredClone(e.data);
+  if(e.type==='intent')s.intent={...d,eventId:e.id};
+  if(e.type==='requirement_status'&&(!s.requirement||(d.sourceMessage||0)>=(s.requirement.sourceMessage||0)))s.requirement={...d,eventId:e.id};
   if (["created", "project_update"].includes(e.type)) Object.assign(s, d);
   if (e.type === "cycle") {
     if (!s.cycles.some((x) => x.cycleId === d.cycleId)) s.cycles.push(d);

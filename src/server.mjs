@@ -2,6 +2,11 @@ import { projectActivities } from "./activity-projector.mjs";
 import { captureRuntime } from "./runtime-info.mjs";
 import { PreviewManager } from "./preview-manager.mjs";
 import { instrumentPreview, previewCsp, safeFile } from "./static-preview.mjs";
+import {cleanCaches} from "./storage-policy.mjs";
+import {historicalCandidates} from "./history.mjs";
+import {Lifecycle} from "./lifecycle.mjs";
+import {Resources} from "./resources.mjs";
+import { Artifacts, mime } from "./artifacts.mjs";
 import { ModelCatalog } from "./model-catalog.mjs";
 import { statistics, cycleStatistics } from "./statistics.mjs";
 import https from "node:https";
@@ -133,6 +138,11 @@ const engine = new Engine(store, config, save, (e) => {
 previews = new PreviewManager(engine);
 engine.previews = previews;
 store.append("system", "runtime_started", runtimeInfo);
+const artifacts = new Artifacts(store, data, e => { for (const r of clients) r.write(`id: ${e.id}\ndata: ${JSON.stringify(e)}\n\n`); },{ttl:config.previewTimeout,startupTimeout:config.previewStartupTimeout});
+engine.artifacts = artifacts;
+const resources=new Resources(config.resourceBudget||4);engine.resources=resources;artifacts.resources=resources;
+let lifecycle;
+const writes = new Map();
 function json(res, status, value) {
   res.writeHead(status, {
     "Content-Type": "application/json; charset=utf-8",
@@ -161,6 +171,9 @@ const server = https.createServer(
         "Content-Security-Policy",
         "default-src 'self'; style-src 'self'; script-src 'self'; connect-src 'self'; img-src 'self' data:; frame-src 'self'; frame-ancestors 'none'",
       );
+      const preview = p.match(/^\/preview\/([a-f0-9]+)(\/.*)$/);
+      if (preview) return artifacts.serve(req,res,preview[1],preview[2]+url.search);
+      if (req.headers.origin === 'null' && p.startsWith('/api/')) return json(res,403,{error:'预览不可访问助手 API'});
       if (p === "/internal/team" && req.method === "POST") {
         const token = req.headers.authorization?.replace(/^Bearer /, "");
         if (!engine.teamTokens.has(token))
@@ -227,6 +240,38 @@ const server = https.createServer(
         }
         return json(res, 401, { error: "请登录" });
       }
+      if(p==='/api/maintenance'&&req.method==='POST'){const b=await body(req);if(b.action==='resume'){lifecycle.maintenance=false;engine.draining=false;artifacts.restartCleanup();return json(res,200,lifecycle.status());}return json(res,200,await lifecycle.drain());}
+      if(p==='/api/release')return json(res,200,existsSync(join(root,'release.json'))?JSON.parse(readFileSync(join(root,'release.json'))):{version:'20261114-integrated-1',revision:process.env.NY_REVISION||'working-tree',immutable:false});
+      if(p==='/api/health')return json(res,200,{version:'20261114-integrated-1',revision:process.env.NY_REVISION||'working-tree',...lifecycle.status(),resources:resources.snapshot()});
+      if(lifecycle.maintenance&&req.method!=='GET')return json(res,503,{error:'服务正在维护排空，请稍后重试；草稿已保留'});
+      const artifactRoute=p.match(/^\/api\/conversations\/([^/]+)\/artifacts(?:\/([^/]+)(?:\/(start|verify|cancel-verify|stop|feedback|accept|archive|upgrade-data|package|download|restore-plan|restore|compare))?)?$/);
+      if(artifactRoute && url.searchParams.get('view')!=='preview' && !(artifactRoute[3]==='download'&&!artifacts.list(artifactRoute[1]).some(a=>a.id===artifactRoute[2]))) {
+        const [,c,id,action]=artifactRoute;
+        if(!engine.state(c).id) throw Error('对话不存在');
+        if(!id) return json(res,200,artifacts.list(c));
+        const a=artifacts.get(c,id);
+        if(['start','verify','cancel-verify','stop','feedback','accept','archive','upgrade-data','restore'].includes(action)&&req.method!=='POST')return json(res,405,{error:'需要 POST'});
+        const b=req.method==='POST'?await body(req):{};
+        if(action==='start') {await artifacts.start(c,id);return json(res,200,artifacts.get(c,id));}
+        if(action==='verify')return json(res,200,await artifacts.verify(c,id));
+        if(action==='cancel-verify')return json(res,200,artifacts.cancelVerification(id));
+        if(action==='archive'){artifacts.event(c,'artifact_archive',{id,archived:b.archived!==false});return json(res,200,{ok:true});}
+        if(action==='upgrade-data')return json(res,200,await artifacts.upgradeData(c,id));
+        if(action==='package'){const file=artifacts.package(c,id,url.searchParams.get('kind')||'source');res.writeHead(200,{'Content-Type':'application/gzip','Content-Disposition':'attachment; filename="'+id+'.tar.gz"'});return res.end(readFileSync(file));}
+        if(action==='stop')return json(res,200,artifacts.stop(id));
+        if(action==='feedback') {
+          if(!b.text?.trim())throw Error('请输入修改要求');
+          if(typeof b.requestId!=='string'||!b.requestId)throw Error('修改请求需要稳定的 requestId');
+          await engine.message(c,`修改成果「${a.name}」v${a.version}（${a.commit}），保留 key=${a.key}。新版必须重新验证，保留旧版。要求：${b.text}`,b.files||[],{id,version:a.version,commit:a.commit,text:b.text,requestId:b.requestId});
+          return json(res,200,{ok:true});
+        }
+        if(action==='accept') {if(a.verification.status!=='passed')throw Error('该版本尚未验证通过');artifacts.event(c,'artifact_user_acceptance',{id,version:a.version,commit:a.commit,time:new Date().toISOString(),source:'user-button'});return json(res,200,{ok:true});}
+        if(action==='restore-plan')return json(res,200,artifacts.restorePlan(c,id));
+        if(action==='restore')return json(res,200,artifacts.restore(c,id,b.head));
+        if(action==='compare')return json(res,200,{diff:engine.git(a.project,['diff',a.commit,'HEAD','--','.']).slice(0,100000)});
+        if(action==='download') {const f=artifacts.file(a);res.writeHead(200,{'Content-Type':mime(f),'Content-Disposition':'attachment; filename="artifact'+extname(f)+'"'});return res.end(readFileSync(f));}
+        return json(res,200,a);
+      }
       if (p === "/api/logout" && req.method === "POST") {
         store.db.prepare("DELETE FROM sessions WHERE token=?").run(cookie);
         res.setHeader(
@@ -242,6 +287,8 @@ const server = https.createServer(
           Connection: "keep-alive",
         });
         res.write(": connected\n\n");
+        const after=Number(req.headers['last-event-id']);
+        if(after)res.write(`data: ${JSON.stringify({type:'resync',after})}\n\n`);
         clients.add(res);
         const timer = setInterval(() => {
           if (
@@ -356,16 +403,31 @@ const server = https.createServer(
         return res.end(payload);
       }
       if (p === "/api/ui-version")
-        return json(res, 200, { version: "20261113-preview-1" });
+        return json(res, 200, { version: "20261114-integrated-1",revision:process.env.NY_REVISION||"working-tree" });
       if (p === "/api/state") return json(res, 200, store.conversations());
-      const activityRoute = p.match(
-        /^\/api\/conversations\/([^/]+)\/activity$/,
-      );
-      if (activityRoute) {
-        const s = engine.state(activityRoute[1]);
-        if (!s.id) return json(res, 404, { error: "对话不存在" });
-        return json(res, 200, projectActivities(s));
+      const activityRoute=p.match(/^\/api\/conversations\/([^/]+)\/activity$/);if(activityRoute){const s=engine.state(activityRoute[1]);return json(res,s.id?200:404,s.id?projectActivities(s):{error:"对话不存在"});}
+      if (p === '/api/summaries') {
+        return json(res,200,store.summaries());
       }
+      const detail=p.match(/^\/api\/conversations\/([^/]+)\/detail$/);
+      if(detail) {const s=engine.state(detail[1]);return json(res,s.id?200:404,s.id?s:{error:'对话不存在'});}
+
+      if (p === "/api/updates") {
+        const after=Number(url.searchParams.get('after'))||0;
+        const result=store.page(after,url.searchParams.get('limit'));return json(res,200,{...result,events:result.events.filter(e=>e.conversation!=='system')});
+      }
+      const rawPage=p.match(/^\/api\/conversations\/([^/]+)\/events$/);
+      if(rawPage)return json(res,200,store.rawPage(rawPage[1],url.searchParams.get('before'),url.searchParams.get('limit')));
+      const payload=p.match(/^\/api\/events\/(\d+)\/payload$/);
+      if(payload){const row=store.db.prepare('SELECT * FROM events WHERE id=?').get(Number(payload[1]));return json(res,row?200:404,row?store.decode(row,true):{error:'事件不存在'});}
+      if(p==='/api/storage/cleanup'&&req.method==='POST'){if(lifecycle.busy())throw Error('运行任务中不能清理');return json(res,200,cleanCaches(artifacts));}
+      if(p==='/api/timings'){return json(res,200,store.summaries().map(s=>{const events=store.events(s.id,{light:true});return{id:s.id,phases:events.filter(e=>e.type==='timing').map(e=>({...e.data,eventId:e.id})),humanWait:events.filter(e=>e.type==='answer').map(e=>{const q=events.find(q=>q.type==='question'&&q.data.id===e.data.id);return{question:e.data.id,duration:q?Date.parse(e.time)-Date.parse(q.time):null,sourceEvent:q?.id};})};}));}
+      if(p==='/api/projects'){
+        const projects=new Map();for(const s of store.summaries()){const id=s.projectId||store.projectId(s.path);if(!projects.has(id))projects.set(id,{id,path:s.path,conversations:[],artifacts:[]});const p=projects.get(id);p.conversations.push({id:s.id,title:s.title,status:s.status,intent:s.intent,requirement:s.requirement});p.artifacts.push(...artifacts.list(s.id));}
+        return json(res,200,[...projects.values()].map(p=>({...p,artifacts:[...new Map(p.artifacts.map(a=>[a.id,a])).values()]})));
+      }
+      const intent=p.match(/^\/api\/conversations\/([^/]+)\/intent$/);
+      if(intent&&req.method==='POST'){const b=await body(req);if(!b.goal?.trim())throw Error('目标不能为空');engine.event(intent[1],'intent',{...b,source:'user-revision',affected:engine.state(intent[1]).tasks.filter(t=>t.status!=='passed').map(t=>t.id)});return json(res,200,{ok:true});}
       if (p === "/api/models")
         return json(
           res,
@@ -466,11 +528,19 @@ const server = https.createServer(
         for (const r of clients) r.end();
         return json(res, 200, { ok: true });
       }
+      if(req.method==='POST' && (p==='/api/conversations'||/\/(message|answer)$/.test(p)) && req.headers['idempotency-key']) {
+        const key=req.headers['idempotency-key'];const scope=p+':'+key;
+        const old=store.db.prepare("SELECT data FROM events WHERE type='request_completed' AND conversation='system' AND json_extract(data,'$.scope')=?").get(scope);
+        if(old)return json(res,200,JSON.parse(old.data).result);
+        if(writes.has(scope)){await writes.get(scope);const done=store.db.prepare("SELECT data FROM events WHERE type='request_completed' AND conversation='system' AND json_extract(data,'$.scope')=?").get(scope);if(done)return json(res,200,JSON.parse(done.data).result);throw Error('上次请求未完成，请重试');}
+        let finish;writes.set(scope,new Promise(r=>finish=r));const end=res.end.bind(res);res.end=(chunk,...args)=>{try{if(res.statusCode===200)store.append('system','request_completed',{scope,result:JSON.parse(String(chunk))});}finally{writes.delete(scope);finish();}return end(chunk,...args);};
+      }
       if (p === "/api/conversations" && req.method === "POST") {
         let b = await body(req);
         if (!b.text?.trim()) throw new Error("请输入需求");
         let c = await engine.create(b.text, b.path, {
           workflowVersion: b.workflowVersion,
+          kind:b.kind||"auto",
           directPlan: b.directPlan,
         });
         await engine.message(c, b.text, b.files, { intent: b.intent });
@@ -503,8 +573,9 @@ const server = https.createServer(
           )
             throw new Error("无效回答");
           const question = s.questions.find((q) => q.id === b.id);
-          engine.event(c, "answer", { ...b, cycleId: question.cycleId });
-          if (question.purpose === "init_repo") {
+          engine.event(c, "answer", {...b,cycleId:question.cycleId});
+          if(question.purpose==="work_conflict")engine.resolveWorkConflict(c,question,b.answer);
+          else if (question.purpose === "init_repo") {
             if (b.answer) {
               engine.initialize(c);
               if (s.workflowVersion === "adaptive_v1")
@@ -626,6 +697,8 @@ function asset(p, res) {
     "/studio/preview-panel.mjs": "studio/preview-panel.mjs",
     "/studio/event-projection.mjs": "studio/event-projection.mjs",
     "/studio/draft-manager.mjs": "studio/draft-manager.mjs",
+    "/studio/conversation-state.mjs": "studio/conversation-state.mjs",
+    "/studio/artifact-workbench.mjs": "studio/artifact-workbench.mjs",
     "/studio/agent-graph.mjs": "studio/agent-graph.mjs",
     "/style.css": "style.css",
     "/viewport.css": "viewport.css",
@@ -647,6 +720,7 @@ function asset(p, res) {
   });
   res.end(readFileSync(f));
 }
+lifecycle=new Lifecycle(server,engine,artifacts,clients,store);lifecycle.resources=resources;if(process.env.NY_MAINTENANCE==='1'){lifecycle.maintenance=true;engine.draining=true;}
 server.on("upgrade", (req, socket) => {
   socket.write("HTTP/1.1 403 Forbidden\r\n\r\n");
   socket.destroy();
@@ -662,11 +736,12 @@ server.listen(
     console.log(
       "NickYoung HTTPS listening on " + (process.env.NY_PORT || config.port),
     );
+    artifacts.origin = `https://127.0.0.1:${server.address().port}`;
+    artifacts.recover();
     engine.recover();
   },
 );
-process.on("SIGTERM", () => {
-  engine.shutdown();
-  for (const r of clients) r.end();
-  server.close(() => process.exit(0));
-});
+const stop=async()=>{
+ const deadline=setTimeout(()=>{console.error(JSON.stringify({type:'shutdown_timeout',phase:'after-checkpoints',running:engine.running.size,connections:lifecycle.sockets.size}));for(const socket of lifecycle.sockets)socket.destroy();process.exit(1);},14000);deadline.unref();
+ try{const result=await lifecycle.shutdown();clearTimeout(deadline);console.log(JSON.stringify({type:'shutdown_complete',...result}));process.exit(0);}catch(e){console.error(e.message);process.exitCode=1;}
+};process.on('SIGTERM',stop);process.on('SIGINT',stop);

@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: {"error":"EEXIST: file already exists, symlink '/home/ubuntu/disk/dzk/nickyoung/data/round4-live/usage/ad050a29-85c9-4b4b-96e2-bd75d91ff3f1/389ce2aa-4f68-4284-8612-4f72b57f88e2/data' -> '/home/ubuntu/disk/dzk/nickyoung/data/round4-rehearsal-1794583111693/restored-usage/usage/ad050a29-85c9-4b4b-96e2-bd75d91ff3f1/389ce2aa-4f68-4284-8612-4f72b57f88e2/data'"}
+
+400 !== 200
+
+    at file:///home/ubuntu/disk/dzk/nickyoung/scripts/round4-restore.mjs:8:958 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: 400,
+  expected: 200,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

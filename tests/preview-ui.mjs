@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { mkdirSync, writeFileSync, readFileSync } from "node:fs";
 import { previewService } from "./helpers/preview-service.mjs";
 const f = await previewService(),
-  out = new URL("../evidence/feedback-preview/", import.meta.url);
+  out = new URL(process.env.NY_PREVIEW_EVIDENCE||"../evidence/feedback-preview/", import.meta.url);
 mkdirSync(out, { recursive: true });
 let browser;
 const checks = [],

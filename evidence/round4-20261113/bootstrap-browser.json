@@ -1,0 +1,8 @@
+{
+  "controlledSlowIncremental": true,
+  "firstVisibleNavigationWorks": true,
+  "viewPreservedAfterBootstrap": true,
+  "userSelectedConversationPreserved": true,
+  "errors": [],
+  "productionUnaffected": true
+}
