@@ -1,0 +1,102 @@
+✖ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (1156.642442ms)
+✖ 预览过期、失败及重新启动准确反馈并回收原进程 (762.661152ms)
+✖ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (1299.83636ms)
+✖ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (2254.026852ms)
+ℹ tests 4
+ℹ suites 0
+ℹ pass 0
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5670.258803
+
+✖ failing tests:
+
+test at tests/preview-lifecycle.test.mjs:5:1
+✖ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (1156.642442ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:5:61)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)
+
+test at tests/preview-lifecycle.test.mjs:6:1
+✖ 预览过期、失败及重新启动准确反馈并回收原进程 (762.661152ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:6:49)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at tests/preview-lifecycle.test.mjs:7:1
+✖ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (1299.83636ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:7:54)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at tests/preview-lifecycle.test.mjs:9:1
+✖ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (2254.026852ms)
+  Error: file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28
+        if(e.type==='artifact_validation')latest.set(e.data.id,e.data);for(const d of latest.values())if(d.status==='running')this.event(c.id,'artifact_validation',{...d,status:'interrupted',reason:'服务重启，验收已中断，请重新验收'});}
+        ^
+  
+  ReferenceError: e is not defined
+      at Artifacts.recover (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:28:7)
+      at Server.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/src/server.mjs:602:15)
+      at Object.onceWrapper (node:events:630:28)
+      at Server.emit (node:events:521:24)
+      at emitListeningNT (node:net:2051:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:89:21)
+  
+  Node.js v24.15.0
+  
+      at launchFixture (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifact-repair-fixture.mjs:18:124)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/preview-lifecycle.test.mjs:9:53)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)

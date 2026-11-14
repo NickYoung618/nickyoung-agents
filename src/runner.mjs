@@ -43,6 +43,7 @@ export const schema = {
   ],
   additionalProperties: false,
 };
+actionProperties.deliveryType={type:'string'};
 export const leaderSchema = {
   type: "object",
   properties: {
@@ -266,7 +267,7 @@ export function runModel({
     if (session) args.push("--resume", session);
   } else {
     bin = process.env.NY_CODEX || "codex";
-    const dir = new URL("../data/schemas", import.meta.url).pathname;
+    const dir = join(process.env.NY_DATA||new URL("../data",import.meta.url).pathname,"schemas");
     mkdirSync(dir, { recursive: true });
     const file = join(
       dir,

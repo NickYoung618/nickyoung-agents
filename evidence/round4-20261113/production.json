@@ -1,0 +1,122 @@
+{
+  "version": "20261114-workbench-4.2",
+  "revision": "1254172dfe38ac57ae90d09c0f6f1f6358bf88d4",
+  "origin": "https://43.156.51.71:8787",
+  "productionWrites": "仅登录会话与静态预览生命周期元数据；未添加用户数据、未验收、未反馈、未创建任务",
+  "userAcceptance": false,
+  "sessions": [
+    {
+      "id": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "title": "帮我做一个纯 Node 命令行待办清单，能添加、列出、完成待办，关闭再打开数据还在。命令怎么写你定，给我一段使用说明。项",
+      "artifacts": [
+        {
+          "id": "4f55a1d1-dcbf-4016-b805-de69c36c1579",
+          "name": "待办 CLI",
+          "version": 1,
+          "status": "passed"
+        },
+        {
+          "id": "440785d6-00fb-48e7-955d-2795d498bf65",
+          "name": "使用说明 / 本次文档修改",
+          "version": 1,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "id": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "title": "这是小项目验收：做一个 Node 命令行名字列表工具，支持 add 和 list",
+      "artifacts": [
+        {
+          "id": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+          "name": "名字列表 CLI",
+          "version": 1,
+          "status": "passed"
+        },
+        {
+          "id": "a78a973d-aae1-4011-9963-57c01ef65f54",
+          "name": "使用说明 / 本次文档修改",
+          "version": 1,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "id": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "title": "在这个已有项目里做一处小文档改动：README 末尾追加“格式：JSON”，不要",
+      "artifacts": [
+        {
+          "id": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+          "name": "名字列表 CLI",
+          "version": 1,
+          "status": "passed"
+        },
+        {
+          "id": "9c43454f-431b-4585-81d3-ee13c5a7f37e",
+          "name": "使用说明 / 本次文档修改",
+          "version": 2,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "id": "9fdcbb91-039a-483b-b8c4-15b1d89cf369",
+      "title": "本轮仅回答：如果接下来做一个小 Node CLI，你会选择什么实现模型和推理强度",
+      "artifacts": []
+    },
+    {
+      "id": "931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "title": "基于open code，做一个多智能体之间直观的交互图给我",
+      "artifacts": [
+        {
+          "id": "dc10add4-1f61-407e-b96e-c9965c91cf25",
+          "name": "opencode-agent-graph",
+          "version": 1,
+          "status": "failed"
+        },
+        {
+          "id": "17800d9b-a2c9-40ab-9f34-dddc7d980312",
+          "name": "使用说明 / 本次文档修改",
+          "version": 1,
+          "status": "passed"
+        },
+        {
+          "id": "22d32390-af29-4f99-af64-4d731ae7a686",
+          "name": "opencode-agent-graph",
+          "version": 2,
+          "status": "passed"
+        }
+      ]
+    },
+    {
+      "id": "b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "title": "做一个具身智能的动画给我",
+      "artifacts": [
+        {
+          "id": "c5959b1c-d356-4398-8f3a-f86127b452e3",
+          "name": "embodied-intelligence",
+          "version": 1,
+          "status": "passed"
+        },
+        {
+          "id": "d4ff5f83-340d-4256-8048-e699d3061ea1",
+          "name": "使用说明 / 本次文档修改",
+          "version": 1,
+          "status": "passed"
+        }
+      ]
+    }
+  ],
+  "configPreserved": true,
+  "staticFilesVerified": 16,
+  "preexistingLoginSessionPreserved": true,
+  "readOnlyInteractions": [
+    "登录与原会话读取",
+    "历史成果卡和项目关系",
+    "静态动画实际暂停",
+    "连续三次刷新重连原实例（资源未增加）",
+    "完整源码包下载",
+    "390px 视口"
+  ],
+  "errors": []
+}

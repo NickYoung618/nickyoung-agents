@@ -1,0 +1,20 @@
+✖ 项目命令返回真实退出码与输出，结束后清理运行槽并记录工具耗时 (1003.70842ms)
+ℹ tests 1
+ℹ suites 0
+ℹ pass 0
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1692.614956
+
+✖ failing tests:
+
+test at tests/round4.test.mjs:23:1
+✖ 项目命令返回真实退出码与输出，结束后清理运行槽并记录工具耗时 (1003.70842ms)
+  ReferenceError: releaseResource is not defined
+      at Engine.teamAction (file:///home/ubuntu/disk/dzk/nickyoung/src/engine.mjs:461:7)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4.test.mjs:23:401)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3)

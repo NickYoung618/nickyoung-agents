@@ -1,0 +1,17 @@
+fatal: path '.nickyoung/artifacts.json' does not exist in '92b7871e0d76c5ab28f9f1950212b75e2c8fe071'
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (109.087665ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (1.122709ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in 'a55e91421eacdd3783c300bb6e6c220e01bf8412'
+fatal: path '.nickyoung/artifacts.json' does not exist in '7ae98649166ed98b52d5dd88d04cf576fadbb7c2'
+fatal: Not a valid object name bad
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (1051.922022ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (9.6261ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (217.424593ms)
+ℹ tests 5
+ℹ suites 0
+ℹ pass 5
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1751.318453

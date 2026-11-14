@@ -1,0 +1,15 @@
+Switched to a new branch 'nickyoung/13500849'
+真实任务 13500849-faad-4415-8a7c-44d95e878e3c
+Preparing worktree (detached HEAD 6a5034c)
+Preparing worktree (detached HEAD 4805354)
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+page.waitForFunction: Timeout 30000ms exceeded.
+    at /home/ubuntu/disk/dzk/nickyoung/scripts/round4-live.mjs:9:1595 {
+  log: [],
+  name: 'TimeoutError'
+}
+
+Node.js v24.15.0

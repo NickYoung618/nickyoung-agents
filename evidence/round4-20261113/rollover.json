@@ -1,0 +1,11 @@
+{
+  "kind": "isolated-real-process-code-switch",
+  "badReleaseDetected": true,
+  "failedReleaseReplaced": true,
+  "oldLoginStillValid": true,
+  "databasePreserved": true,
+  "userDataBefore": 1,
+  "userDataAfter": 1,
+  "goodRelease": "/home/ubuntu/disk/dzk/nickyoung/data/round4-rehearsal-1794585951837/releases/20261114-workbench-4.2-1254172dfe38",
+  "productionUnaffected": true
+}

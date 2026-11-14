@@ -1,6 +1,6 @@
 export const labels = {
   implemented: '已实现', planning:'规划', executing:'实现', validating:'运行检查', repairing:'修复', delivered:'已交付', blocked:'等待处理',
-  idle: '待开始', working: '进行中', paused: '已暂停', interrupted: '等待恢复',
+  waiting_user:'等待用户处理文件冲突', idle: '待开始', working: '进行中', paused: '已暂停', interrupted: '等待恢复',
   done: '已交付', error: '遇到问题', queued: '待执行', running: '实现中',
   review: '待审查', reviewing: '审查中', repair: '返修中', consultation: '待处理方案',
   passed: '已通过', deferred: '遗留', stopped: '已停止', cancelled: '已取消',
@@ -31,7 +31,16 @@ export function progress(s) {
     next = waiting ? `${waiting} 项决定需要你答复，其余工作按实际状态推进。` : '等待当前工作结果；可查看任务清单和证据。';
   } else if (busy.length) action = busy.map(m => `${m.name}正在处理需求`).join('；');
   else if (waiting) { action = `${waiting} 项决定等待答复`; next = '打开待你决定，查看各选项后果。'; }
-  const last = s.events.at(-1);
+  const resourceWait=s.events.findLast(e=>e.type==='resource_wait'),resourceReady=s.events.findLast(e=>e.type==='resource_ready');
+  if(s.status==='working'&&resourceWait&&resourceWait.id>(resourceReady?.id||0)){action='等待资源 · '+resourceWait.data.reason;next='资源释放后自动继续，可以停止闲置预览释放预算。';}
+  const activity=s.events.findLast(e=>['process','message','check','review','run_start','artifact','preview'].includes(e.type));
+  const process=s.events.findLast(e=>e.type==='process');
+  const command=process?.data.event?.item?.command || process?.data.event?.command;
+  if(command && busy.length && s.status==='working') {
+    const phase=/\b(test|pytest|jest|vitest|playwright)\b|--test/.test(command)?'测试':/apply_patch|\b(sed|tee)\b.*(>|-i)/.test(command)?'修改文件':/\b(cat|rg|head|tail|ls)\b/.test(command)?'读取文件':null;
+    if(phase)action+=' · '+phase;
+  }
+  const last = activity || s.events.at(-1);
   return { action, next, waiting, passed: s.tasks.filter(t => t.status === 'passed').length, last };
 }
 const important = new Set(['message','task','task_update','review','check','error','report','question','answer','decision','interrupted','question_closed','cycle_phase','cycle_review_start','cycle_review','cycle_repair','workflow_blocked','planner_trigger','workflow_status']);
@@ -78,8 +87,8 @@ export function deliveryEvidence(s, report) {
   }
   const incomplete = [...tasks.values()].filter(t => t.status !== 'passed' && t.status !== 'resolved');
   const reportText = String(report.data.text || '');
-  const usage = [...new Set([...(reportText.match(/\b(?:node|npm|pnpm|python3?)\s+[A-Za-z0-9_.\/:@= -]+/g) || []), ...(reportText.match(/https?:\/\/[^\s<>()，。]+/g) || [])].map(s => s.trim()))].slice(0,3).join('\n');
-  return { usage, incomplete, passed: checks.filter(e => e.data.passed).length, failed: checks.filter(e => !e.data.passed).length,
+  const usage = ""; // Only structured, program-verified artifacts provide usage entries.
+  return { usage, incomplete, reviewFailed: reviews.filter(e => e.data.verdict !== "pass" || e.data.issues?.length).length, runtimeFailed: events.filter(e => ["run_failed", "error", "artifact_error"].includes(e.type)).length, passed: checks.filter(e => e.data.passed).length, failed: checks.filter(e => !e.data.passed).length,
     reviews: reviews.map(e => ({ id: e.id, verdict: e.data.verdict, commit: e.data.commit })),
     summary: reportText.split('。').slice(0,2).join('。').slice(0,320) };
 }

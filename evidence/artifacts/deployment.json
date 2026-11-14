@@ -1,0 +1,14 @@
+{
+  "time": "2026-11-13T10:36:51.202Z",
+  "backup": "/home/ubuntu/disk/dzk/nickyoung/data/backups/artifacts-2026-11-13T10-36-50-127Z",
+  "service": "active",
+  "runningBefore": 0,
+  "health": {
+    "version": {
+      "version": "20261113-artifacts-2"
+    },
+    "state": 200,
+    "updates": 200,
+    "module": 200
+  }
+}

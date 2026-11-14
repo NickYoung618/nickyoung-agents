@@ -1,0 +1,118 @@
+
+> nickyoung@0.1.0 test
+> node --test --test-isolation=none tests/*.test.mjs
+
+✔ 关键写入重复请求不重复创建，增量补齐有序且预览 Origin 不能访问管理 API (3231.776153ms)
+✖ 固定提交核验、测试命令分离、失败新版保留旧版、无效入口不可用 (1125.570302ms)
+✔ 元数据分开但保留已有跟踪文件，恢复保护用户改动和 HEAD (944.048584ms)
+✔ 历史报告不提供正则入口，分别统计审查退回和运行异常 (2.79432ms)
+✔ 预览启动失败、过期、重新启动及并发限制 (539.796328ms)
+✔ 增量事件重连去重且历史验收条件不会被状态更新污染 (6.133833ms)
+✔ 真实超时清理、两项预览并发上限和示例文件权限 (2759.552293ms)
+✔ 恢复仅改变所列代码，数据库与环境配置保持原值 (649.478952ms)
+✔ 项目忽略平台目录时仍提交产品成果清单，不夹带附件 (246.151786ms)
+✔ 原样保留所有原生强度与隐藏标记，不按固定名单截断 (0.94879ms)
+✔ Claude 按各模型实际能力列出强度，缺少元数据不猜测 (0.713477ms)
+✔ 同一 Claude 完整模型被多个别名引用时只列一次 (0.265229ms)
+fatal: not a git repository (or any of the parent directories): .git
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/7ec6daf4'
+✔ 通道切换交接上下文，同通道模型变更保留会话，对话覆盖不改全局配置 (1761.957307ms)
+✔ 未通过的任务阻止收工，遗留任务允许交付 (14.040361ms)
+✔ 实现与审查不可为同一人，验收命令不能为空 (13.493636ms)
+✔ 暂停确实停止本对话进程 (4.62085ms)
+✔ 会诊重试门槛与第三次失败停止 (9.357434ms)
+✔ 遗留关闭必须关联已通过审查的替代任务 (5.829742ms)
+✔ 非 Git 已有目录等待确认，保留原文件 (261.025834ms)
+✔ 取消正在执行的任务会终止对应成员，不影响其他任务 (6.983073ms)
+✔ 服务恢复保留记录，将中断任务交回负责人 (9.060117ms)
+✔ 讨论最多两轮，超过上限不再调用成员 (4.046607ms)
+✔ 请示未回答不能收工，等待期间无关任务仍能调度 (9.379336ms)
+✔ 同伴答复齐全后提问者自动继续，不经负责人 (9.29702ms)
+✔ 被新需求替代的请示可明确结束，不伪造用户答案 (4.423831ms)
+✔ 讨论和任务共用成员并发上限，同一成员不会重复启动 (4.241934ms)
+✔ 取消排队任务不会终止同一成员正在执行的另一任务 (1.834187ms)
+✔ 简单回复结束后回到待命，不持续显示团队工作中 (10.028375ms)
+✔ 改派会移除旧成员尚未启动的排队回合 (5.729224ms)
+✔ HTTPS 登录隔离、限速、来源校验及改密注销 (4141.572353ms)
+✔ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (6193.657281ms)
+✔ 预览过期、失败及重新启动准确反馈并回收原进程 (8747.493966ms)
+✔ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (11463.860021ms)
+✔ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (3029.117042ms)
+✔ 停止回合确实终止子进程 (15.052039ms)
+✔ 进程非零退出码和标准输出保留 (121.506398ms)
+✔ 服务商拒绝显示原始原因，不混入用量元数据 (1.911362ms)
+✔ 换模后历史发言仍标注当时的实际模型 (1.143001ms)
+✔ 限流记录真实恢复时间，恢复后续跑，暂停清理重试 (2187.910141ms)
+✔ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (9823.179109ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in 'd1dbe431d233c6e9129d4023a12bba2d3abc9219'
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (3232.057631ms)
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (184.586776ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.770535ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in 'd1dbe431d233c6e9129d4023a12bba2d3abc9219'
+fatal: path '.nickyoung/artifacts.json' does not exist in '9203958806e33236f5eaf2d35f5dd0cae4e0ee5b'
+fatal: path '.nickyoung/artifacts.json' does not exist in '315f80644255b9cacd5167c18d4a193ced9149df'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in '4f749bc3e5ff9377ea275671407ec942b13c34ad'
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (1482.604008ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (13.971146ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (317.938916ms)
+✔ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (1135.089973ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (174.472789ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (69.793836ms)
+✔ 内存不足时不启动重操作，恢复资源后可以执行 (1.10996ms)
+✔ 不可变发布不受工作区修改影响，发布文件损坏会阻止切换 (6.808574ms)
+✔ 当前回合开始后插话不能被旧回合收工覆盖，下一回合处理有源事件 (110.00605ms)
+✔ 长进程输出后反馈响应丢失重试仍只登记一次，未知成果验收不泄漏预算 (15.080176ms)
+✔ 事件重放保留任务、请示及暂停状态 (3.522148ms)
+✔ 第一次返修、第二次会诊、第三次停止；方案问题立即会诊 (0.2027ms)
+✔ 统计按交付时的模型归属，缓存用量与返修可对账 (0.954496ms)
+✔ 摘要区分审查者、暂停、已交付和等待决定 (2.854807ms)
+✔ 5000 条事件只投影最近关键进展，过程不会淹没结论 (4.116496ms)
+✔ 1 至 8 成员布局均在边界内，节点不重叠 (3.762246ms)
+✔ 派发、送审、返修和同伴问答保留事件 ID 与正确方向 (0.945753ms)
+✔ 草稿按会话隔离，存储不可用有反馈 (0.537249ms)
+✔ 多次交付证据只统计相应报告前的回合，不隐藏失败 (0.296304ms)
+✔ 写入后暂停继续，自己的未提交改动能完成且无需用户中间提交 (580.12472ms)
+✔ 中断与服务重启持久恢复检查点，不重复认定模型改动为用户脏文件 (2219.5483ms)
+✔ 暂停期间用户修改同一文件会明确停等；拒绝不丢内容，明确采用后可以继续 (801.149871ms)
+✔ 暂停期间无关用户文件保持原样并排除交付提交，包含已暂存用户改动 (853.949512ms)
+✔ 初始用户改动保留；任务开始前拒绝自动接管；改派复用任务检查点 (515.171809ms)
+✔ 真实子进程写入事件形成持久检查点，SIGTERM 中断后可再次运行 (2197.594377ms)
+✔ 取消后的未完成文件保留，新任务不会自动接管或提交它们 (438.681183ms)
+ℹ tests 69
+ℹ suites 0
+ℹ pass 68
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 73551.619827
+
+✖ failing tests:
+
+test at tests/artifacts.test.mjs:12:1
+✖ 固定提交核验、测试命令分离、失败新版保留旧版、无效入口不可用 (1125.570302ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/artifacts.test.mjs:12:848)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

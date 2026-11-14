@@ -1,0 +1,16 @@
+{
+  "version": "20261114-workbench-4.2",
+  "revision": "1254172dfe38ac57ae90d09c0f6f1f6358bf88d4",
+  "maintenance": false,
+  "connections": 1,
+  "running": 0,
+  "resources": {
+    "availableMb": 3844,
+    "limit": 4,
+    "used": 0,
+    "active": [],
+    "queue": []
+  },
+  "acceptedByAutomation": 0,
+  "checked": "2026-11-13T16:08:52.193Z"
+}

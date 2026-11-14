@@ -1,0 +1,43 @@
+✖ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (8642.219219ms)
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (2760.824976ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in 'b4512d83d903c4155f1812a5f8c1fb954a0bbae9'
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (109.920873ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.687581ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '2137fe64be77615609472977639fafb1e5e15612'
+fatal: path '.nickyoung/artifacts.json' does not exist in 'a02b687cd419717f183f18a4e0f2179eb41ec71b'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in 'bee7427c396ebcfeac5c414b15e8a66736f22902'
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (522.753952ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (1.823183ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (56.099198ms)
+✔ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (1205.669949ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (234.877493ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (109.543418ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 9
+ℹ fail 1
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 16160.262925
+
+✖ failing tests:
+
+test at tests/round4-data.test.mjs:3:1
+✖ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (8642.219219ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'failed' !== 'passed'
+  
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4-data.test.mjs:3:701)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'passed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }

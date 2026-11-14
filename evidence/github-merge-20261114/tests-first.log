@@ -1,0 +1,679 @@
+
+> nickyoung@0.1.0 test
+> node --test --test-isolation=none tests/*.test.mjs
+
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/03701a94'
+✔ 工具活动在模型回合结束前可见，开始/结束与文件变更只来自真实事件 (14.814861ms)
+✔ 结束记录不伪造开始时间，EROFS 是具体环境阻塞，重放不制造重复活动 (2.013916ms)
+✔ 浏览器增量状态与 SQLite 重放使用相同投影；重复 SSE 不重复加入，源事件不被修改 (4.290285ms)
+Preparing worktree (detached HEAD 4cf27d6)
+Preparing worktree (detached HEAD 4cf27d6)
+✔ 实际 CLI 适配器：auto 含分流规划；角色 schema、权限、独立会话和 runId 关联 (3902.329005ms)
+✔ 实现、检查和免审分开；不把免审称为独立审查通过 (1.582508ms)
+✔ 批次交付证据来自报告快照，旧批次事件不污染新交付 (2.055735ms)
+✔ 图只显示真实整批交接和局部返修，不制造成功到负责人的交接 (0.973891ms)
+✔ 关键写入重复请求不重复创建，增量补齐有序且预览 Origin 不能访问管理 API (3149.791149ms)
+✔ 固定提交核验、测试命令分离、失败新版保留旧版、无效入口不可用 (1185.38084ms)
+✔ 元数据分开但保留已有跟踪文件，恢复保护用户改动和 HEAD (1020.776426ms)
+✔ 历史报告不提供正则入口，分别统计审查退回和运行异常 (0.846832ms)
+✔ 预览启动失败、过期、重新启动及并发限制 (1159.526716ms)
+✔ 增量事件重连去重且历史验收条件不会被状态更新污染 (0.771953ms)
+✔ 真实超时清理、两项预览并发上限和示例文件权限 (2583.967415ms)
+✔ 恢复仅改变所列代码，数据库与环境配置保持原值 (462.811816ms)
+✔ 项目忽略平台目录时仍提交产品成果清单，不夹带附件 (150.91275ms)
+✔ 原样保留所有原生强度与隐藏标记，不按固定名单截断 (0.588105ms)
+✔ Claude 按各模型实际能力列出强度，缺少元数据不猜测 (0.544355ms)
+✔ 同一 Claude 完整模型被多个别名引用时只列一次 (0.582947ms)
+fatal: not a git repository (or any of the parent directories): .git
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/aaf416a8'
+✔ 通道切换交接上下文，同通道模型变更保留会话，对话覆盖不改全局配置 (512.845691ms)
+✔ 未通过的任务阻止收工，遗留任务允许交付 (4.922172ms)
+✔ 实现与审查不可为同一人，验收命令不能为空 (9.333189ms)
+✔ 暂停确实停止本对话进程 (7.426178ms)
+✔ 会诊重试门槛与第三次失败停止 (7.567847ms)
+✔ 遗留关闭必须关联已通过审查的替代任务 (4.964295ms)
+✔ 非 Git 已有目录等待确认，保留原文件 (193.505673ms)
+✔ 取消正在执行的任务会终止对应成员，不影响其他任务 (2.90921ms)
+✔ 服务恢复保留记录，将中断任务交回负责人 (3.958286ms)
+✔ 讨论最多两轮，超过上限不再调用成员 (2.065864ms)
+✔ 请示未回答不能收工，等待期间无关任务仍能调度 (4.546409ms)
+✔ 同伴答复齐全后提问者自动继续，不经负责人 (9.891842ms)
+✔ 被新需求替代的请示可明确结束，不伪造用户答案 (3.310749ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Switched to a new branch 'nickyoung/061a95ec'
+Preparing worktree (detached HEAD cf5b11f)
+✔ 讨论和任务共用成员并发上限，同一成员不会重复启动 (7.99061ms)
+✔ 取消排队任务不会终止同一成员正在执行的另一任务 (4.334972ms)
+✔ 简单回复结束后回到待命，不持续显示团队工作中 (4.507176ms)
+✔ 改派会移除旧成员尚未启动的排队回合 (3.382991ms)
+✔ 真实评估默认不调用模型；live 必须明确预算与现有配置 (1.975138ms)
+Preparing worktree (detached HEAD cf5b11f)
+Switched to a new branch 'nickyoung/ec341701'
+Preparing worktree (detached HEAD a0d740b)
+Preparing worktree (detached HEAD a0d740b)
+Switched to a new branch 'nickyoung/93df93a8'
+Preparing worktree (detached HEAD f35b4ef)
+Preparing worktree (detached HEAD f35b4ef)
+Preparing worktree (detached HEAD f35b4ef)
+✔ 比较评估夹具：相同初始提交和固定外部验收，调用预算受程序限制 (13487.740463ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ HTTPS 登录隔离、限速、来源校验及改密注销 (2737.90959ms)
+✔ 三路径和无证据免审退回默认策略 (4.628515ms)
+✔ 计划在副作用之前校验环、引用、覆盖与独立身份 (4.586711ms)
+✔ 旧事件默认 legacy；设计失败硬上限优先 (0.388103ms)
+✔ 角色 schema 为简单 CLI 子集，共享 plan 结构 (1.407755ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P0 HTTPS：鉴权预览/下载、会话归属、sandbox、runtime 与实际流程一致 (2950.985951ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P2 HTTPS：真实创建 adaptive direct 会话，创建响应、事件及状态一致；默认创建仍 legacy (6637.211548ms)
+✔ P2 HTTPS：源码路径与下载包排除凭据，管理目录链接逃逸拒绝，删除工作区后产物仍可访问 (3770.46473ms)
+✔ 打开、独立验收及重连读取不改变使用数据；版本、单次验收和进程数量一致 (8305.204726ms)
+✔ 预览过期、失败及重新启动准确反馈并回收原进程 (7216.619935ms)
+✔ 并发验收取消与失败均回收独立目录和进程，不留下能力凭据 (22334.627386ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 服务重启失效预览能力，标记中断验收并清理临时验收目录 (3497.313902ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P0：真实动画源码转为自包含可执行 HTML；固定产物独立于临时工作区 (409.199875ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P0：失败保留上一成功版本；重复成功不新增版本，源码不修改 (400.820983ms)
+✔ P0：路径穿越、符号链接与外部依赖拒绝；预览响应独立 sandbox (284.383767ms)
+✔ P0：runtime 信息在启动时固定，脏源码不冒充干净 SHA (817.778776ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 73e8b66)
+✔ P1：构建完成即生成草稿；历史版本、单项目合并构建与检查附件长期保留 (1487.120886ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P1：inline_preview 的交付入口要求同提交产物；程序生成后再交付，不额外调用负责人 (3124.82691ms)
+✔ P1：CLI 实际构建事件自动登记，不等待终止消息；失败与取消不登记迟到结果，恢复后可更新 (503.207615ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ P1：切换批次拒绝迟到产物；相同提交在新批次重新关联而不复用旧验收 (616.142113ms)
+✔ P2：桥消息只接受对应预览窗口、标识和有限结构，不能执行业务命令 (5.262979ms)
+✔ P2：团队命令工具的真实构建完成自动登记产物并关联原命令日志 (1896.980952ms)
+✔ 停止回合确实终止子进程 (13.812446ms)
+✔ 进程非零退出码和标准输出保留 (166.088486ms)
+✔ 服务商拒绝显示原始原因，不混入用量元数据 (0.869243ms)
+✔ 换模后历史发言仍标注当时的实际模型 (0.509586ms)
+✔ 限流记录真实恢复时间，恢复后续跑，暂停清理重试 (2275.73392ms)
+✔ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (12340.404005ms)
+✔ 同一项目在新会话交付新版时，跨会话升级仍保留旧版数据 (9576.645319ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '53bf8238ce1481435b00d7c803ce41379b9911d6'
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (3198.149262ms)
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (70.25688ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.69499ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '53bf8238ce1481435b00d7c803ce41379b9911d6'
+fatal: path '.nickyoung/artifacts.json' does not exist in '5a50a76139bdce47beab8ea3a785ad7da9cd6e7d'
+fatal: path '.nickyoung/artifacts.json' does not exist in '1df985b1c935fcf031223faca72d6bf2bdbe61c3'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in '8bb8272358adecdc14b0b5c1a05077928b3c3802'
+✔ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (581.193232ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (1.972166ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (77.034397ms)
+✔ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (1207.229141ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (469.596367ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (272.477575ms)
+✔ 内存不足时不启动重操作，恢复资源后可以执行 (0.736145ms)
+✔ 不可变发布不受工作区修改影响，发布文件损坏会阻止切换 (5.964517ms)
+✔ 当前回合开始后插话不能被旧回合收工覆盖，下一回合处理有源事件 (110.986442ms)
+✔ 长进程输出后反馈响应丢失重试仍只登记一次，未知成果验收不泄漏预算 (10.566375ms)
+✔ 项目命令返回真实退出码与输出，结束后清理运行槽并记录工具耗时 (1108.932287ms)
+✔ 事件重放保留任务、请示及暂停状态 (12.537345ms)
+✔ 第一次返修、第二次会诊、第三次停止；方案问题立即会诊 (0.744335ms)
+✔ 统计按交付时的模型归属，缓存用量与返修可对账 (2.904849ms)
+✔ runId 去重、用途、未知用量与墙钟分别统计 (2.493516ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 2e4ff83)
+✔ 真实适配器失败与暂停均保留 runId 和已知部分 usage (224.477242ms)
+✔ 摘要区分审查者、暂停、已交付和等待决定 (0.679107ms)
+✔ 5000 条事件只投影最近关键进展，过程不会淹没结论 (2.199747ms)
+✔ 1 至 8 成员布局均在边界内，节点不重叠 (1.368801ms)
+✔ 派发、送审、返修和同伴问答保留事件 ID 与正确方向 (0.443778ms)
+✔ 草稿按会话隔离，存储不可用有反馈 (0.69586ms)
+✔ 多次交付证据只统计相应报告前的回合，不隐藏失败 (0.433897ms)
+✔ 正式证据只复用同源码、规格、目标、环境；不复用网络/时间/随机检查或自述 (0.79204ms)
+✔ 验证副本识别未知跟踪与未跟踪文件；只允许声明的构建输出 (242.008529ms)
+Preparing worktree (detached HEAD 2e4ff83)
+Preparing worktree (detached HEAD f2a5624)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 6eedb58)
+✔ 阻塞缺陷直达原执行者；局部检查闭合不重复全量审查 (2653.232348ms)
+Preparing worktree (detached HEAD 6eedb58)
+Preparing worktree (detached HEAD d500cc8)
+Preparing worktree (detached HEAD d500cc8)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD c985682)
+✔ 语义修复只做一次范围复查；高影响疑点有有限验证路径 (3324.240602ms)
+Preparing worktree (detached HEAD c985682)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 859a5ae)
+✔ 修复触及公共约定路径触发有证据升级，预算不允许循环重建任务 (870.013215ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 962370d)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 40a887a)
+✔ 源码污染使正式证据失败，原目录保持实现成果；正常输出允许 (3806.630274ms)
+Preparing worktree (detached HEAD 40a887a)
+Preparing worktree (detached HEAD eb714b2)
+✔ 实际缺陷补丁与新增回归：原审查提交和最终补丁提交分开，正式检查覆盖新增断言 (2892.103854ms)
+✔ 写入后暂停继续，自己的未提交改动能完成且无需用户中间提交 (486.067689ms)
+✔ 中断与服务重启持久恢复检查点，不重复认定模型改动为用户脏文件 (1226.963599ms)
+✔ 暂停期间用户修改同一文件会明确停等；拒绝不丢内容，明确采用后可以继续 (1003.644152ms)
+✔ 暂停期间无关用户文件保持原样并排除交付提交，包含已暂存用户改动 (769.907056ms)
+✔ 初始用户改动保留；任务开始前拒绝自动接管；改派复用任务检查点 (472.067424ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 1961d2b)
+✔ 真实子进程写入事件形成持久检查点，SIGTERM 中断后可再次运行 (838.214784ms)
+✔ 取消后的未完成文件保留，新任务不会自动接管或提交它们 (303.628812ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 同提交同正式检查实际执行一次；成功来源明确且复用有来源引用 (2375.713637ms)
+Preparing worktree (detached HEAD 49601ad)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD d0e7972)
+✔ 429 排队恢复与暂停分开记录，不消耗代码修复预算 (1311.255561ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 3181c06)
+✔ 缺失依赖保留诊断与环境阻塞，不反复修改业务代码 (1245.694455ms)
+Preparing worktree (detached HEAD 3181c06)
+Preparing worktree (detached HEAD 3181c06)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 01de527)
+✔ 不确定高影响疑点仅允许有限范围复查，不静默忽略或无限循环 (1639.062996ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 已有旧会话不受新创建开关影响；计划修订保留历史而只调度当前任务 (1230.63798ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 354bbad)
+✔ 授权被拒绝只阻塞关联任务；回执不能被当作许可 (194.027638ms)
+Preparing worktree (detached HEAD 354bbad)
+Preparing worktree (detached HEAD 354bbad)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD fbd5b93)
+✔ 环境变化先使证据失效并重跑检查，再进行模型审查 (2740.966258ms)
+Preparing worktree (detached HEAD fbd5b93)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ MCP 与 fallback 使用同一计划；重复提交与 pump 不重复启动 (1625.011013ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 13acda3)
+✔ 取消、改派和暂停后的迟到结果不推进当前任务 (343.015208ms)
+Preparing worktree (detached HEAD 13acda3)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 48be20e)
+Preparing worktree (detached HEAD 48be20e)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 检查与审查阶段重启，只重建隔离 gate，不重复实现或唤醒负责人 (2273.558582ms)
+Preparing worktree (detached HEAD e87af44)
+Preparing worktree (detached HEAD ebfec60)
+Preparing worktree (detached HEAD ebfec60)
+Preparing worktree (detached HEAD ebfec60)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD ef03c23)
+✔ 公共约定检查点只阻塞关联任务，用户决定绑定具体任务 (3780.108382ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 已交付追加目标创建新 cycle；显式状态查询不唤醒或改动计划 (983.909415ms)
+✔ 计划错误先拒绝，无半执行任务；finish 与自动交付同样拒绝未验证 (90.276147ms)
+✔ 暂停/429/缺失依赖不计代码返修；改名任务不能绕过批次预算 (73.660153ms)
+Preparing worktree (detached HEAD e4245a1)
+Preparing worktree (detached HEAD e4245a1)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+✔ 暂停首次规划后可继续；目标追加使旧规划结果失效 (2155.863008ms)
+Preparing worktree (detached HEAD f969613)
+Preparing worktree (detached HEAD f969613)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD fa04313)
+✔ 执行中追加新目标时，旧规划结果只记历史，不覆盖新目标的计划 (1848.23223ms)
+Preparing worktree (detached HEAD fa04313)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 5a7f717)
+✔ 规划结果已持久化但尚未提交时，重启直接重放计划，不再调用负责人 (1305.006247ms)
+✔ 同目标重复计划幂等；新目标版本沿用同计划也能恢复执行 (42.560224ms)
+Preparing worktree (detached HEAD 5a7f717)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 137b942)
+✔ 三任务最小纵向闭环：连续实现、正式检查、整体审查、程序交付 (1096.088087ms)
+Preparing worktree (detached HEAD 137b942)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD 01a66ca)
+✔ 五任务 auto 规划 1 / 执行 5 / 整体审查 1 / 协调 0 (2076.97527ms)
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+hint: of your new repositories, which will suppress this warning, call:
+hint: 
+hint: 	git config --global init.defaultBranch <name>
+hint: 
+hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+hint: 'development'. The just-created branch can be renamed via this command:
+hint: 
+hint: 	git branch -m <name>
+Preparing worktree (detached HEAD edab22f)
+✔ direct 完整配置无规划无审查，自动检查仍真实执行 (858.617373ms)
+✔ auto 选择免审仍统计一次首次规划 (736.712698ms)
+ℹ tests 128
+ℹ suites 0
+ℹ pass 128
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 177380.968026

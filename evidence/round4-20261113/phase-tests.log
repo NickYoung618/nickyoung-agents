@@ -1,0 +1,75 @@
+✖ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (2170.848515ms)
+✔ 浏览器、SSE 和空闲 TLS 保持连接时，排空阻止新写入并在期限内优雅退出 (3739.869915ms)
+fatal: path '.nickyoung/artifacts.json' does not exist in '3cb7743e6112d422e0155655c92d847320d17bfa'
+fatal: path '.nickyoung/artifacts.json' does not exist in '1fdeec0ee5db14cc5d3b354215832de5a833463e'
+fatal: path '.nickyoung/artifacts.json' does not exist in '9adcecf7872f89c3047737e59151fc8225990589'
+fatal: Not a valid object name bad
+fatal: path '.nickyoung/artifacts.json' does not exist in 'e86624bb100b367731b191bab39516284daaa5d8'
+✔ 投影缓存、复合索引、增量分页和大检查点分离兼容读取 (60.988766ms)
+✔ 问答可直接回答，开发缺少成果/当前验证失败会阻止准备完成 (0.515426ms)
+✖ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (267.168126ms)
+✔ 资源不足排队并说明，释放可继续，排空拒绝尚未运行的资源请求 (1.293266ms)
+✔ 历史目录或提交丢失有具体原因，问答无需伪造成果 (39.718603ms)
+✖ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (86.084179ms)
+✔ Node 服务通过 fs/new URL 读取的 HTML 和样式属于同一成果输入 (144.97864ms)
+✔ 同一路径、软链接及 Git 子目录归一到同一项目身份 (57.380721ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 7
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8312.816267
+
+✖ failing tests:
+
+test at tests/round4-data.test.mjs:3:1
+✖ 界面版本升级沿用经验证的数据，迁移失败自动恢复旧预览和原数据 (2170.848515ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'failed' !== 'passed'
+  
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4-data.test.mjs:3:701)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'passed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/round4.test.mjs:5:1
+✖ 无关 README 提交复用版本，共享依赖变化必须产生新版本和新示例 (267.168126ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  'failed' !== 'passed'
+  
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4.test.mjs:5:866)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 'failed',
+    expected: 'passed',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at tests/round4.test.mjs:9:1
+✖ 短租期从成功就绪开始，启动时限独立且失败后释放预览资源 (86.084179ms)
+  Error: ENOENT: no such file or directory, stat '/tmp/ny-lease-Cvq2UW/artifacts/c4decf62-9fdc-4b20-b6b3-4cf4a1c5b462/server.mjs'
+      at statSync (node:fs:1726:25)
+      at Artifacts.startVersion (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:113:9)
+      at Artifacts.start (file:///home/ubuntu/disk/dzk/nickyoung/src/artifacts.mjs:106:24)
+      at TestContext.<anonymous> (file:///home/ubuntu/disk/dzk/nickyoung/tests/round4.test.mjs:9:620)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'stat',
+    path: '/tmp/ny-lease-Cvq2UW/artifacts/c4decf62-9fdc-4b20-b6b3-4cf4a1c5b462/server.mjs'
+  }

@@ -1,0 +1,18 @@
+node:internal/modules/run_main:107
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: 首屏出现时导航必须已经可用
+
+false !== true
+
+    at file:///home/ubuntu/disk/dzk/nickyoung/scripts/round4-bootstrap-browser.mjs:2:811 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: false,
+  expected: true,
+  operator: 'strictEqual',
+  diff: 'simple'
+}
+
+Node.js v24.15.0

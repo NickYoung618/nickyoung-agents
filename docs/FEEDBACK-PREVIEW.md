@@ -2,6 +2,8 @@
 
 基线：GitHub main 为 `8c2fde8f17691741b450c8b8e7190966e6ab9fec`，本轮在隔离 worktree `nickyoung-preview` 的 `feedback-preview` 分支实施。生产目录仍为 `aa1f35f`；`nickyoung.service` PID 1884776，启动于 2026-11-13 02:10 +08，运行原目录。没有重启、push、merge、升级在途会话或修改模型与账户配置。
 
+整合后的接口兼容和交付入口见 [GitHub 整合说明](GITHUB-INTEGRATION.md)；本页保留该轮独立实施的历史记录。
+
 ## 使用
 
 已登录工作台打开任务 → “运行记录”查看活动 → “预览” → “生成 / 检查预览”。原 `78b0950e` 具身智能动画源码作为回归夹具，可以播放、暂停、继续、重播及下载。工作台保持原黑白灰冷蓝主题，作品保留自身配色。预览时压缩进展摘要，手机给画面留出空间；文件、任务清单和完整运行记录仍可切换。
@@ -30,7 +32,7 @@
 | --- | --- |
 | GET /api/runtime | 已加载服务版本与支持流程 |
 | GET /api/conversations/:c/activity | 实际活动投影与来源事件 |
-| GET /api/conversations/:c/artifacts | 历史产物与当前预览状态 |
+| GET /api/conversations/:c/artifacts?view=preview | 历史产物与当前预览状态 |
 | POST /api/conversations/:c/preview，空对象 | 生成/检查受限静态预览 |
 | GET /api/conversations/:c/artifacts/:id/content | 隔离预览或检查附件 |
 | GET /api/conversations/:c/artifacts/:id/download | 附件下载 |

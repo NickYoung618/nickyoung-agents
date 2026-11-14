@@ -1,0 +1,90 @@
+{
+  "dir": "/home/ubuntu/disk/dzk/nickyoung/data/round4-import-check-1794584317983",
+  "imported": {
+    "artifacts": 11,
+    "sessions": 6
+  },
+  "packages": [
+    {
+      "session": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "artifact": "4f55a1d1-dcbf-4016-b805-de69c36c1579",
+      "type": "cli",
+      "commit": "c00caafd2f48c7d8468695e0c76d018fe4693e22",
+      "sourceFiles": 4,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "8549110d-cf15-4c65-b8f6-9f993a92b804",
+      "artifact": "440785d6-00fb-48e7-955d-2795d498bf65",
+      "type": "document",
+      "commit": "c00caafd2f48c7d8468695e0c76d018fe4693e22",
+      "sourceFiles": 4,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "artifact": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+      "type": "cli",
+      "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+      "sourceFiles": 5,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "eb7284e3-7c41-4b51-a2ef-10ad51e2917f",
+      "artifact": "a78a973d-aae1-4011-9963-57c01ef65f54",
+      "type": "document",
+      "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+      "sourceFiles": 5,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "artifact": "ed8ef258-10a8-44ea-b3b6-f30e9bbe35c7",
+      "type": "cli",
+      "commit": "5180ae757526e36f9393dcb6077e6d1fc04e409c",
+      "sourceFiles": 5,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "a573cb84-95a6-4923-878d-f4f57d2b3805",
+      "artifact": "9c43454f-431b-4585-81d3-ee13c5a7f37e",
+      "type": "document",
+      "commit": "852359fa9541f14d50cddf01045586c9d0e9085c",
+      "sourceFiles": 5,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "artifact": "17800d9b-a2c9-40ab-9f34-dddc7d980312",
+      "type": "document",
+      "commit": "57b4d62afa84b60db3408717cfe4ecf5fd5dba3a",
+      "sourceFiles": 30,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "931a7722-dc4e-4c47-8740-1f241e099e6b",
+      "artifact": "22d32390-af29-4f99-af64-4d731ae7a686",
+      "type": "web",
+      "commit": "57b4d62afa84b60db3408717cfe4ecf5fd5dba3a",
+      "sourceFiles": 30,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "artifact": "c5959b1c-d356-4398-8f3a-f86127b452e3",
+      "type": "web",
+      "commit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+      "sourceFiles": 17,
+      "repositoryUnavailable": true
+    },
+    {
+      "session": "b2cc689f-6195-4929-9d7a-0a0f62e0f86c",
+      "artifact": "d4ff5f83-340d-4256-8048-e699d3061ea1",
+      "type": "document",
+      "commit": "78b0950eb8273ecd4ce16f69562eee895ba35020",
+      "sourceFiles": 17,
+      "repositoryUnavailable": true
+    }
+  ],
+  "idempotent": true
+}

@@ -4,6 +4,7 @@ import { readFileSync, existsSync } from "node:fs";
 import { join } from "node:path";
 export function captureRuntime(root) {
   const startedAt = new Date().toISOString();
+  if(existsSync(join(root,'release.json'))){const release=JSON.parse(readFileSync(join(root,'release.json')));return Object.freeze({buildCommit:release.revision,branch:null,dirty:false,contentVersion:release.revision,startedAt,supportedWorkflowVersions:['legacy','adaptive_v1'],defaultWorkflowVersion:'legacy'});}
   let buildCommit = null,
     branch = null,
     dirty = null,
